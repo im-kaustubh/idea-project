@@ -27,3 +27,17 @@ git clone https://github.com/im-kaustubh/idea-project.git
 cd idea-project
 git checkout -b feature-yourname       # create and switch to new branch
 git push -u origin feature-yourname    # push it to GitHub
+
+# 🐛 Create a GitHub Issue
+
+Hey! 👋 Now that you’ve created a branch, please also create an issue on the GitHub repo. Here’s how:
+
+1. Go to the repo: [https://github.com/im-kaustubh/idea-project](https://github.com/im-kaustubh/idea-project)
+2. Click on the **"Issues"** tab.
+3. Click **"New issue"**.
+4. Give it a **clear title**, for example: `Test issue by <your name>`
+5. Add a short **description**, like:
+   > This is a test issue to get familiar with GitHub issues.
+6. Click **"Submit new issue"**
+
+✅ Let me know once you're done!
