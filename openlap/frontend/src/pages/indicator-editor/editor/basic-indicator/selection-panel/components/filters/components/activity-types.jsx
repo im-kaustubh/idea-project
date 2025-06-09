@@ -1,4 +1,5 @@
 import { useContext, useEffect } from "react";
+import { Box } from "@mui/material";
 import {
   Autocomplete,
   Chip,
@@ -7,6 +8,8 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActivityTypesList } from "../utils/filters-api.js";
@@ -106,16 +109,37 @@ const ActivityTypes = ({ state, setState }) => {
     });
   };
 
+
+
+
+
+
+
   return (
-    <>
+    <>{/* Hier habe ich eine Checkbox eingefügt, direkt neben dem Text "Search for Activity Types" */}
       <Grid container spacing={4} sx={{ mb: 2 }}>
-        <Grid item xs={12} md={4}>
-          <Grid container spacing={1}>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary">
-                Search for Activity types
-              </Typography>
-            </Grid>
+  <Grid item xs={12} md={4}>
+    <Grid container spacing={1}>
+      <Grid item xs={12}>
+        <Box display="flex" alignItems="center">
+          <Typography variant="body2" color="text.secondary">
+            Search for Activity types
+          </Typography>
+          <Checkbox sx={{ ml: 1 }} />
+        </Box>
+      </Grid>
+           
+
+       
+
+
+
+       
+            
+            
+
+
+
             <Grid item xs={12}>
               <Tooltip
                 arrow
