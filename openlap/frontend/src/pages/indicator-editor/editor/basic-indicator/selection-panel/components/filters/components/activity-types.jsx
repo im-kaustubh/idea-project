@@ -9,6 +9,7 @@ import {
   Tooltip,
   Typography,
   Checkbox,
+  Button,
   FormControlLabel,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
@@ -125,7 +126,8 @@ const ActivityTypes = ({ state, setState }) => {
           <Typography variant="body2" color="text.secondary">
             Search for Activity types
           </Typography>
-          <Checkbox sx={{ ml: 1 }} />
+          
+          <Button sx={{ ml: 1 }} variant="contained">Select all</Button>
         </Box>
       </Grid>
            
