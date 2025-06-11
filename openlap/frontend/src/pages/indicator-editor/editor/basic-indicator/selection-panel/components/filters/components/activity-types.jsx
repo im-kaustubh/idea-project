@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react"; //UseState hinzugefügt
 import { Box } from "@mui/material";
 import {
   Autocomplete,
@@ -18,6 +18,7 @@ import { getLastWordAndCapitalize } from "../../../utils/utils.js";
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const ActivityTypes = ({ state, setState }) => {
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false); // hinzugefügt für Autocomplete
   const { api } = useContext(AuthContext);
   const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
     BasicIndicatorContext
@@ -110,14 +111,7 @@ const ActivityTypes = ({ state, setState }) => {
     });
   };
 
-
-
-
-
-
-
-  return (
-    <>{/* Hier habe ich eine Checkbox eingefügt, direkt neben dem Text "Search for Activity Types" */}
+  return ( <>
       <Grid container spacing={4} sx={{ mb: 2 }}>
   <Grid item xs={12} md={4}>
     <Grid container spacing={1}>
@@ -126,7 +120,14 @@ const ActivityTypes = ({ state, setState }) => {
           <Typography variant="body2" color="text.secondary">
             Search for Activity types
           </Typography>
-          <Button sx={{ ml: 1}}variant="contained" size="small"> select all </Button>
+          <Button
+            sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
+            variant="contained"
+            size="small"
+            onMouseDown={(e) => e.preventDefault()} 
+          >
+            select all
+          </Button>
         </Box>
       </Grid>
            
@@ -154,6 +155,11 @@ const ActivityTypes = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+
+                  open={autocompleteOpen} // hinzugefügt
+                  onOpen={() => setAutocompleteOpen(true)} // hinzugefügt
+                  onClose={() => setAutocompleteOpen(false)} // hinzugefügt
+                  
                   disabled={
                     indicatorQuery.platforms.length === 0 ||
                     state.selectedActivitiesList.length > 0
