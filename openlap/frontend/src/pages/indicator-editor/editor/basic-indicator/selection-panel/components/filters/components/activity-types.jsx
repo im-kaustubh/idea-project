@@ -126,8 +126,7 @@ const ActivityTypes = ({ state, setState }) => {
           <Typography variant="body2" color="text.secondary">
             Search for Activity types
           </Typography>
-          
-          <Button sx={{ ml: 1 }} variant="contained">Select all</Button>
+          <Button sx={{ ml: 1}}variant="contained" size="small"> select all </Button>
         </Box>
       </Grid>
            
