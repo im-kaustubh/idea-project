@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from "react";
-import { Box } from "@mui/material";
+import { useContext, useEffect, useState } from "react"; // geändert: useState importiert
+import { Box } from "@mui/material"; // geändert: Box importiert
 import {
   Autocomplete,
   Chip,
@@ -8,8 +8,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  Checkbox,
-  Button,
+  Checkbox, // geändert: Checkbox importiert
+  Button,   // geändert: Button importiert
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActivityTypesList } from "../utils/filters-api.js";
@@ -17,8 +17,8 @@ import { getLastWordAndCapitalize } from "../../../utils/utils.js";
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const ActivityTypes = ({ state, setState }) => {
-  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
-  const [pendingCheckedOptions, setPendingCheckedOptions] = useState({});
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false); // geändert: autocompleteOpen State hinzugefügt
+  const [pendingCheckedOptions, setPendingCheckedOptions] = useState({}); // geändert: Checkbox State hinzugefügt
   const { api } = useContext(AuthContext);
   const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
     BasicIndicatorContext
@@ -36,7 +36,7 @@ const ActivityTypes = ({ state, setState }) => {
           ...prevState,
           activityTypesList: activityTypesData.filter(
             (activityType) =>
-              !prevState.selectedActivityTypesList.some((t) => t.id === activityType.id)
+              !prevState.selectedActivityTypesList.some((t) => t.id === activityType.id) // geändert: .some statt .includes
           ),
         }));
       } catch (error) {
@@ -49,14 +49,14 @@ const ActivityTypes = ({ state, setState }) => {
     }
   }, [indicatorQuery.platforms.length]);
 
-  const handleCheckboxChange = (id) => {
+  const handleCheckboxChange = (id) => { // geändert: Checkbox Handler hinzugefügt
     setPendingCheckedOptions((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
   };
 
-  const handleSelectAllCheckboxes = () => {
+  const handleSelectAllCheckboxes = () => { // geändert: Select All Handler hinzugefügt
     const allChecked = {};
     state.activityTypesList.forEach((option) => {
       allChecked[option.id] = true;
@@ -64,17 +64,17 @@ const ActivityTypes = ({ state, setState }) => {
     setPendingCheckedOptions(allChecked);
   };
 
-  const handleDeselectAllCheckboxes = () => {
+  const handleDeselectAllCheckboxes = () => { // geändert: Deselect All Handler hinzugefügt
     setPendingCheckedOptions({});
   };
 
   const areAllChecked =
     state.activityTypesList.length > 0 &&
-    state.activityTypesList.every((option) => pendingCheckedOptions[option.id]);
+    state.activityTypesList.every((option) => pendingCheckedOptions[option.id]); // geändert: Checkbox-Logik
 
-  const isAnyChecked = Object.values(pendingCheckedOptions).some(Boolean);
+  const isAnyChecked = Object.values(pendingCheckedOptions).some(Boolean); // geändert: Checkbox-Logik
 
-  const handleApplyChecked = () => {
+  const handleApplyChecked = () => { // geändert: Apply Handler hinzugefügt
     const selectedIds = Object.entries(pendingCheckedOptions)
       .filter(([_, checked]) => checked)
       .map(([id]) => id);
@@ -160,7 +160,7 @@ const ActivityTypes = ({ state, setState }) => {
   };
 
   // Delete all selected Activity Types
-  const handleDeleteAllSelected = () => {
+  const handleDeleteAllSelected = () => { // geändert: Delete All Handler hinzugefügt
     setState((prevState) => ({
       ...prevState,
       activityTypesList: [
@@ -185,11 +185,11 @@ const ActivityTypes = ({ state, setState }) => {
         <Grid item xs={12} md={4}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Box display="flex" alignItems="center">
+              <Box display="flex" alignItems="center"> {/* geändert: Box für Buttons */}
                 <Typography variant="body2" color="text.secondary">
                   Search for Activity types
                 </Typography>
-                {state.activityTypesList.length > 0 && (
+                {state.activityTypesList.length > 0 && ( // geändert: Buttons nur wenn Liste nicht leer
                   <>
                     <Button
                       sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
@@ -233,9 +233,9 @@ const ActivityTypes = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
-                  open={autocompleteOpen}
-                  onOpen={() => setAutocompleteOpen(true)}
-                  onClose={() => setAutocompleteOpen(false)}
+                  open={autocompleteOpen} // geändert: Autocomplete open/close
+                  onOpen={() => setAutocompleteOpen(true)} // geändert
+                  onClose={() => setAutocompleteOpen(false)} // geändert
                   disabled={
                     indicatorQuery.platforms.length === 0 ||
                     state.selectedActivitiesList.length > 0
@@ -253,7 +253,7 @@ const ActivityTypes = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option) => {
+                  renderOption={(props, option) => { // geändert: Checkbox in Option
                     const { key, ...restProps } = props;
                     const label = { inputProps: { "aria-label": option.name } };
                     return (
@@ -298,7 +298,7 @@ const ActivityTypes = ({ state, setState }) => {
         <Grid item xs={12} md={8}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Box display="flex" alignItems="center" justifyContent="flex-start">
+              <Box display="flex" alignItems="center" justifyContent="flex-start"> {/* geändert: Box für Button */}
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -307,7 +307,7 @@ const ActivityTypes = ({ state, setState }) => {
                 >
                   Selected <b>Activity type(s)</b>
                 </Typography>
-                {state.selectedActivityTypesList.length > 0 && (
+                {state.selectedActivityTypesList.length > 0 && ( // geändert: Delete All Button
                   <Button
                     variant="contained"
                     color="error"
