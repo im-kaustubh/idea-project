@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"; //UseState hinzugefügt
+import { useContext, useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import {
   Autocomplete,
@@ -10,7 +10,6 @@ import {
   Typography,
   Checkbox,
   Button,
-  FormControlLabel,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActivityTypesList } from "../utils/filters-api.js";
@@ -18,7 +17,8 @@ import { getLastWordAndCapitalize } from "../../../utils/utils.js";
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const ActivityTypes = ({ state, setState }) => {
-  const [autocompleteOpen, setAutocompleteOpen] = useState(false); // hinzugefügt für Autocomplete
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const [pendingCheckedOptions, setPendingCheckedOptions] = useState({});
   const { api } = useContext(AuthContext);
   const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
     BasicIndicatorContext
@@ -36,7 +36,7 @@ const ActivityTypes = ({ state, setState }) => {
           ...prevState,
           activityTypesList: activityTypesData.filter(
             (activityType) =>
-              !prevState.selectedActivityTypesList.includes(activityType.id)
+              !prevState.selectedActivityTypesList.some((t) => t.id === activityType.id)
           ),
         }));
       } catch (error) {
@@ -48,6 +48,56 @@ const ActivityTypes = ({ state, setState }) => {
       loadActivityTypesData();
     }
   }, [indicatorQuery.platforms.length]);
+
+  const handleCheckboxChange = (id) => {
+    setPendingCheckedOptions((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleSelectAllCheckboxes = () => {
+    const allChecked = {};
+    state.activityTypesList.forEach((option) => {
+      allChecked[option.id] = true;
+    });
+    setPendingCheckedOptions(allChecked);
+  };
+
+  const handleDeselectAllCheckboxes = () => {
+    setPendingCheckedOptions({});
+  };
+
+  const areAllChecked =
+    state.activityTypesList.length > 0 &&
+    state.activityTypesList.every((option) => pendingCheckedOptions[option.id]);
+
+  const isAnyChecked = Object.values(pendingCheckedOptions).some(Boolean);
+
+  const handleApplyChecked = () => {
+    const selectedIds = Object.entries(pendingCheckedOptions)
+      .filter(([_, checked]) => checked)
+      .map(([id]) => id);
+
+    const selectedTypes = state.activityTypesList.filter((type) =>
+      selectedIds.includes(type.id)
+    );
+
+    setState((prevState) => ({
+      ...prevState,
+      selectedActivityTypesList: [
+        ...prevState.selectedActivityTypesList,
+        ...selectedTypes.filter(
+          (type) =>
+            !prevState.selectedActivityTypesList.some((t) => t.id === type.id)
+        ),
+      ],
+      activityTypesList: prevState.activityTypesList.filter(
+        (type) => !selectedIds.includes(type.id)
+      ),
+    }));
+    setPendingCheckedOptions({});
+  };
 
   const handleSelectActivityTypes = (selectedActivityType) => {
     setState((prevState) => ({
@@ -62,7 +112,6 @@ const ActivityTypes = ({ state, setState }) => {
       autoCompleteValue: null,
     }));
 
-    // If query is changed
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
@@ -95,7 +144,6 @@ const ActivityTypes = ({ state, setState }) => {
       };
     });
 
-    // If query is changed
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
@@ -111,37 +159,67 @@ const ActivityTypes = ({ state, setState }) => {
     });
   };
 
-  return ( <>
+  // Delete all selected Activity Types
+  const handleDeleteAllSelected = () => {
+    setState((prevState) => ({
+      ...prevState,
+      activityTypesList: [
+        ...prevState.activityTypesList,
+        ...prevState.selectedActivityTypesList,
+      ].sort((a, b) => a.name.localeCompare(b.name)),
+      selectedActivityTypesList: [],
+    }));
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      activityTypes: [],
+    }));
+  };
+
+  return (
+    <>
       <Grid container spacing={4} sx={{ mb: 2 }}>
-  <Grid item xs={12} md={4}>
-    <Grid container spacing={1}>
-      <Grid item xs={12}>
-        <Box display="flex" alignItems="center">
-          <Typography variant="body2" color="text.secondary">
-            Search for Activity types
-          </Typography>
-          <Button
-            sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
-            variant="contained"
-            size="small"
-            onMouseDown={(e) => e.preventDefault()} 
-          >
-            select all
-          </Button>
-        </Box>
-      </Grid>
-           
-
-       
-
-
-
-       
-            
-            
-
-
-
+        <Grid item xs={12} md={4}>
+          <Grid container spacing={1}>
+            <Grid item xs={12}>
+              <Box display="flex" alignItems="center">
+                <Typography variant="body2" color="text.secondary">
+                  Search for Activity types
+                </Typography>
+                {state.activityTypesList.length > 0 && (
+                  <>
+                    <Button
+                      sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
+                      variant="contained"
+                      size="small"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={
+                        areAllChecked
+                          ? handleDeselectAllCheckboxes
+                          : handleSelectAllCheckboxes
+                      }
+                    >
+                      {areAllChecked ? "deselect all" : "select all"}
+                    </Button>
+                    {isAnyChecked && (
+                      <Button
+                        sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
+                        variant="contained"
+                        size="small"
+                        color="success"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={handleApplyChecked}
+                      >
+                        Apply
+                      </Button>
+                    )}
+                  </>
+                )}
+              </Box>
+            </Grid>
             <Grid item xs={12}>
               <Tooltip
                 arrow
@@ -155,11 +233,9 @@ const ActivityTypes = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
-
-                  open={autocompleteOpen} // hinzugefügt
-                  onOpen={() => setAutocompleteOpen(true)} // hinzugefügt
-                  onClose={() => setAutocompleteOpen(false)} // hinzugefügt
-                  
+                  open={autocompleteOpen}
+                  onOpen={() => setAutocompleteOpen(true)}
+                  onClose={() => setAutocompleteOpen(false)}
                   disabled={
                     indicatorQuery.platforms.length === 0 ||
                     state.selectedActivitiesList.length > 0
@@ -179,8 +255,23 @@ const ActivityTypes = ({ state, setState }) => {
                   getOptionLabel={(option) => option.name}
                   renderOption={(props, option) => {
                     const { key, ...restProps } = props;
+                    const label = { inputProps: { "aria-label": option.name } };
                     return (
-                      <li {...restProps} key={key}>
+                      <li
+                        {...restProps}
+                        key={key}
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <Checkbox
+                          {...label}
+                          checked={!!pendingCheckedOptions[option.id]}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleCheckboxChange(option.id);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{ mr: 1 }}
+                        />
                         <Grid container sx={{ py: 0.5 }}>
                           <Grid item xs={12}>
                             <Typography>{option.name}</Typography>
@@ -207,9 +298,27 @@ const ActivityTypes = ({ state, setState }) => {
         <Grid item xs={12} md={8}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Selected <b>Activity type(s)</b>
-              </Typography>
+              <Box display="flex" alignItems="center" justifyContent="flex-start">
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ mr: 1 }}
+                >
+                  Selected <b>Activity type(s)</b>
+                </Typography>
+                {state.selectedActivityTypesList.length > 0 && (
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    onClick={handleDeleteAllSelected}
+                    sx={{ minWidth: 0, px: 2, ml: 1 }}
+                  >
+                    delete all
+                  </Button>
+                )}
+              </Box>
             </Grid>
             <Grid
               item
