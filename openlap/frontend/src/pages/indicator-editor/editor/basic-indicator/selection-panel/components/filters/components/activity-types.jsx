@@ -5,7 +5,7 @@ import {
   Chip,
   Divider,
   Grid,
-  TextField,//irgendwas gecoded
+  TextField,//irgendwas
   Tooltip,
   Typography,
   Checkbox, // geändert: Checkbox importiert
@@ -96,6 +96,25 @@ const ActivityTypes = ({ state, setState }) => {
         (type) => !selectedIds.includes(type.id)
       ),
     }));
+
+    setAnalysisRef((prevState) => ({ // geändert
+      ...prevState,
+      analyzedData: {},
+    })); // geändert
+
+    setIndicatorQuery((prevState) => { // geändert
+      let tempActivityTypes = [
+        ...prevState.activityTypes,
+        ...selectedIds.filter(
+          (id) => !prevState.activityTypes.includes(id)
+        ),
+      ];
+      return {
+        ...prevState,
+        activityTypes: tempActivityTypes,
+      };
+    }); // geändert
+
     setPendingCheckedOptions({});
   };
 
