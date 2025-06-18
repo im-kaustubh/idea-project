@@ -1,12 +1,15 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react"; // geändert: useState importiert
+import { Box } from "@mui/material"; // geändert: Box importiert
 import {
   Autocomplete,
   Chip,
   Divider,
   Grid,
-  TextField,
+  TextField,//irgendwas
   Tooltip,
   Typography,
+  Checkbox, // geändert: Checkbox importiert
+  Button,   // geändert: Button importiert
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActivityTypesList } from "../utils/filters-api.js";
@@ -14,6 +17,8 @@ import { getLastWordAndCapitalize } from "../../../utils/utils.js";
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const ActivityTypes = ({ state, setState }) => {
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false); // geändert: autocompleteOpen State hinzugefügt
+  const [pendingCheckedOptions, setPendingCheckedOptions] = useState({}); // geändert: Checkbox State hinzugefügt
   const { api } = useContext(AuthContext);
   const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
     BasicIndicatorContext
@@ -31,7 +36,7 @@ const ActivityTypes = ({ state, setState }) => {
           ...prevState,
           activityTypesList: activityTypesData.filter(
             (activityType) =>
-              !prevState.selectedActivityTypesList.includes(activityType.id)
+              !prevState.selectedActivityTypesList.some((t) => t.id === activityType.id) // geändert: .some statt .includes
           ),
         }));
       } catch (error) {
@@ -43,6 +48,75 @@ const ActivityTypes = ({ state, setState }) => {
       loadActivityTypesData();
     }
   }, [indicatorQuery.platforms.length]);
+
+  const handleCheckboxChange = (id) => { // geändert: Checkbox Handler hinzugefügt
+    setPendingCheckedOptions((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleSelectAllCheckboxes = () => { // geändert: Select All Handler hinzugefügt
+    const allChecked = {};
+    state.activityTypesList.forEach((option) => {
+      allChecked[option.id] = true;
+    });
+    setPendingCheckedOptions(allChecked);
+  };
+
+  const handleDeselectAllCheckboxes = () => { // geändert: Deselect All Handler hinzugefügt
+    setPendingCheckedOptions({});
+  };
+
+  const areAllChecked =
+    state.activityTypesList.length > 0 &&
+    state.activityTypesList.every((option) => pendingCheckedOptions[option.id]); // geändert: Checkbox-Logik
+
+  const isAnyChecked = Object.values(pendingCheckedOptions).some(Boolean); // geändert: Checkbox-Logik
+
+  const handleApplyChecked = () => { // geändert: Apply Handler hinzugefügt
+    const selectedIds = Object.entries(pendingCheckedOptions)
+      .filter(([_, checked]) => checked)
+      .map(([id]) => id);
+
+    const selectedTypes = state.activityTypesList.filter((type) =>
+      selectedIds.includes(type.id)
+    );
+
+    setState((prevState) => ({
+      ...prevState,
+      selectedActivityTypesList: [
+        ...prevState.selectedActivityTypesList,
+        ...selectedTypes.filter(
+          (type) =>
+            !prevState.selectedActivityTypesList.some((t) => t.id === type.id)
+        ),
+      ],
+      activityTypesList: prevState.activityTypesList.filter(
+        (type) => !selectedIds.includes(type.id)
+      ),
+    }));
+
+    setAnalysisRef((prevState) => ({ // geändert
+      ...prevState,
+      analyzedData: {},
+    })); // geändert
+
+    setIndicatorQuery((prevState) => { // geändert
+      let tempActivityTypes = [
+        ...prevState.activityTypes,
+        ...selectedIds.filter(
+          (id) => !prevState.activityTypes.includes(id)
+        ),
+      ];
+      return {
+        ...prevState,
+        activityTypes: tempActivityTypes,
+      };
+    }); // geändert
+
+    setPendingCheckedOptions({});
+  };
 
   const handleSelectActivityTypes = (selectedActivityType) => {
     setState((prevState) => ({
@@ -57,7 +131,6 @@ const ActivityTypes = ({ state, setState }) => {
       autoCompleteValue: null,
     }));
 
-    // If query is changed
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
@@ -90,7 +163,6 @@ const ActivityTypes = ({ state, setState }) => {
       };
     });
 
-    // If query is changed
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
@@ -106,15 +178,66 @@ const ActivityTypes = ({ state, setState }) => {
     });
   };
 
+  // Delete all selected Activity Types
+  const handleDeleteAllSelected = () => { // geändert: Delete All Handler hinzugefügt
+    setState((prevState) => ({
+      ...prevState,
+      activityTypesList: [
+        ...prevState.activityTypesList,
+        ...prevState.selectedActivityTypesList,
+      ].sort((a, b) => a.name.localeCompare(b.name)),
+      selectedActivityTypesList: [],
+    }));
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      activityTypes: [],
+    }));
+  };
+
   return (
     <>
       <Grid container spacing={4} sx={{ mb: 2 }}>
         <Grid item xs={12} md={4}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary">
-                Search for Activity types
-              </Typography>
+              <Box display="flex" alignItems="center"> {/* geändert: Box für Buttons */}
+                <Typography variant="body2" color="text.secondary">
+                  Search for Activity types
+                </Typography>
+                {state.activityTypesList.length > 0 && ( // geändert: Buttons nur wenn Liste nicht leer
+                  <>
+                    <Button
+                      sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
+                      variant="contained"
+                      size="small"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={
+                        areAllChecked
+                          ? handleDeselectAllCheckboxes
+                          : handleSelectAllCheckboxes
+                      }
+                    >
+                      {areAllChecked ? "deselect all" : "select all"}
+                    </Button>
+                    {isAnyChecked && (
+                      <Button
+                        sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
+                        variant="contained"
+                        size="small"
+                        color="success"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={handleApplyChecked}
+                      >
+                        Apply
+                      </Button>
+                    )}
+                  </>
+                )}
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <Tooltip
@@ -129,6 +252,9 @@ const ActivityTypes = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+                  open={autocompleteOpen} // geändert: Autocomplete open/close
+                  onOpen={() => setAutocompleteOpen(true)} // geändert
+                  onClose={() => setAutocompleteOpen(false)} // geändert
                   disabled={
                     indicatorQuery.platforms.length === 0 ||
                     state.selectedActivitiesList.length > 0
@@ -146,10 +272,25 @@ const ActivityTypes = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option) => {
+                  renderOption={(props, option) => { // geändert: Checkbox in Option
                     const { key, ...restProps } = props;
+                    const label = { inputProps: { "aria-label": option.name } };
                     return (
-                      <li {...restProps} key={key}>
+                      <li
+                        {...restProps}
+                        key={key}
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <Checkbox
+                          {...label}
+                          checked={!!pendingCheckedOptions[option.id]}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleCheckboxChange(option.id);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{ mr: 1 }}
+                        />
                         <Grid container sx={{ py: 0.5 }}>
                           <Grid item xs={12}>
                             <Typography>{option.name}</Typography>
@@ -176,9 +317,27 @@ const ActivityTypes = ({ state, setState }) => {
         <Grid item xs={12} md={8}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Selected <b>Activity type(s)</b>
-              </Typography>
+              <Box display="flex" alignItems="center" justifyContent="flex-start"> {/* geändert: Box für Button */}
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ mr: 1 }}
+                >
+                  Selected <b>Activity type(s)</b>
+                </Typography>
+                {state.selectedActivityTypesList.length > 0 && ( // geändert: Delete All Button
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    onClick={handleDeleteAllSelected}
+                    sx={{ minWidth: 0, px: 2, ml: 1 }}
+                  >
+                    delete all
+                  </Button>
+                )}
+              </Box>
             </Grid>
             <Grid
               item
