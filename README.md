@@ -1,4 +1,4 @@
-# idea-project TEST
+# idea-project
 IDEA Project SoSe25
 
 # 🚀 GitHub Onboarding Guide for `idea-project`
