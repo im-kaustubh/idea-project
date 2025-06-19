@@ -19,6 +19,7 @@ import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 const ActivityTypes = ({ state, setState }) => {
   const [autocompleteOpen, setAutocompleteOpen] = useState(false); // geändert: autocompleteOpen State hinzugefügt
   const [pendingCheckedOptions, setPendingCheckedOptions] = useState({}); // geändert: Checkbox State hinzugefügt
+  const [lastCheckedIndex, setLastCheckedIndex] = useState(null); // geändert: Index des letzten Klicks merken
   const { api } = useContext(AuthContext);
   const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
     BasicIndicatorContext
@@ -49,11 +50,23 @@ const ActivityTypes = ({ state, setState }) => {
     }
   }, [indicatorQuery.platforms.length]);
 
-  const handleCheckboxChange = (id) => { // geändert: Checkbox Handler hinzugefügt
-    setPendingCheckedOptions((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const handleCheckboxChange = (id, index, event) => { // geändert: index und event übergeben
+    if (event.shiftKey && lastCheckedIndex !== null) { // geändert: Shift gedrückt?
+      const ids = state.activityTypesList.map((item) => item.id);
+      const start = Math.min(lastCheckedIndex, index);
+      const end = Math.max(lastCheckedIndex, index);
+      const newChecked = { ...pendingCheckedOptions };
+      for (let i = start; i <= end; i++) {
+        newChecked[ids[i]] = true;
+      }
+      setPendingCheckedOptions(newChecked);
+    } else {
+      setPendingCheckedOptions((prev) => ({
+        ...prev,
+        [id]: !prev[id],
+      }));
+    }
+    setLastCheckedIndex(index); // geändert: Index merken
   };
 
   const handleSelectAllCheckboxes = () => { // geändert: Select All Handler hinzugefügt
@@ -272,31 +285,49 @@ const ActivityTypes = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option) => { // geändert: Checkbox in Option
+                  renderOption={(props, option, { index }) => { // geändert: index aus drittem Argument
                     const { key, ...restProps } = props;
                     const label = { inputProps: { "aria-label": option.name } };
                     return (
                       <li
                         {...restProps}
                         key={key}
-                        style={{ display: "flex", alignItems: "center" }}
+                        style={{ display: "flex", alignItems: "center", width: "100%" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCheckboxChange(option.id, index, e); // geändert: index und event übergeben
+                        }}
                       >
                         <Checkbox
                           {...label}
                           checked={!!pendingCheckedOptions[option.id]}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleCheckboxChange(option.id);
-                          }}
                           onClick={(e) => e.stopPropagation()}
+                          onChange={() => {}} // leer, da das Toggling über <li> läuft
                           sx={{ mr: 1 }}
                         />
-                        <Grid container sx={{ py: 0.5 }}>
+                        <Grid container sx={{ py: 0.5, width: "calc(100% - 40px)" }}>
                           <Grid item xs={12}>
-                            <Typography>{option.name}</Typography>
+                            <Typography
+                              sx={{
+                                whiteSpace: "normal",
+                                wordBreak: "break-all",
+                                overflowWrap: "break-word",
+                              }}
+                            >
+                              {option.name}
+                            </Typography>
                           </Grid>
                           <Grid item xs={12}>
-                            <Typography variant="body2">{option.id}</Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                whiteSpace: "normal",
+                                wordBreak: "break-all",
+                                overflowWrap: "break-word",
+                              }}
+                            >
+                              {option.id}
+                            </Typography>
                           </Grid>
                         </Grid>
                       </li>
