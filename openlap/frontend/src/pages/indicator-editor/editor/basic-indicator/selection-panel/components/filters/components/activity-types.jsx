@@ -208,35 +208,7 @@ const ActivityTypes = ({ state, setState }) => {
                 <Typography variant="body2" color="text.secondary">
                   Search for Activity types
                 </Typography>
-                {state.activityTypesList.length > 0 && ( // geändert: Buttons nur wenn Liste nicht leer
-                  <>
-                    <Button
-                      sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
-                      variant="contained"
-                      size="small"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={
-                        areAllChecked
-                          ? handleDeselectAllCheckboxes
-                          : handleSelectAllCheckboxes
-                      }
-                    >
-                      {areAllChecked ? "deselect all" : "select all"}
-                    </Button>
-                    {isAnyChecked && (
-                      <Button
-                        sx={{ ml: 1, visibility: autocompleteOpen ? "visible" : "hidden" }}
-                        variant="contained"
-                        size="small"
-                        color="success"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={handleApplyChecked}
-                      >
-                        Apply
-                      </Button>
-                    )}
-                  </>
-                )}
+                {/* Entfernt: Apply Button über der Liste */}
               </Box>
             </Grid>
             <Grid item xs={12}>
@@ -268,38 +240,101 @@ const ActivityTypes = ({ state, setState }) => {
                     listbox: {
                       style: {
                         maxHeight: "240px",
+                        paddingTop: 0, // <--- wichtig!
+                        marginTop: 0,  // <--- optional, falls margin gesetzt ist
                       },
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option) => { // geändert: Checkbox in Option
+                  renderOption={(props, option, { index }) => {
                     const { key, ...restProps } = props;
                     const label = { inputProps: { "aria-label": option.name } };
+                    // Sticky Header nur am Anfang der Liste einfügen
                     return (
-                      <li
-                        {...restProps}
-                        key={key}
-                        style={{ display: "flex", alignItems: "center" }}
-                      >
-                        <Checkbox
-                          {...label}
-                          checked={!!pendingCheckedOptions[option.id]}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleCheckboxChange(option.id);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          sx={{ mr: 1 }}
-                        />
-                        <Grid container sx={{ py: 0.5 }}>
-                          <Grid item xs={12}>
-                            <Typography>{option.name}</Typography>
+                      <>
+                        {index === 0 && (
+                          <li
+                            style={{
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 2,
+                              background: "#fff",
+                              borderBottom: "1px solid #eee",
+                              width: "100%",
+                              margin: 0,
+                              padding: 0,
+                              left: 0,
+                              right: 0,
+                              boxSizing: "border-box",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: "100%",
+                                px: 0,
+                                py: 0,
+                                background: "#fff",
+                                display: "flex",
+                                alignItems: "center",
+                                height: "40px",
+                              }}
+                            >
+                              <Checkbox
+                                checked={areAllChecked}
+                                indeterminate={isAnyChecked && !areAllChecked}
+                                onChange={() => {
+                                  areAllChecked ? handleDeselectAllCheckboxes() : handleSelectAllCheckboxes();
+                                }}
+                                sx={{ ml: 2, mr: 1 }}
+                                inputProps={{ "aria-label": "Alle auswählen" }}
+                              />
+                              {/* Anzahl der ausgewählten Einträge */}
+                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
+                                {Object.values(pendingCheckedOptions).filter(Boolean).length} selected
+                              </Typography>
+                              <Box sx={{ flexGrow: 1 }} />
+                              {isAnyChecked && (
+                                <Button
+                                  sx={{ mr: 2, minWidth: 0, px: 2, height: 32 }}
+                                  variant="contained"
+                                  size="small"
+                                  color="primary" // <-- statt "success" jetzt "primary" für blau
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={handleApplyChecked}
+                                >
+                                  Apply
+                                </Button>
+                              )}
+                            </Box>
+                          </li>
+                        )}
+                        <li
+                          {...restProps}
+                          key={key}
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          <Checkbox
+                            {...label}
+                            checked={!!pendingCheckedOptions[option.id]}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleCheckboxChange(option.id);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            sx={{ mr: 1 }}
+                          />
+                          <Grid container sx={{ py: 0.5 }}>
+                            <Grid item xs={12}>
+                              <Typography>{option.name}</Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Typography variant="body2">{option.id}</Typography>
+                            </Grid>
                           </Grid>
-                          <Grid item xs={12}>
-                            <Typography variant="body2">{option.id}</Typography>
-                          </Grid>
-                        </Grid>
-                      </li>
+                        </li>
+                      </>
                     );
                   }}
                   renderInput={(params) => (
@@ -326,16 +361,21 @@ const ActivityTypes = ({ state, setState }) => {
                 >
                   Selected <b>Activity type(s)</b>
                 </Typography>
-                {state.selectedActivityTypesList.length > 0 && ( // geändert: Delete All Button
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
+                {state.selectedActivityTypesList.length > 0 && (
+                  <Typography
+                    variant="body2"
+                    color="primary"
+                    sx={{
+                      ml: 1,
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      userSelect: "none",
+                      "&:hover": { textDecoration: "underline", color: "primary.dark" },
+                    }}
                     onClick={handleDeleteAllSelected}
-                    sx={{ minWidth: 0, px: 2, ml: 1 }}
                   >
                     delete all
-                  </Button>
+                  </Typography>
                 )}
               </Box>
             </Grid>
