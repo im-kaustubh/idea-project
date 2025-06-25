@@ -224,13 +224,10 @@ const ActivityTypes = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
-                  open={autocompleteOpen} // geändert: Autocomplete open/close
-                  onOpen={() => setAutocompleteOpen(true)} // geändert
-                  onClose={() => setAutocompleteOpen(false)} // geändert
-                  disabled={
-                    indicatorQuery.platforms.length === 0 ||
-                    state.selectedActivitiesList.length > 0
-                  }
+                  open={autocompleteOpen}
+                  onOpen={() => setAutocompleteOpen(true)}
+                  onClose={() => setAutocompleteOpen(false)}
+                  disabled={indicatorQuery.platforms.length === 0} // <--- geändert
                   disablePortal
                   disableCloseOnSelect
                   id="combo-box-lrs"
@@ -390,11 +387,7 @@ const ActivityTypes = ({ state, setState }) => {
                     <Chip
                       color="primary"
                       label={getLastWordAndCapitalize(activityType.name)}
-                      onDelete={
-                        Object.keys(indicatorQuery.activities).length
-                          ? undefined
-                          : () => handleDeselectActivityTypes(activityType)
-                      }
+                      onDelete={() => handleDeselectActivityTypes(activityType)} // <--- geändert
                     />
                   </Grid>
                 ))}
@@ -407,16 +400,7 @@ const ActivityTypes = ({ state, setState }) => {
             >
               <Divider />
             </Grid>
-            <Grid item xs={12}>
-              {Object.keys(indicatorQuery.activities).length > 0 && (
-                <Typography variant="body2" color="text.secondary">
-                  <i>
-                    Remove all the <b>Activities</b> below to add/remove
-                    activity types
-                  </i>
-                </Typography>
-              )}
-            </Grid>
+            
           </Grid>
         </Grid>
       </Grid>
