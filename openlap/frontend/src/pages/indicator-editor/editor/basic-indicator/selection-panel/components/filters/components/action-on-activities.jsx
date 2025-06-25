@@ -1,4 +1,4 @@
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
 import {
   Chip,
   Grid,
@@ -7,6 +7,9 @@ import {
   Autocomplete,
   Divider,
   Tooltip,
+  Checkbox,
+  Button,
+  Box,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActionOnActivitiesList } from "../utils/filters-api.js";
@@ -25,6 +28,9 @@ const ActionOnActivities = ({ state, setState }) => {
     setIndicator,
     setVisRef,
   } = useContext(BasicIndicatorContext);
+
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const [pendingCheckedOptions, setPendingCheckedOptions] = useState({});
 
   useEffect(() => {
     const loadActivityTypesData = async () => {
@@ -51,6 +57,86 @@ const ActionOnActivities = ({ state, setState }) => {
     }
   }, [state.selectedActivitiesList.length]);
 
+  const handleCheckboxChange = (id) => {
+    setPendingCheckedOptions((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleSelectAllCheckboxes = () => {
+    const allChecked = {};
+    state.actionsList.forEach((option) => {
+      allChecked[option.id] = true;
+    });
+    setPendingCheckedOptions(allChecked);
+  };
+
+  const handleDeselectAllCheckboxes = () => {
+    setPendingCheckedOptions({});
+  };
+
+  const areAllChecked =
+    state.actionsList.length > 0 &&
+    state.actionsList.every((option) => pendingCheckedOptions[option.id]);
+
+  const isAnyChecked = Object.values(pendingCheckedOptions).some(Boolean);
+
+  const handleApplyChecked = () => {
+    const selectedIds = Object.entries(pendingCheckedOptions)
+      .filter(([_, checked]) => checked)
+      .map(([id]) => id);
+
+    const selectedActions = state.actionsList.filter((action) =>
+      selectedIds.includes(action.id)
+    );
+
+    setState((prevState) => ({
+      ...prevState,
+      selectedActionsList: [
+        ...prevState.selectedActionsList,
+        ...selectedActions,
+      ],
+      actionsList: prevState.actionsList.filter(
+        (action) => !selectedIds.includes(action.id)
+      ),
+    }));
+
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      actionOnActivities: [
+        ...prevState.actionOnActivities,
+        ...selectedActions.map((a) => a.id),
+      ],
+    }));
+
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+
+    setPendingCheckedOptions({});
+  };
+
+  const handleDeleteAllSelected = () => {
+    setState((prevState) => ({
+      ...prevState,
+      actionsList: [
+        ...prevState.actionsList,
+        ...prevState.selectedActionsList,
+      ].sort((a, b) => a.name.localeCompare(b.name)),
+      selectedActionsList: [],
+    }));
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      actionOnActivities: [],
+    }));
+  };
+
   const handleSelectActionOnActivity = (selectedAction) => {
     setState((prevState) => ({
       ...prevState,
@@ -66,7 +152,6 @@ const ActionOnActivities = ({ state, setState }) => {
       actionOnActivities: [...prevState.actionOnActivities, selectedAction.id],
     }));
 
-    // If query is changed
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
@@ -100,7 +185,6 @@ const ActionOnActivities = ({ state, setState }) => {
         (item) => item.id !== selectedAction.id
       );
 
-      // If query is changed
       setAnalysisRef((prevState) => ({
         ...prevState,
         analyzedData: {},
@@ -179,9 +263,11 @@ const ActionOnActivities = ({ state, setState }) => {
         <Grid item xs={12} md={4}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary">
-                Search for Actions
-              </Typography>
+              <Box display="flex" alignItems="center">
+                <Typography variant="body2" color="text.secondary">
+                  Search for Actions
+                </Typography>
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <Tooltip
@@ -196,6 +282,9 @@ const ActionOnActivities = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+                  open={autocompleteOpen}
+                  onOpen={() => setAutocompleteOpen(true)}
+                  onClose={() => setAutocompleteOpen(false)}
                   disabled={
                     Object.entries(indicatorQuery.activities).length === 0
                   }
@@ -208,25 +297,115 @@ const ActionOnActivities = ({ state, setState }) => {
                     listbox: {
                       style: {
                         maxHeight: "240px",
+                        paddingTop: 0,
+                        marginTop: 0,
                       },
                     },
                   }}
                   getOptionLabel={(option) => option?.name}
-                  renderOption={(props, option) => {
+                  renderOption={(props, option, { index }) => {
                     const { key, ...restProps } = props;
+                    const label = { inputProps: { "aria-label": option.name } };
                     return (
-                      <li {...restProps} key={key}>
-                        <Grid container>
-                          <Grid item xs={12}>
-                            <Typography>{option?.name}</Typography>
+                      <>
+                        {index === 0 && (
+                          <li
+                            style={{
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 2,
+                              background: "#fff",
+                              borderBottom: "1px solid #eee",
+                              width: "100%",
+                              margin: 0,
+                              padding: 0,
+                              left: 0,
+                              right: 0,
+                              boxSizing: "border-box",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: "100%",
+                                px: 0,
+                                py: 0,
+                                background: "#fff",
+                                display: "flex",
+                                alignItems: "center",
+                                height: "40px",
+                              }}
+                            >
+                              <Checkbox
+                                checked={areAllChecked}
+                                indeterminate={isAnyChecked && !areAllChecked}
+                                onChange={() => {
+                                  areAllChecked
+                                    ? handleDeselectAllCheckboxes()
+                                    : handleSelectAllCheckboxes();
+                                }}
+                                sx={{ ml: 2, mr: 1 }}
+                                inputProps={{ "aria-label": "Alle auswählen" }}
+                              />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ minWidth: 24, mr: 1 }}
+                              >
+                                {
+                                  Object.values(pendingCheckedOptions).filter(
+                                    Boolean
+                                  ).length
+                                }{" "}
+                                selected
+                              </Typography>
+                              <Box sx={{ flexGrow: 1 }} />
+                              {isAnyChecked && (
+                                <Button
+                                  sx={{
+                                    mr: 2,
+                                    minWidth: 0,
+                                    px: 2,
+                                    height: 32,
+                                  }}
+                                  variant="contained"
+                                  size="small"
+                                  color="primary"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={handleApplyChecked}
+                                >
+                                  Apply
+                                </Button>
+                              )}
+                            </Box>
+                          </li>
+                        )}
+                        <li
+                          {...restProps}
+                          key={key}
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          <Checkbox
+                            {...label}
+                            checked={!!pendingCheckedOptions[option.id]}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleCheckboxChange(option.id);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            sx={{ mr: 1 }}
+                          />
+                          <Grid container sx={{ py: 0.5 }}>
+                            <Grid item xs={12}>
+                              <Typography>{option?.name}</Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Typography variant="body2">{option?.id}</Typography>
+                            </Grid>
                           </Grid>
-                          <Grid item xs={12}>
-                            <Typography variant="body2">
-                              {option?.id}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </li>
+                        </li>
+                      </>
                     );
                   }}
                   renderInput={(params) => (
@@ -243,14 +422,40 @@ const ActionOnActivities = ({ state, setState }) => {
 
         <Grid item xs={12} md={8}>
           <Grid container spacing={1}>
-            <Grid
-              item
-              xs={12}
-              sx={{ mt: state.selectedActionsList.length > 0 ? 1 : 0 }}
-            >
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Selected <b>Action(s)</b>
-              </Typography>
+            <Grid item xs={12}>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="flex-start"
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ mr: 1 }}
+                >
+                  Selected <b>Action(s)</b>
+                </Typography>
+                {state.selectedActionsList.length > 0 && (
+                  <Typography
+                    variant="body2"
+                    color="primary"
+                    sx={{
+                      ml: 1,
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      userSelect: "none",
+                      "&:hover": {
+                        textDecoration: "underline",
+                        color: "primary.dark",
+                      },
+                    }}
+                    onClick={handleDeleteAllSelected}
+                  >
+                    delete all
+                  </Typography>
+                )}
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <Grid container spacing={1}>
