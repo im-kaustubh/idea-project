@@ -9,21 +9,22 @@ import {
   Tooltip,
   Typography,
   Checkbox,
-  Button,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActivityTypesList } from "../utils/filters-api.js";
 import { getLastWordAndCapitalize } from "../../../utils/utils.js";
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
+// Hier beginnt die Komponente für die Auswahl der Aktivitätstypen
 const ActivityTypes = ({ state, setState }) => {
+  // Hier werden lokale Zustände für das Öffnen des Auswahlfelds und die letzte angeklickte Checkbox verwaltet
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const [lastCheckedIndex, setLastCheckedIndex] = useState(null);
+  // Hier werden Kontextdaten geholt, z.B. API und globale Filter
   const { api } = useContext(AuthContext);
-  const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
-    BasicIndicatorContext
-  );
+  const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(BasicIndicatorContext);
 
-  // Lade immer die vollständige Liste, unabhängig von Auswahl
+  // Hier wird beim Laden oder Wechseln der Plattformen die Liste der Aktivitätstypen neu geladen
   useEffect(() => {
     const loadActivityTypesData = async () => {
       try {
@@ -32,10 +33,13 @@ const ActivityTypes = ({ state, setState }) => {
           indicatorQuery.lrsStores,
           indicatorQuery.platforms
         );
+        // Hier wird die neue Liste gespeichert
         setState((prevState) => ({
           ...prevState,
           activityTypesList: activityTypesData,
         }));
+        // Hier wird der Index der zuletzt angeklickten Checkbox zurückgesetzt
+        setLastCheckedIndex(null);
       } catch (error) {
         console.log("Failed to load Activity types list", error);
       }
@@ -46,54 +50,80 @@ const ActivityTypes = ({ state, setState }) => {
     }
   }, [indicatorQuery.platforms.length]);
 
-  // Hilfsfunktion: Ist der Typ ausgewählt?
+  // Hier wird geprüft, ob eine Checkbox (Aktivitätstyp) ausgewählt ist
   const isChecked = (id) =>
     state.selectedActivityTypesList.some((type) => type.id === id);
 
-  // Checkbox-Handler: Direktes Hinzufügen/Entfernen
-  const handleCheckboxChange = (option) => {
-    if (isChecked(option.id)) {
-      // Entfernen
-      setState((prevState) => ({
-        ...prevState,
-        selectedActivityTypesList: prevState.selectedActivityTypesList.filter(
-          (type) => type.id !== option.id
-        ),
-      }));
-      setIndicatorQuery((prevState) => ({
-        ...prevState,
-        activityTypes: prevState.activityTypes.filter((id) => id !== option.id),
-      }));
+  // Hier passiert die Logik, wenn eine Checkbox angeklickt wird (inkl. Shift-Range-Auswahl)
+  const handleCheckboxChange = (option, realIndex, event) => {
+    let newSelected = [...state.selectedActivityTypesList];
+    let newActivityTypes = [...indicatorQuery.activityTypes];
+
+    // Wenn Shift gedrückt ist, werden alle Checkboxen im Bereich ausgewählt oder abgewählt
+    if (event && event.shiftKey && lastCheckedIndex !== null) {
+      const start = Math.min(lastCheckedIndex, realIndex);
+      const end = Math.max(lastCheckedIndex, realIndex);
+      const rangeOptions = state.activityTypesList.slice(start, end + 1);
+
+      const shouldCheck = !isChecked(option.id);
+
+      if (shouldCheck) {
+        // Hier werden alle Checkboxen im Bereich ausgewählt
+        rangeOptions.forEach((opt) => {
+          if (!isChecked(opt.id)) {
+            newSelected.push(opt);
+            newActivityTypes.push(opt.id);
+          }
+        });
+      } else {
+        // Hier werden alle Checkboxen im Bereich abgewählt
+        newSelected = newSelected.filter(
+          (type) => !rangeOptions.some((opt) => opt.id === type.id)
+        );
+        newActivityTypes = newActivityTypes.filter(
+          (id) => !rangeOptions.some((opt) => opt.id === id)
+        );
+      }
+      // Hier wird gemerkt, welche Checkbox zuletzt angeklickt wurde
+      setLastCheckedIndex(realIndex);
     } else {
-      // Hinzufügen
-      setState((prevState) => ({
-        ...prevState,
-        selectedActivityTypesList: [
-          ...prevState.selectedActivityTypesList,
-          option,
-        ],
-      }));
-      setIndicatorQuery((prevState) => ({
-        ...prevState,
-        activityTypes: [...prevState.activityTypes, option.id],
-      }));
+      // Hier wird eine einzelne Checkbox ausgewählt oder abgewählt
+      if (isChecked(option.id)) {
+        newSelected = newSelected.filter((type) => type.id !== option.id);
+        newActivityTypes = newActivityTypes.filter((id) => id !== option.id);
+      } else {
+        newSelected.push(option);
+        newActivityTypes.push(option.id);
+      }
+      setLastCheckedIndex(realIndex);
     }
+
+    // Hier wird der neue Zustand gespeichert
+    setState((prevState) => ({
+      ...prevState,
+      selectedActivityTypesList: newSelected,
+    }));
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      activityTypes: newActivityTypes,
+    }));
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
     }));
   };
 
-  // Sticky Header Logik
+  // Hier wird geprüft, ob alle oder einige Checkboxen ausgewählt sind (für "Alle auswählen"-Checkbox)
   const allChecked =
     state.activityTypesList.length > 0 &&
     state.activityTypesList.every((option) => isChecked(option.id));
   const anyChecked =
     state.activityTypesList.some((option) => isChecked(option.id));
 
+  // Hier wird die Logik für "Alle auswählen" oder "Alle abwählen" umgesetzt
   const handleSelectAll = () => {
     if (allChecked) {
-      // Alle abwählen
+      // Hier werden alle Checkboxen abgewählt
       setState((prevState) => ({
         ...prevState,
         selectedActivityTypesList: prevState.selectedActivityTypesList.filter(
@@ -108,7 +138,7 @@ const ActivityTypes = ({ state, setState }) => {
         ),
       }));
     } else {
-      // Alle auswählen
+      // Hier werden alle Checkboxen ausgewählt
       const newSelected = [
         ...state.selectedActivityTypesList,
         ...state.activityTypesList.filter(
@@ -136,7 +166,7 @@ const ActivityTypes = ({ state, setState }) => {
     }));
   };
 
-  // Einzelnes Entfernen per Chip
+  // Hier wird eine einzelne ausgewählte Aktivität wieder entfernt
   const handleDeselectActivityTypes = (selectedActivityType) => {
     setState((prevState) => ({
       ...prevState,
@@ -156,28 +186,15 @@ const ActivityTypes = ({ state, setState }) => {
     }));
   };
 
-  // Alle entfernen
-  const handleDeleteAllSelected = () => {
-    setState((prevState) => ({
-      ...prevState,
-      selectedActivityTypesList: [],
-    }));
-    setIndicatorQuery((prevState) => ({
-      ...prevState,
-      activityTypes: [],
-    }));
-    setAnalysisRef((prevState) => ({
-      ...prevState,
-      analyzedData: {},
-    }));
-  };
-
+  // Hier beginnt das UI
   return (
     <>
+      {/* Hier ist das Layout für die Auswahl und Anzeige */}
       <Grid container spacing={4} sx={{ mb: 2 }}>
         <Grid item xs={12} md={4}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
+              {/* Hier steht der Hinweistext für die Suche */}
               <Box display="flex" alignItems="center">
                 <Typography variant="body2" color="text.secondary">
                   Search for Activity types
@@ -185,6 +202,7 @@ const ActivityTypes = ({ state, setState }) => {
               </Box>
             </Grid>
             <Grid item xs={12}>
+              {/* Hier ist das Tooltip, das einen Hinweis anzeigt, wenn keine Plattform ausgewählt ist */}
               <Tooltip
                 arrow
                 title={
@@ -196,6 +214,7 @@ const ActivityTypes = ({ state, setState }) => {
                   ) : undefined
                 }
               >
+                {/* Hier ist das Auswahlfeld für die Aktivitätstypen */}
                 <Autocomplete
                   open={autocompleteOpen}
                   onOpen={() => setAutocompleteOpen(true)}
@@ -216,67 +235,84 @@ const ActivityTypes = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option, { index }) => (
-                    <>
-                      {index === 0 && (
-                        <li
-                          style={{
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 2,
-                            background: "#fff",
-                            borderBottom: "1px solid #eee",
-                            width: "100%",
-                            margin: 0,
-                            padding: 0,
-                            left: 0,
-                            right: 0,
-                            boxSizing: "border-box",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: "100%",
-                              px: 0,
-                              py: 0,
+                  // Hier wird jede Option (Checkbox) in der Liste gerendert
+                  renderOption={(props, option) => {
+                    // Hier wird der Index der Option in der Gesamtliste gesucht
+                    const realIndex = state.activityTypesList.findIndex(
+                      (o) => o.id === option.id
+                    );
+                    return (
+                      <>
+                        {/* Hier ist die "Alle auswählen"-Checkbox ganz oben */}
+                        {realIndex === 0 && (
+                          <li
+                            style={{
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 2,
                               background: "#fff",
+                              borderBottom: "1px solid #eee",
+                              width: "100%",
+                              margin: 0,
+                              padding: 0,
+                              left: 0,
+                              right: 0,
+                              boxSizing: "border-box",
                               display: "flex",
                               alignItems: "center",
-                              height: "40px",
                             }}
                           >
-                            <Checkbox
-                              checked={allChecked}
-                              indeterminate={anyChecked && !allChecked}
-                              onChange={handleSelectAll}
-                              sx={{ ml: 2, mr: 1 }}
-                              inputProps={{ "aria-label": "Alle auswählen" }}
-                            />
-                            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
-                              {state.selectedActivityTypesList.length} selected
-                            </Typography>
-                          </Box>
+                            <Box
+                              sx={{
+                                width: "100%",
+                                px: 0,
+                                py: 0,
+                                background: "#fff",
+                                display: "flex",
+                                alignItems: "center",
+                                height: "40px",
+                              }}
+                            >
+                              {/* Hier ist die Checkbox für "Alle auswählen" */}
+                              <Checkbox
+                                checked={allChecked}
+                                indeterminate={anyChecked && !allChecked}
+                                onChange={handleSelectAll}
+                                sx={{ ml: 2, mr: 1 }}
+                                inputProps={{ "aria-label": "Alle auswählen" }}
+                              />
+                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
+                                {state.selectedActivityTypesList.length} selected
+                              </Typography>
+                            </Box>
+                          </li>
+                        )}
+                        {/* Hier ist eine einzelne Checkbox für einen Aktivitätstyp */}
+                        <li {...props} style={{ display: "flex", alignItems: "center" }}>
+                          <Checkbox
+                            checked={isChecked(option.id)}
+                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
+                            sx={{ mr: 1 }}
+                          />
+                          {/* Hier ist der Name und die ID des Aktivitätstyps, auch anklickbar */}
+                          <Grid
+                            container
+                            sx={{ py: 0.5 }}
+                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <Grid item xs={12}>
+                              <Typography>{option.name}</Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Typography variant="body2">{option.id}</Typography>
+                            </Grid>
+                          </Grid>
                         </li>
-                      )}
-                      <li {...props} style={{ display: "flex", alignItems: "center" }}>
-                        <Checkbox
-                          checked={isChecked(option.id)}
-                          onChange={() => handleCheckboxChange(option)}
-                          sx={{ mr: 1 }}
-                        />
-                        <Grid container sx={{ py: 0.5 }}>
-                          <Grid item xs={12}>
-                            <Typography>{option.name}</Typography>
-                          </Grid>
-                          <Grid item xs={12}>
-                            <Typography variant="body2">{option.id}</Typography>
-                          </Grid>
-                        </Grid>
-                      </li>
-                    </>
-                  )}
+                      </>
+                    );
+                  }}
+                  // Hier ist das Eingabefeld für die Suche
                   renderInput={(params) => (
                     <TextField {...params} placeholder="*Activity types" />
                   )}
@@ -286,6 +322,7 @@ const ActivityTypes = ({ state, setState }) => {
           </Grid>
         </Grid>
 
+        {/* Hier werden die ausgewählten Aktivitätstypen als Chips angezeigt */}
         <Grid item xs={12} md={8}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
@@ -298,7 +335,6 @@ const ActivityTypes = ({ state, setState }) => {
                 >
                   Selected <b>Activity type(s)</b>
                 </Typography>
-                {/* delete all Button wurde entfernt */}
               </Box>
             </Grid>
             <Grid
@@ -307,6 +343,7 @@ const ActivityTypes = ({ state, setState }) => {
               sx={{ mt: state.selectedActivityTypesList.length > 0 ? 1 : 0 }}
             >
               <Grid container spacing={1}>
+                {/* Hier wird für jeden ausgewählten Typ ein Chip angezeigt, der entfernt werden kann */}
                 {state.selectedActivityTypesList?.map((activityType, index) => (
                   <Grid item key={index}>
                     <Chip
@@ -332,4 +369,5 @@ const ActivityTypes = ({ state, setState }) => {
   );
 };
 
+// Hier wird die Komponente exportiert
 export default ActivityTypes;
