@@ -1,4 +1,4 @@
-import { useEffect, useContext, useState } from "react"; // geändert: useState importiert
+import { useEffect, useContext, useState } from "react";
 import {
   Chip,
   Grid,
@@ -7,9 +7,9 @@ import {
   Autocomplete,
   Divider,
   Tooltip,
-  Checkbox, // geändert: Checkbox importiert
-  Button,   // geändert: Button importiert
-  Box,      // geändert: Box importiert
+  Checkbox,
+  Button,
+  Box,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActivitiesList } from "../utils/filters-api.js";
@@ -24,9 +24,8 @@ const Activities = ({ state, setState }) => {
     setAnalysisInputMenu,
   } = useContext(BasicIndicatorContext);
 
-  // --- NEU: State für Checkboxen und Autocomplete-Open ---
-  const [autocompleteOpen, setAutocompleteOpen] = useState(false); // geändert
-  const [pendingCheckedOptions, setPendingCheckedOptions] = useState({}); // geändert
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const [lastCheckedIndex, setLastCheckedIndex] = useState(null);
 
   useEffect(() => {
     const loadActivitiesData = async () => {
@@ -37,13 +36,9 @@ const Activities = ({ state, setState }) => {
           indicatorQuery.platforms,
           indicatorQuery.activityTypes
         );
-        // TODO: why not filtered with selected??
         setState((prevState) => ({
           ...prevState,
-          activitiesList: activitiesData.filter(
-            (activity) =>
-              !prevState.selectedActivitiesList.includes(activity.id)
-          ),
+          activitiesList: activitiesData,
         }));
       } catch (error) {
         console.log("Failed to load Activities list", error);
@@ -54,174 +49,196 @@ const Activities = ({ state, setState }) => {
     }
   }, [indicatorQuery.activityTypes.length]);
 
-  // --- NEU: Checkbox-Handler ---
-  const handleCheckboxChange = (id) => {
-    setPendingCheckedOptions((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  const isChecked = (id) =>
+    state.selectedActivitiesList.some((activity) => activity.id === id);
 
-  const handleSelectAllCheckboxes = () => {
-    const allChecked = {};
-    state.activitiesList.forEach((option) => {
-      allChecked[option.id] = true;
-    });
-    setPendingCheckedOptions(allChecked);
-  };
+  const handleCheckboxChange = (option, realIndex, event) => {
+    let newSelected = [...state.selectedActivitiesList];
+    let newActivities = { ...indicatorQuery.activities };
 
-  const handleDeselectAllCheckboxes = () => {
-    setPendingCheckedOptions({});
-  };
+    if (event && event.shiftKey && lastCheckedIndex !== null) {
+      const start = Math.min(lastCheckedIndex, realIndex);
+      const end = Math.max(lastCheckedIndex, realIndex);
+      const rangeOptions = state.activitiesList.slice(start, end + 1);
+      const shouldCheck = !isChecked(option.id);
 
-  const areAllChecked =
-    state.activitiesList.length > 0 &&
-    state.activitiesList.every((option) => pendingCheckedOptions[option.id]);
-
-  const isAnyChecked = Object.values(pendingCheckedOptions).some(Boolean);
-
-  // --- NEU: Apply Handler ---
-  const handleApplyChecked = () => {
-    // IDs der ausgewählten Checkboxen
-    const selectedIds = Object.entries(pendingCheckedOptions)
-      .filter(([_, checked]) => checked)
-      .map(([id]) => id);
-
-    // Die ausgewählten Activity-Objekte
-    const selectedActivities = state.activitiesList.filter((activity) =>
-      selectedIds.includes(activity.id)
-    );
-
-    // State aktualisieren: ausgewählte Activities verschieben
-    setState((prevState) => ({
-      ...prevState,
-      selectedActivitiesList: [
-        ...prevState.selectedActivitiesList,
-        ...selectedActivities,
-      ],
-      activitiesList: prevState.activitiesList.filter(
-        (activity) => !selectedIds.includes(activity.id)
-      ),
-    }));
-
-    // IndicatorQuery aktualisieren (wie bei handleSelectActivities)
-    selectedActivities.forEach((selectedActivity) => {
-      setIndicatorQuery((prevState) => {
-        const { queryId, name } = selectedActivity;
-        let tempActivities = { ...prevState.activities };
-        if (tempActivities[queryId]) {
-          if (!tempActivities[queryId].includes(name)) {
-            tempActivities[queryId].push(name);
+      if (shouldCheck) {
+        rangeOptions.forEach((opt) => {
+          if (!isChecked(opt.id)) {
+            newSelected.push(opt);
+            if (newActivities[opt.queryId]) {
+              if (!newActivities[opt.queryId].includes(opt.name)) {
+                newActivities[opt.queryId].push(opt.name);
+              }
+            } else {
+              newActivities[opt.queryId] = [opt.name];
+            }
           }
-        } else {
-          tempActivities[queryId] = [name];
-        }
-        let tempActivityKeys = Object.keys(tempActivities);
-        setAnalysisInputMenu((prevState) => ({
-          ...prevState,
-          activities: {
-            ...prevState.activities,
-            id: tempActivityKeys.length === 1 ? tempActivityKeys[0] : undefined,
-            options: tempActivityKeys,
-          },
-        }));
-
-        return {
-          ...prevState,
-          activities: tempActivities,
-        };
-      });
-    });
-
-    setAnalysisRef((prevState) => ({
-      ...prevState,
-      analyzedData: {},
-    }));
-
-    setPendingCheckedOptions({});
-  };
-
-  const handleSelectActivities = (selectedActivity) => {
-    setState((prevState) => ({
-      ...prevState,
-      activitiesList: prevState.activitiesList.filter(
-        (item) => item.id !== selectedActivity.id
-      ),
-      selectedActivitiesList: [
-        ...prevState.selectedActivitiesList,
-        selectedActivity,
-      ],
-      autoCompleteValue: null,
-    }));
-
-    // If query is changed
-    setAnalysisRef((prevState) => ({
-      ...prevState,
-      analyzedData: {},
-    }));
-
-    setIndicatorQuery((prevState) => {
-      const { queryId, name } = selectedActivity;
-      let tempActivities = { ...prevState.activities };
-      if (tempActivities[queryId]) {
-        if (!tempActivities[queryId].includes(name)) {
-          tempActivities[queryId].push(name);
+        });
+      } else {
+        newSelected = newSelected.filter(
+          (activity) => !rangeOptions.some((opt) => opt.id === activity.id)
+        );
+        rangeOptions.forEach((opt) => {
+          if (newActivities[opt.queryId]) {
+            newActivities[opt.queryId] = newActivities[opt.queryId].filter(
+              (name) => name !== opt.name
+            );
+            if (newActivities[opt.queryId].length === 0) {
+              delete newActivities[opt.queryId];
+            }
+          }
+        });
+      }
+      setLastCheckedIndex(realIndex);
+    } else {
+      if (isChecked(option.id)) {
+        newSelected = newSelected.filter((activity) => activity.id !== option.id);
+        if (newActivities[option.queryId]) {
+          newActivities[option.queryId] = newActivities[option.queryId].filter(
+            (name) => name !== option.name
+          );
+          if (newActivities[option.queryId].length === 0) {
+            delete newActivities[option.queryId];
+          }
         }
       } else {
-        tempActivities[queryId] = [name];
+        newSelected.push(option);
+        if (newActivities[option.queryId]) {
+          if (!newActivities[option.queryId].includes(option.name)) {
+            newActivities[option.queryId].push(option.name);
+          }
+        } else {
+          newActivities[option.queryId] = [option.name];
+        }
       }
-      let tempActivityKeys = Object.keys(tempActivities);
-      setAnalysisInputMenu((prevState) => ({
+      setLastCheckedIndex(realIndex);
+    }
+
+    setState((prevState) => ({
+      ...prevState,
+      selectedActivitiesList: newSelected,
+    }));
+
+    const tempActivityKeys = Object.keys(newActivities);
+    setAnalysisInputMenu((prevState) => ({
+      ...prevState,
+      activities: {
+        ...prevState.activities,
+        id: tempActivityKeys.length === 1 ? tempActivityKeys[0] : undefined,
+        options: tempActivityKeys,
+      },
+    }));
+
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      activities: newActivities,
+    }));
+
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+  };
+
+  const allChecked =
+    state.activitiesList.length > 0 &&
+    state.activitiesList.every((option) => isChecked(option.id));
+  
+  const anyChecked =
+    state.activitiesList.some((option) => isChecked(option.id));
+
+  const handleSelectAll = () => {
+    if (allChecked) {
+      const newActivities = { ...indicatorQuery.activities };
+      state.activitiesList.forEach((opt) => {
+        if (newActivities[opt.queryId]) {
+          newActivities[opt.queryId] = newActivities[opt.queryId].filter(
+            (name) => name !== opt.name
+          );
+          if (newActivities[opt.queryId].length === 0) {
+            delete newActivities[opt.queryId];
+          }
+        }
+      });
+
+      setState((prevState) => ({
         ...prevState,
-        activities: {
-          ...prevState.activities,
-          id: tempActivityKeys.length === 1 ? tempActivityKeys[0] : undefined,
-          options: tempActivityKeys,
-        },
+        selectedActivitiesList: prevState.selectedActivitiesList.filter(
+          (activity) => !state.activitiesList.some((opt) => opt.id === activity.id)
+        ),
       }));
 
-      return {
+      setIndicatorQuery((prevState) => ({
         ...prevState,
-        activities: tempActivities,
-      };
-    });
+        activities: newActivities,
+      }));
+    } else {
+      const newSelected = [
+        ...state.selectedActivitiesList,
+        ...state.activitiesList.filter(
+          (opt) => !state.selectedActivitiesList.some((activity) => activity.id === opt.id)
+        ),
+      ];
+      const newActivities = { ...indicatorQuery.activities };
+      state.activitiesList.forEach((opt) => {
+        if (!isChecked(opt.id)) {
+          if (newActivities[opt.queryId]) {
+            if (!newActivities[opt.queryId].includes(opt.name)) {
+              newActivities[opt.queryId].push(opt.name);
+            }
+          } else {
+            newActivities[opt.queryId] = [opt.name];
+          }
+        }
+      });
+
+      setState((prevState) => ({
+        ...prevState,
+        selectedActivitiesList: newSelected,
+      }));
+
+      setIndicatorQuery((prevState) => ({
+        ...prevState,
+        activities: newActivities,
+      }));
+    }
+
+    const tempActivityKeys = Object.keys(indicatorQuery.activities);
+    setAnalysisInputMenu((prevState) => ({
+      ...prevState,
+      activities: {
+        ...prevState.activities,
+        id: tempActivityKeys.length === 1 ? tempActivityKeys[0] : undefined,
+        options: tempActivityKeys,
+      },
+    }));
+
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
   };
 
   const handleDeselectActivity = (selectedActivity) => {
-    setState((prevState) => {
-      return {
-        ...prevState,
-        activitiesList: [...prevState.activitiesList, selectedActivity].sort(
-          (a, b) => a.name.localeCompare(b.name)
-        ),
-        selectedActivitiesList: prevState.selectedActivitiesList.filter(
-          (item) => item.id !== selectedActivity.id
-        ),
-        autoCompleteValue: null,
-      };
-    });
+    setState((prevState) => ({
+      ...prevState,
+      selectedActivitiesList: prevState.selectedActivitiesList.filter(
+        (item) => item.id !== selectedActivity.id
+      ),
+    }));
 
     setIndicatorQuery((prevState) => {
       let tempActivities = { ...prevState.activities };
       if (tempActivities[selectedActivity.queryId]) {
-        const index = tempActivities[selectedActivity.queryId].indexOf(
-          selectedActivity.name
-        );
-        if (index !== -1) {
-          tempActivities[selectedActivity.queryId].splice(index, 1);
-        }
-
+        tempActivities[selectedActivity.queryId] = tempActivities[
+          selectedActivity.queryId
+        ].filter((name) => name !== selectedActivity.name);
         if (tempActivities[selectedActivity.queryId].length === 0) {
           delete tempActivities[selectedActivity.queryId];
         }
       }
 
-      // If query is changed
-      setAnalysisRef((prevState) => ({
-        ...prevState,
-        analyzedData: {},
-      }));
-
       let tempActivityKeys = Object.keys(tempActivities);
       setAnalysisInputMenu((prevState) => ({
         ...prevState,
@@ -237,6 +254,11 @@ const Activities = ({ state, setState }) => {
         activities: tempActivities,
       };
     });
+
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
   };
 
   return (
@@ -291,12 +313,13 @@ const Activities = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option, { index }) => {
-                    const { key, ...restProps } = props;
-                    const label = { inputProps: { "aria-label": option.name } };
+                  renderOption={(props, option) => {
+                    const realIndex = state.activitiesList.findIndex(
+                      (o) => o.id === option.id
+                    );
                     return (
                       <>
-                        {index === 0 && (
+                        {realIndex === 0 && (
                           <li
                             style={{
                               position: "sticky",
@@ -326,51 +349,30 @@ const Activities = ({ state, setState }) => {
                               }}
                             >
                               <Checkbox
-                                checked={areAllChecked}
-                                indeterminate={isAnyChecked && !areAllChecked}
-                                onChange={() => {
-                                  areAllChecked
-                                    ? handleDeselectAllCheckboxes()
-                                    : handleSelectAllCheckboxes();
-                                }}
+                                checked={allChecked}
+                                indeterminate={anyChecked && !allChecked}
+                                onChange={handleSelectAll}
                                 sx={{ ml: 2, mr: 1 }}
                                 inputProps={{ "aria-label": "Alle auswählen" }}
                               />
                               <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
-                                {Object.values(pendingCheckedOptions).filter(Boolean).length} selected
+                                {state.selectedActivitiesList.length} selected
                               </Typography>
-                              <Box sx={{ flexGrow: 1 }} />
-                              {isAnyChecked && (
-                                <Button
-                                  sx={{ mr: 2, minWidth: 0, px: 2, height: 32 }}
-                                  variant="contained"
-                                  size="small"
-                                  color="primary"
-                                  onMouseDown={(e) => e.preventDefault()}
-                                  onClick={handleApplyChecked}
-                                >
-                                  Apply
-                                </Button>
-                              )}
                             </Box>
                           </li>
                         )}
-                        <li
-                          {...restProps}
-                          key={key}
-                          style={{ display: "flex", alignItems: "center" }}
-                        >
+                        <li {...props} style={{ display: "flex", alignItems: "center" }}>
                           <Checkbox
-                            {...label}
-                            checked={!!pendingCheckedOptions[option.id]}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              handleCheckboxChange(option.id);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
+                            checked={isChecked(option.id)}
+                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
                             sx={{ mr: 1 }}
                           />
-                          <Grid container sx={{ py: 0.5 }}>
+                          <Grid
+                            container
+                            sx={{ py: 0.5 }}
+                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
+                            style={{ cursor: "pointer" }}
+                          >
                             <Grid item xs={12}>
                               <Typography>{option.name}</Typography>
                             </Grid>
@@ -385,9 +387,6 @@ const Activities = ({ state, setState }) => {
                   renderInput={(params) => (
                     <TextField {...params} placeholder="*Activities" />
                   )}
-                  onChange={(event, value) => {
-                    if (value) handleSelectActivities(value);
-                  }}
                 />
               </Tooltip>
             </Grid>
@@ -406,40 +405,7 @@ const Activities = ({ state, setState }) => {
                 >
                   Selected <b>Activity(ies)</b>
                 </Typography>
-                {state.selectedActivitiesList.length > 0 && (
-                  <Typography
-                    variant="body2"
-                    color="primary"
-                    sx={{
-                      ml: 1,
-                      textDecoration: "underline",
-                      cursor: "pointer",
-                      userSelect: "none",
-                      "&:hover": { textDecoration: "underline", color: "primary.dark" },
-                    }}
-                    onClick={() => {
-                      // Delete all selected activities
-                      setState((prevState) => ({
-                        ...prevState,
-                        activitiesList: [
-                          ...prevState.activitiesList,
-                          ...prevState.selectedActivitiesList,
-                        ].sort((a, b) => a.name.localeCompare(b.name)),
-                        selectedActivitiesList: [],
-                      }));
-                      setAnalysisRef((prevState) => ({
-                        ...prevState,
-                        analyzedData: {},
-                      }));
-                      setIndicatorQuery((prevState) => ({
-                        ...prevState,
-                        activities: [],
-                      }));
-                    }}
-                  >
-                    delete all
-                  </Typography>
-                )}
+                
               </Box>
             </Grid>
             <Grid

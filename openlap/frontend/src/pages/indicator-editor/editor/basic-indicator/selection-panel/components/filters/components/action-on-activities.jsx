@@ -8,7 +8,6 @@ import {
   Divider,
   Tooltip,
   Checkbox,
-  Button,
   Box,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
@@ -30,7 +29,7 @@ const ActionOnActivities = ({ state, setState }) => {
   } = useContext(BasicIndicatorContext);
 
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
-  const [pendingCheckedOptions, setPendingCheckedOptions] = useState({});
+  const [lastCheckedIndex, setLastCheckedIndex] = useState(null);
 
   useEffect(() => {
     const loadActivityTypesData = async () => {
@@ -44,9 +43,7 @@ const ActionOnActivities = ({ state, setState }) => {
         );
         setState((prevState) => ({
           ...prevState,
-          actionsList: actionsData.filter(
-            (action) => !indicatorQuery.actionOnActivities.includes(action)
-          ),
+          actionsList: actionsData,
         }));
       } catch (error) {
         console.log("Failed to load Action on Activities list", error);
@@ -57,57 +54,56 @@ const ActionOnActivities = ({ state, setState }) => {
     }
   }, [state.selectedActivitiesList.length]);
 
-  const handleCheckboxChange = (id) => {
-    setPendingCheckedOptions((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  const isChecked = (id) =>
+    state.selectedActionsList.some((action) => action.id === id);
 
-  const handleSelectAllCheckboxes = () => {
-    const allChecked = {};
-    state.actionsList.forEach((option) => {
-      allChecked[option.id] = true;
-    });
-    setPendingCheckedOptions(allChecked);
-  };
+  const handleCheckboxChange = (option, realIndex, event) => {
+    let newSelected = [...state.selectedActionsList];
+    let newActionOnActivities = [...indicatorQuery.actionOnActivities];
 
-  const handleDeselectAllCheckboxes = () => {
-    setPendingCheckedOptions({});
-  };
+    if (event && event.shiftKey && lastCheckedIndex !== null) {
+      const start = Math.min(lastCheckedIndex, realIndex);
+      const end = Math.max(lastCheckedIndex, realIndex);
+      const rangeOptions = state.actionsList.slice(start, end + 1);
+      const shouldCheck = !isChecked(option.id);
 
-  const areAllChecked =
-    state.actionsList.length > 0 &&
-    state.actionsList.every((option) => pendingCheckedOptions[option.id]);
-
-  const isAnyChecked = Object.values(pendingCheckedOptions).some(Boolean);
-
-  const handleApplyChecked = () => {
-    const selectedIds = Object.entries(pendingCheckedOptions)
-      .filter(([_, checked]) => checked)
-      .map(([id]) => id);
-
-    const selectedActions = state.actionsList.filter((action) =>
-      selectedIds.includes(action.id)
-    );
+      if (shouldCheck) {
+        rangeOptions.forEach((opt) => {
+          if (!isChecked(opt.id)) {
+            newSelected.push(opt);
+            newActionOnActivities.push(opt.id);
+          }
+        });
+      } else {
+        newSelected = newSelected.filter(
+          (action) => !rangeOptions.some((opt) => opt.id === action.id)
+        );
+        newActionOnActivities = newActionOnActivities.filter(
+          (id) => !rangeOptions.some((opt) => opt.id === id)
+        );
+      }
+      setLastCheckedIndex(realIndex);
+    } else {
+      if (isChecked(option.id)) {
+        newSelected = newSelected.filter((action) => action.id !== option.id);
+        newActionOnActivities = newActionOnActivities.filter(
+          (id) => id !== option.id
+        );
+      } else {
+        newSelected.push(option);
+        newActionOnActivities.push(option.id);
+      }
+      setLastCheckedIndex(realIndex);
+    }
 
     setState((prevState) => ({
       ...prevState,
-      selectedActionsList: [
-        ...prevState.selectedActionsList,
-        ...selectedActions,
-      ],
-      actionsList: prevState.actionsList.filter(
-        (action) => !selectedIds.includes(action.id)
-      ),
+      selectedActionsList: newSelected,
     }));
 
     setIndicatorQuery((prevState) => ({
       ...prevState,
-      actionOnActivities: [
-        ...prevState.actionOnActivities,
-        ...selectedActions.map((a) => a.id),
-      ],
+      actionOnActivities: newActionOnActivities,
     }));
 
     setAnalysisRef((prevState) => ({
@@ -115,146 +111,286 @@ const ActionOnActivities = ({ state, setState }) => {
       analyzedData: {},
     }));
 
-    setPendingCheckedOptions({});
+    // Update analysis input menu
+    const uniqueQueryIds = [...new Set(newSelected.map((item) => item.queryId))];
+    setAnalysisInputMenu((prevInputState) => ({
+      ...prevInputState,
+      actionOnActivities: {
+        ...prevInputState.actionOnActivities,
+        id: uniqueQueryIds.length === 1 ? uniqueQueryIds[0] : undefined,
+        options: uniqueQueryIds,
+      },
+    }));
+
+    // Reset visualization if actions are changed
+    setVisRef((prevState) => ({
+      ...prevState,
+      visualizationLibraryId: "",
+      visualizationTypeId: "",
+      visualizationMapping: {
+        ...prevState.visualizationMapping,
+        mapping: [],
+      },
+    }));
+    setGenerate(false);
+    setIndicator((prevState) => ({
+      ...prevState,
+      previewData: {
+        ...prevState.previewData,
+        displayCode: [],
+        scriptData: "",
+      },
+    }));
+    setLockedStep((prevState) => ({
+      ...prevState,
+      visualization: {
+        locked: true,
+        openPanel: false,
+      },
+      finalize: {
+        ...prevState.finalize,
+        locked: true,
+        openPanel: false,
+      },
+    }));
+  };
+
+  const allChecked =
+    state.actionsList.length > 0 &&
+    state.actionsList.every((option) => isChecked(option.id));
+  
+  const anyChecked =
+    state.actionsList.some((option) => isChecked(option.id));
+
+  const handleSelectAll = () => {
+    if (allChecked) {
+      const newSelected = state.selectedActionsList.filter(
+        (action) => !state.actionsList.some((opt) => opt.id === action.id)
+      );
+      const newActionOnActivities = indicatorQuery.actionOnActivities.filter(
+        (id) => !state.actionsList.some((opt) => opt.id === id)
+      );
+
+      setState((prevState) => ({
+        ...prevState,
+        selectedActionsList: newSelected,
+      }));
+
+      setIndicatorQuery((prevState) => ({
+        ...prevState,
+        actionOnActivities: newActionOnActivities,
+      }));
+    } else {
+      const newSelected = [
+        ...state.selectedActionsList,
+        ...state.actionsList.filter(
+          (opt) => !state.selectedActionsList.some((action) => action.id === opt.id)
+        ),
+      ];
+      const newActionOnActivities = [
+        ...indicatorQuery.actionOnActivities,
+        ...state.actionsList
+          .map((opt) => opt.id)
+          .filter((id) => !indicatorQuery.actionOnActivities.includes(id)),
+      ];
+
+      setState((prevState) => ({
+        ...prevState,
+        selectedActionsList: newSelected,
+      }));
+
+      setIndicatorQuery((prevState) => ({
+        ...prevState,
+        actionOnActivities: newActionOnActivities,
+      }));
+    }
+
+    // Update analysis input menu
+    const uniqueQueryIds = [...new Set(
+      allChecked
+        ? state.selectedActionsList
+            .filter((action) => !state.actionsList.some((opt) => opt.id === action.id))
+            .map((item) => item.queryId)
+        : [
+            ...state.selectedActionsList.map((item) => item.queryId),
+            ...state.actionsList.map((item) => item.queryId),
+          ]
+    )];
+
+    setAnalysisInputMenu((prevInputState) => ({
+      ...prevInputState,
+      actionOnActivities: {
+        ...prevInputState.actionOnActivities,
+        id: uniqueQueryIds.length === 1 ? uniqueQueryIds[0] : undefined,
+        options: uniqueQueryIds,
+      },
+    }));
+
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+
+    // Reset visualization
+    setVisRef((prevState) => ({
+      ...prevState,
+      visualizationLibraryId: "",
+      visualizationTypeId: "",
+      visualizationMapping: {
+        ...prevState.visualizationMapping,
+        mapping: [],
+      },
+    }));
+    setGenerate(false);
+    setIndicator((prevState) => ({
+      ...prevState,
+      previewData: {
+        ...prevState.previewData,
+        displayCode: [],
+        scriptData: "",
+      },
+    }));
+    setLockedStep((prevState) => ({
+      ...prevState,
+      visualization: {
+        locked: true,
+        openPanel: false,
+      },
+      finalize: {
+        ...prevState.finalize,
+        locked: true,
+        openPanel: false,
+      },
+    }));
+  };
+
+  const handleDeselectActionOnActivity = (selectedAction) => {
+    setState((prevState) => ({
+      ...prevState,
+      selectedActionsList: prevState.selectedActionsList.filter(
+        (item) => item.id !== selectedAction.id
+      ),
+    }));
+
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      actionOnActivities: prevState.actionOnActivities.filter(
+        (item) => item !== selectedAction.id
+      ),
+    }));
+
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+
+    // Update analysis input menu
+    const uniqueQueryIds = [
+      ...new Set(
+        state.selectedActionsList
+          .filter((action) => action.id !== selectedAction.id)
+          .map((item) => item.queryId)
+      ),
+    ];
+    setAnalysisInputMenu((prevInputState) => ({
+      ...prevInputState,
+      actionOnActivities: {
+        ...prevInputState.actionOnActivities,
+        id: uniqueQueryIds.length === 1 ? uniqueQueryIds[0] : undefined,
+        options: uniqueQueryIds,
+      },
+    }));
+
+    // Reset visualization
+    setVisRef((prevState) => ({
+      ...prevState,
+      visualizationLibraryId: "",
+      visualizationTypeId: "",
+      visualizationMapping: {
+        ...prevState.visualizationMapping,
+        mapping: [],
+      },
+    }));
+    setGenerate(false);
+    setIndicator((prevState) => ({
+      ...prevState,
+      previewData: {
+        ...prevState.previewData,
+        displayCode: [],
+        scriptData: "",
+      },
+    }));
+    setLockedStep((prevState) => ({
+      ...prevState,
+      visualization: {
+        locked: true,
+        openPanel: false,
+      },
+      finalize: {
+        ...prevState.finalize,
+        locked: true,
+        openPanel: false,
+      },
+    }));
   };
 
   const handleDeleteAllSelected = () => {
     setState((prevState) => ({
       ...prevState,
-      actionsList: [
-        ...prevState.actionsList,
-        ...prevState.selectedActionsList,
-      ].sort((a, b) => a.name.localeCompare(b.name)),
       selectedActionsList: [],
     }));
-    setAnalysisRef((prevState) => ({
-      ...prevState,
-      analyzedData: {},
-    }));
+
     setIndicatorQuery((prevState) => ({
       ...prevState,
       actionOnActivities: [],
     }));
-  };
-
-  const handleSelectActionOnActivity = (selectedAction) => {
-    setState((prevState) => ({
-      ...prevState,
-      actionsList: prevState.actionsList.filter(
-        (item) => item.id !== selectedAction.id
-      ),
-      selectedActionsList: [...prevState.selectedActionsList, selectedAction],
-      autoCompleteValue: null,
-    }));
-
-    setIndicatorQuery((prevState) => ({
-      ...prevState,
-      actionOnActivities: [...prevState.actionOnActivities, selectedAction.id],
-    }));
 
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
     }));
 
-    setAnalysisInputMenu((prevState) => {
-      let tempActionOptionExists = [
-        ...prevState.actionOnActivities.options,
-      ].some((output) => output === selectedAction.queryId);
-      if (!tempActionOptionExists) {
-        let tempOptions = [
-          ...prevState.actionOnActivities.options,
-          selectedAction.queryId,
-        ];
-        return {
-          ...prevState,
-          actionOnActivities: {
-            ...prevState.actionOnActivities,
-            id: tempOptions.length === 1 ? tempOptions[0] : undefined,
-            options: tempOptions,
-          },
-        };
-      }
-      return prevState;
-    });
-  };
+    // Update analysis input menu
+    setAnalysisInputMenu((prevInputState) => ({
+      ...prevInputState,
+      actionOnActivities: {
+        ...prevInputState.actionOnActivities,
+        id: undefined,
+        options: [],
+      },
+    }));
 
-  const handleDeselectActionOnActivity = (selectedAction) => {
-    setState((prevState) => {
-      let tempSelectedActionList = prevState.selectedActionsList.filter(
-        (item) => item.id !== selectedAction.id
-      );
-
-      setAnalysisRef((prevState) => ({
-        ...prevState,
-        analyzedData: {},
-      }));
-
-      setVisRef((prevState) => {
-        return {
-          ...prevState,
-          visualizationLibraryId: "",
-          visualizationTypeId: "",
-          visualizationMapping: {
-            ...prevState.visualizationMapping,
-            mapping: [],
-          },
-        };
-      });
-      setGenerate(false);
-      setIndicator((prevState) => ({
-        ...prevState,
-        previewData: {
-          ...prevState.previewData,
-          displayCode: [],
-          scriptData: "",
-        },
-      }));
-      setLockedStep((prevState) => ({
-        ...prevState,
-        visualization: {
-          locked: true,
-          openPanel: false,
-        },
-        finalize: {
-          ...prevState.finalize,
-          locked: true,
-          openPanel: false,
-        },
-      }));
-
-      setAnalysisInputMenu((prevInputState) => {
-        const uniqueQueryIds = [
-          ...new Set(tempSelectedActionList.map((item) => item.queryId)),
-        ];
-        return {
-          ...prevInputState,
-          actionOnActivities: {
-            ...prevInputState.actionOnActivities,
-            id: uniqueQueryIds.length === 1 ? uniqueQueryIds[0] : undefined,
-            options: uniqueQueryIds,
-          },
-        };
-      });
-
-      return {
-        ...prevState,
-        actionsList: [...prevState.actionsList, selectedAction].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        ),
-        selectedActionsList: tempSelectedActionList,
-        autoCompleteValue: null,
-      };
-    });
-
-    setIndicatorQuery((prevState) => {
-      return {
-        ...prevState,
-        actionOnActivities: prevState.actionOnActivities.filter(
-          (item) => item !== selectedAction.id
-        ),
-      };
-    });
+    // Reset visualization
+    setVisRef((prevState) => ({
+      ...prevState,
+      visualizationLibraryId: "",
+      visualizationTypeId: "",
+      visualizationMapping: {
+        ...prevState.visualizationMapping,
+        mapping: [],
+      },
+    }));
+    setGenerate(false);
+    setIndicator((prevState) => ({
+      ...prevState,
+      previewData: {
+        ...prevState.previewData,
+        displayCode: [],
+        scriptData: "",
+      },
+    }));
+    setLockedStep((prevState) => ({
+      ...prevState,
+      visualization: {
+        locked: true,
+        openPanel: false,
+      },
+      finalize: {
+        ...prevState.finalize,
+        locked: true,
+        openPanel: false,
+      },
+    }));
   };
 
   return (
@@ -303,12 +439,13 @@ const ActionOnActivities = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option?.name}
-                  renderOption={(props, option, { index }) => {
-                    const { key, ...restProps } = props;
-                    const label = { inputProps: { "aria-label": option.name } };
+                  renderOption={(props, option) => {
+                    const realIndex = state.actionsList.findIndex(
+                      (o) => o.id === option.id
+                    );
                     return (
                       <>
-                        {index === 0 && (
+                        {realIndex === 0 && (
                           <li
                             style={{
                               position: "sticky",
@@ -338,13 +475,9 @@ const ActionOnActivities = ({ state, setState }) => {
                               }}
                             >
                               <Checkbox
-                                checked={areAllChecked}
-                                indeterminate={isAnyChecked && !areAllChecked}
-                                onChange={() => {
-                                  areAllChecked
-                                    ? handleDeselectAllCheckboxes()
-                                    : handleSelectAllCheckboxes();
-                                }}
+                                checked={allChecked}
+                                indeterminate={anyChecked && !allChecked}
+                                onChange={handleSelectAll}
                                 sx={{ ml: 2, mr: 1 }}
                                 inputProps={{ "aria-label": "Alle auswählen" }}
                               />
@@ -353,50 +486,26 @@ const ActionOnActivities = ({ state, setState }) => {
                                 color="text.secondary"
                                 sx={{ minWidth: 24, mr: 1 }}
                               >
-                                {
-                                  Object.values(pendingCheckedOptions).filter(
-                                    Boolean
-                                  ).length
-                                }{" "}
-                                selected
+                                {state.selectedActionsList.length} selected
                               </Typography>
-                              <Box sx={{ flexGrow: 1 }} />
-                              {isAnyChecked && (
-                                <Button
-                                  sx={{
-                                    mr: 2,
-                                    minWidth: 0,
-                                    px: 2,
-                                    height: 32,
-                                  }}
-                                  variant="contained"
-                                  size="small"
-                                  color="primary"
-                                  onMouseDown={(e) => e.preventDefault()}
-                                  onClick={handleApplyChecked}
-                                >
-                                  Apply
-                                </Button>
-                              )}
                             </Box>
                           </li>
                         )}
                         <li
-                          {...restProps}
-                          key={key}
+                          {...props}
                           style={{ display: "flex", alignItems: "center" }}
                         >
                           <Checkbox
-                            {...label}
-                            checked={!!pendingCheckedOptions[option.id]}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              handleCheckboxChange(option.id);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
+                            checked={isChecked(option.id)}
+                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
                             sx={{ mr: 1 }}
                           />
-                          <Grid container sx={{ py: 0.5 }}>
+                          <Grid
+                            container
+                            sx={{ py: 0.5 }}
+                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
+                            style={{ cursor: "pointer" }}
+                          >
                             <Grid item xs={12}>
                               <Typography>{option?.name}</Typography>
                             </Grid>
@@ -411,9 +520,6 @@ const ActionOnActivities = ({ state, setState }) => {
                   renderInput={(params) => (
                     <TextField {...params} placeholder="*Actions" />
                   )}
-                  onChange={(event, value) => {
-                    if (value) handleSelectActionOnActivity(value);
-                  }}
                 />
               </Tooltip>
             </Grid>
@@ -436,25 +542,6 @@ const ActionOnActivities = ({ state, setState }) => {
                 >
                   Selected <b>Action(s)</b>
                 </Typography>
-                {state.selectedActionsList.length > 0 && (
-                  <Typography
-                    variant="body2"
-                    color="primary"
-                    sx={{
-                      ml: 1,
-                      textDecoration: "underline",
-                      cursor: "pointer",
-                      userSelect: "none",
-                      "&:hover": {
-                        textDecoration: "underline",
-                        color: "primary.dark",
-                      },
-                    }}
-                    onClick={handleDeleteAllSelected}
-                  >
-                    delete all
-                  </Typography>
-                )}
               </Box>
             </Grid>
             <Grid item xs={12}>
