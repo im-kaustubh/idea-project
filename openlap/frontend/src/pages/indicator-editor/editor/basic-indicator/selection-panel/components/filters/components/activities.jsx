@@ -261,6 +261,14 @@ const Activities = ({ state, setState }) => {
     }));
   };
 
+  // Prepare options with type for grouping
+  const flatoptions = state.activitiesList.flatMap(option => {
+    return {
+      ...option,
+      type: option.activityType.split('/').pop()
+    }
+  });
+
   return (
     <>
       <Grid container spacing={4} sx={{ mb: 2 }}>
@@ -301,7 +309,8 @@ const Activities = ({ state, setState }) => {
                   disablePortal
                   disableCloseOnSelect
                   id="combo-box-lrs"
-                  options={state.activitiesList}
+                  options={flatoptions}
+                  groupBy={(option) => option.type || 'Unknown Type'}
                   fullWidth
                   slotProps={{
                     listbox: {
@@ -313,77 +322,105 @@ const Activities = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option) => {
-                    const realIndex = state.activitiesList.findIndex(
-                      (o) => o.id === option.id
-                    );
+                  renderGroup={(params) => {
+                    const { group, children } = params;
                     return (
-                      <>
-                        {realIndex === 0 && (
+                      <li key={group}>
+                        <ul style={{ padding: 0 }}>
                           <li
                             style={{
                               position: "sticky",
                               top: 0,
-                              zIndex: 2,
-                              background: "#fff",
-                              borderBottom: "1px solid #eee",
-                              width: "100%",
-                              margin: 0,
-                              padding: 0,
-                              left: 0,
-                              right: 0,
-                              boxSizing: "border-box",
-                              display: "flex",
-                              alignItems: "center",
+                              zIndex: 1,
+                              background: "#f5f5f5",
+                              padding: "8px 16px",
+                              fontWeight: "bold",
                             }}
                           >
-                            <Box
-                              sx={{
-                                width: "100%",
-                                px: 0,
-                                py: 0,
-                                background: "#fff",
-                                display: "flex",
-                                alignItems: "center",
-                                height: "40px",
-                              }}
-                            >
-                              <Checkbox
-                                checked={allChecked}
-                                indeterminate={anyChecked && !allChecked}
-                                onChange={handleSelectAll}
-                                sx={{ ml: 2, mr: 1 }}
-                                inputProps={{ "aria-label": "Alle auswählen" }}
-                              />
-                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
-                                {state.selectedActivitiesList.length} selected
-                              </Typography>
-                            </Box>
+                            {group}
                           </li>
-                        )}
-                        <li {...props} style={{ display: "flex", alignItems: "center" }}>
-                          <Checkbox
-                            checked={isChecked(option.id)}
-                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
-                            sx={{ mr: 1 }}
-                          />
-                          <Grid
-                            container
-                            sx={{ py: 0.5 }}
-                            onClick={(e) => handleCheckboxChange(option, realIndex, e)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <Grid item xs={12}>
-                              <Typography>{option.name}</Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Typography variant="body2">{option.id}</Typography>
-                            </Grid>
-                          </Grid>
-                        </li>
-                      </>
+                          {children}
+                        </ul>
+                      </li>
                     );
                   }}
+                  renderOption={(props, option) => (
+                    <li {...props} style={{ display: "flex", alignItems: "center" }}>
+                      <Checkbox
+                        checked={isChecked(option.id)}
+                        onClick={(e) => {
+                          const realIndex = state.activitiesList.findIndex(
+                            (o) => o.id === option.id
+                          );
+                          handleCheckboxChange(option, realIndex, e);
+                        }}
+                        sx={{ mr: 1 }}
+                      />
+                      <Grid
+                        container
+                        sx={{ py: 0.5 }}
+                        onClick={(e) => {
+                          const realIndex = state.activitiesList.findIndex(
+                            (o) => o.id === option.id
+                          );
+                          handleCheckboxChange(option, realIndex, e);
+                        }}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <Grid item xs={12}>
+                          <Typography>{option.name}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography variant="body2">{option.id}</Typography>
+                        </Grid>
+                      </Grid>
+                    </li>
+                  )}
+                  ListboxComponent={(props) => (
+                    <ul {...props} style={{ padding: 0 }}>
+                      <li
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 2,
+                          background: "#fff",
+                          borderBottom: "1px solid #eee",
+                          width: "100%",
+                          margin: 0,
+                          padding: 0,
+                          left: 0,
+                          right: 0,
+                          boxSizing: "border-box",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: "100%",
+                            px: 0,
+                            py: 0,
+                            background: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            height: "40px",
+                          }}
+                        >
+                          <Checkbox
+                            checked={allChecked}
+                            indeterminate={anyChecked && !allChecked}
+                            onChange={handleSelectAll}
+                            sx={{ ml: 2, mr: 1 }}
+                            inputProps={{ "aria-label": "Alle auswählen" }}
+                          />
+                          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
+                            {state.selectedActivitiesList.length} selected
+                          </Typography>
+                        </Box>
+                      </li>
+                      {props.children}
+                    </ul>
+                  )}
                   renderInput={(params) => (
                     <TextField {...params} placeholder="*Activities" />
                   )}
@@ -405,7 +442,6 @@ const Activities = ({ state, setState }) => {
                 >
                   Selected <b>Activity(ies)</b>
                 </Typography>
-                
               </Box>
             </Grid>
             <Grid
