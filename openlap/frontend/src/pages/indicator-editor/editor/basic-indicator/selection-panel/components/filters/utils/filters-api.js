@@ -31,7 +31,9 @@ export const fetchActivitiesList = async (
       "v1/statements/activities",
       activitiesRequest
     );
+    // console.log(response.data)
     return response.data.data;
+    
   } catch (error) {
     console.error("Failed to fetch activities data", error);
     throw error; // Re-throw the error to handle it in the component

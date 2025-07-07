@@ -38,6 +38,17 @@ const Activities = ({ state, setState }) => {
               !prevState.selectedActivitiesList.includes(activity.id)
           ),
         }));
+
+        let uniqueactivitylist = []
+        let uniactivitytype;
+        state.activitiesList.map((activity) => {
+          uniactivitytype = activity.activityType.split("/").pop()
+          if (!uniqueactivitylist.includes(uniactivitytype)) {
+            uniqueactivitylist.push(uniactivitytype)
+          }
+        })
+  
+        // console.log(flatoptions)
       } catch (error) {
         console.log("Failed to load Activities list", error);
       }
@@ -46,6 +57,7 @@ const Activities = ({ state, setState }) => {
       loadActivitiesData();
     }
   }, [indicatorQuery.activityTypes.length]);
+
 
   const handleSelectActivities = (selectedActivity) => {
     setState((prevState) => ({
@@ -145,6 +157,19 @@ const Activities = ({ state, setState }) => {
     });
   };
 
+  // let onlytype;
+  // let flatoptions = []
+  let flatoptions = state.activitiesList.flatMap(option => {
+
+    return {
+      ...option,
+      type: option.activityType.split('/').pop()
+    }
+  })
+  console.log(state.activitiesList)
+
+
+
   return (
     <>
       <Grid container spacing={4} sx={{ mb: 2 }}>
@@ -177,10 +202,13 @@ const Activities = ({ state, setState }) => {
                     indicatorQuery.activityTypes.length === 0 ||
                     state.selectedActionsList.length > 0
                   }
+
                   disablePortal
                   disableCloseOnSelect
                   id="combo-box-lrs"
-                  options={state.activitiesList}
+                  options={flatoptions}
+                  // options={state.selectedActivityTypesList.map((activitytype)=>activitytype.name)}
+                  groupBy={(options) => options.type || 'Unknown Type'}
                   fullWidth
                   slotProps={{
                     listbox: {
@@ -190,14 +218,46 @@ const Activities = ({ state, setState }) => {
                     },
                   }}
                   getOptionLabel={(option) => option.name}
-                  renderOption={(props, option) => {
-                    const { key, ...restProps } = props;
+                  renderGroup={(params) => {
+                    const { group, children } = params;
+                    console.log(params)
+                    // console.log(activitiesData)
                     return (
-                      <li {...restProps} key={key}>
-                        {option.name}
-                      </li>
+                      <>
+
+                        <li>
+                          {group}
+                        </li>
+                        <ul>
+                          {children}
+                        </ul>
+                      </>
+                      // <li>hello</li>
+                      // <b><li {...restProps} key={key}>
+                      // (state.selectedActivityTypesList.map((activitytype)=>(
+                      // <li>{activitytype.name}</li>
+                      // )))
+                      // </li></b>
+                      // <li>hello</li>
                     );
                   }}
+                  // renderOption={(props, option) => {
+                  //   const { key, ...restProps } = props;
+                  //   // console.log(state.selectedActivityTypesList.map((activitytype)=>activitytype.name))
+                  //   console.log(option)
+                  //   return (
+                  //     <>
+                  //       <li {...restProps} key={key}>
+                  //         {option}
+                  //       </li>
+                  //       {state.activitiesList.map((activity) => (
+                  //         <li>{activity.id}</li>
+                  //       ))}
+                  //     </>
+
+                  //   );
+                  // }}
+
                   renderInput={(params) => (
                     <TextField {...params} placeholder="*Activities" />
                   )}
