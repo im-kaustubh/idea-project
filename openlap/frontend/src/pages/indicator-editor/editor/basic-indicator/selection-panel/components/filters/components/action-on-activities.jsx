@@ -196,6 +196,7 @@ const ActionOnActivities = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+                  className="joyride-action-selector"
                   disabled={
                     Object.entries(indicatorQuery.activities).length === 0
                   }

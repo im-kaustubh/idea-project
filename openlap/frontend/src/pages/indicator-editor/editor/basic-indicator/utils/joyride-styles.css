@@ -1,0 +1,329 @@
+/* Joyride CSS Overrides for Basic Indicator Editor */
+
+/* Global Joyride Styles */
+.__floater__body {
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.15));
+}
+
+.__floater__arrow {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Custom spotlight padding for form elements */
+.joyride-lrs-selector,
+.joyride-platform-selector,
+.joyride-activity-type-selector,
+.joyride-activity-selector,
+.joyride-action-selector,
+.joyride-analysis-technique,
+.joyride-viz-library {
+  position: relative;
+}
+
+/* Highlighted area adjustments - 4px top/bottom padding, -4px left padding */
+.joyride-lrs-selector::before,
+.joyride-platform-selector::before,
+.joyride-activity-type-selector::before,
+.joyride-activity-selector::before,
+.joyride-action-selector::before,
+.joyride-analysis-technique::before,
+.joyride-viz-library::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 4px;
+  right: 0;
+  pointer-events: none;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+/* Date Range Container */
+.joyride-date-range {
+  position: relative;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* Analysis inputs and params containers */
+.joyride-analysis-inputs,
+.joyride-analysis-params {
+  position: relative;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(25, 118, 210, 0.02);
+  border: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+/* Visualization type container */
+.joyride-viz-type {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: rgba(25, 118, 210, 0.02);
+  border: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+/* Visualization inputs */
+.joyride-viz-inputs {
+  position: relative;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(25, 118, 210, 0.02);
+  border: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+/* Button highlighting */
+.joyride-preview-data-btn,
+.joyride-generate-preview-btn,
+.joyride-submit-btn {
+  position: relative;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.joyride-preview-data-btn:hover,
+.joyride-generate-preview-btn:hover,
+.joyride-submit-btn:hover {
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+/* Joyride tooltip custom styles */
+.react-joyride__tooltip {
+  border-radius: 12px !important;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border: 1px solid rgba(25, 118, 210, 0.1) !important;
+  overflow: hidden;
+}
+
+.react-joyride__tooltip h3 {
+  color: #1976d2 !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.react-joyride__tooltip p {
+  line-height: 1.6 !important;
+  margin-bottom: 8px !important;
+}
+
+.react-joyride__tooltip strong {
+  color: #1976d2 !important;
+  font-weight: 600 !important;
+}
+
+/* Joyride button styles */
+.react-joyride__button {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  padding: 8px 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-joyride__button--primary {
+  background: #1976d2 !important;
+  border: none !important;
+}
+
+.react-joyride__button--primary:hover {
+  background: #1565c0 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
+
+.react-joyride__button--secondary {
+  background: transparent !important;
+  color: #1976d2 !important;
+  border: 1px solid #1976d2 !important;
+}
+
+.react-joyride__button--secondary:hover {
+  background: rgba(25, 118, 210, 0.04) !important;
+}
+
+.react-joyride__button--skip {
+  color: #666 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.react-joyride__button--skip:hover {
+  color: #333 !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Progress indicator */
+.react-joyride__tooltip .react-joyride__progress {
+  background: rgba(25, 118, 210, 0.1) !important;
+  height: 4px !important;
+  border-radius: 2px !important;
+  margin-bottom: 12px !important;
+}
+
+.react-joyride__tooltip .react-joyride__progress-bar {
+  background: #1976d2 !important;
+  border-radius: 2px !important;
+}
+
+/* Spotlight overlay */
+.react-joyride__spotlight {
+  border-radius: 8px !important;
+  animation: joyrideSpotlight 0.3s ease-out;
+}
+
+@keyframes joyrideSpotlight {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Overlay */
+.react-joyride__overlay {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(2px);
+}
+
+/* Step badge */
+.react-joyride__beacon {
+  animation: joyrideBeacon 1.5s ease-out infinite;
+}
+
+@keyframes joyrideBeacon {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Tooltip arrow */
+.react-joyride__tooltip[data-placement*="top"] .react-joyride__tooltip-arrow {
+  border-top-color: #ffffff !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.react-joyride__tooltip[data-placement*="bottom"] .react-joyride__tooltip-arrow {
+  border-bottom-color: #ffffff !important;
+  filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.react-joyride__tooltip[data-placement*="left"] .react-joyride__tooltip-arrow {
+  border-left-color: #ffffff !important;
+  filter: drop-shadow(2px 0 4px rgba(0, 0, 0, 0.1));
+}
+
+.react-joyride__tooltip[data-placement*="right"] .react-joyride__tooltip-arrow {
+  border-right-color: #ffffff !important;
+  filter: drop-shadow(-2px 0 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .react-joyride__tooltip {
+    max-width: 90vw !important;
+    font-size: 14px !important;
+  }
+  
+  .joyride-analysis-inputs,
+  .joyride-analysis-params,
+  .joyride-viz-type,
+  .joyride-viz-inputs {
+    padding: 8px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .react-joyride__tooltip {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%) !important;
+    border-color: rgba(25, 118, 210, 0.3) !important;
+    color: #ffffff !important;
+  }
+  
+  .react-joyride__tooltip h3 {
+    color: #64b5f6 !important;
+  }
+  
+  .react-joyride__tooltip strong {
+    color: #64b5f6 !important;
+  }
+  
+  .joyride-analysis-inputs,
+  .joyride-analysis-params,
+  .joyride-viz-type,
+  .joyride-viz-inputs {
+    background-color: rgba(25, 118, 210, 0.05);
+    border-color: rgba(25, 118, 210, 0.2);
+  }
+}
+
+/* Accessibility improvements */
+.react-joyride__tooltip:focus-within {
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
+}
+
+.react-joyride__button:focus {
+  outline: 2px solid rgba(25, 118, 210, 0.5) !important;
+  outline-offset: 2px !important;
+}
+
+/* Animation for smooth transitions */
+.react-joyride__tooltip {
+  animation: joyrideTooltipEnter 0.3s ease-out;
+}
+
+@keyframes joyrideTooltipEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced button hover states */
+.joyride-preview-data-btn,
+.joyride-generate-preview-btn,
+.joyride-submit-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.joyride-preview-data-btn::before,
+.joyride-generate-preview-btn::before,
+.joyride-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+  pointer-events: none;
+}
+
+.joyride-preview-data-btn:hover::before,
+.joyride-generate-preview-btn:hover::before,
+.joyride-submit-btn:hover::before {
+  left: 100%;
+}
