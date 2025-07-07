@@ -164,8 +164,10 @@ public class StatementServiceImpl implements StatementService {
                     .in(activitiesRequest.getPlatforms())
                     .and("statement.object.definition.type")
                     .in(activitiesRequest.getActivityTypes())),
-            Aggregation.group("statement.object.definition.name"),
-            Aggregation.project().and("statement.object.definition.name").as("activityName"));
+            Aggregation.group("statement.object.definition.name")
+                    .first("statement.object.definition.type").as("activityType"),
+            Aggregation.project().and("statement.object.definition.name").as("activityName")
+                    .and("activityType").as("activityType"));
 
     // Executing the aggregation
     List<Document> mappedResults = getDocuments(aggregation);
@@ -176,11 +178,12 @@ public class StatementServiceImpl implements StatementService {
     List<Object> activitiesList = new ArrayList<>();
     for (Document doc : mappedResults) {
       String activityName = null;
+      String activityType = (String) doc.get("activityType");
       for (Map.Entry<?, ?> entryActivity : doc.entrySet()) {
         if (entryActivity.getValue() != null) {
           String queryId = "statement.object.definition.name." + entryActivity.getKey();
           activityName = (String) entryActivity.getValue();
-          activitiesList.add(Map.of("id", activityName, "queryId", queryId, "name", activityName));
+          activitiesList.add(Map.of("id", activityName, "queryId", queryId, "name", activityName, "activityType", activityType));
           break;
         }
       }
