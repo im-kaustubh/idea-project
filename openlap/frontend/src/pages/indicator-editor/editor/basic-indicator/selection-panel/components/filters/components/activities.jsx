@@ -1,4 +1,4 @@
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
 import {
   Chip,
   Grid,
@@ -7,6 +7,8 @@ import {
   Autocomplete,
   Divider,
   Tooltip,
+  Checkbox,
+  Box,
 } from "@mui/material";
 import { AuthContext } from "../../../../../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import { fetchActivitiesList } from "../utils/filters-api.js";
@@ -21,6 +23,19 @@ const Activities = ({ state, setState }) => {
     setAnalysisInputMenu,
   } = useContext(BasicIndicatorContext);
 
+  // Checkbox-Status prüfen
+  const isChecked = (id) =>
+    state.selectedActivitiesList.some((activity) => activity.id === id);
+
+  // Checkbox-Handler
+  const handleCheckboxChange = (option) => {
+    if (isChecked(option.id)) {
+      handleDeselectActivity(option);
+    } else {
+      handleSelectActivities(option);
+    }
+  };
+
   useEffect(() => {
     const loadActivitiesData = async () => {
       try {
@@ -30,25 +45,10 @@ const Activities = ({ state, setState }) => {
           indicatorQuery.platforms,
           indicatorQuery.activityTypes
         );
-        // TODO: why not filtered with selected??
         setState((prevState) => ({
           ...prevState,
-          activitiesList: activitiesData.filter(
-            (activity) =>
-              !prevState.selectedActivitiesList.includes(activity.id)
-          ),
+          activitiesList: activitiesData,
         }));
-
-        let uniqueactivitylist = []
-        let uniactivitytype;
-        state.activitiesList.map((activity) => {
-          uniactivitytype = activity.activityType.split("/").pop()
-          if (!uniqueactivitylist.includes(uniactivitytype)) {
-            uniqueactivitylist.push(uniactivitytype)
-          }
-        })
-  
-        // console.log(flatoptions)
       } catch (error) {
         console.log("Failed to load Activities list", error);
       }
@@ -56,15 +56,12 @@ const Activities = ({ state, setState }) => {
     if (indicatorQuery.activityTypes.length > 0) {
       loadActivitiesData();
     }
+    // eslint-disable-next-line
   }, [indicatorQuery.activityTypes.length]);
-
 
   const handleSelectActivities = (selectedActivity) => {
     setState((prevState) => ({
       ...prevState,
-      activitiesList: prevState.activitiesList.filter(
-        (item) => item.id !== selectedActivity.id
-      ),
       selectedActivitiesList: [
         ...prevState.selectedActivitiesList,
         selectedActivity,
@@ -72,7 +69,6 @@ const Activities = ({ state, setState }) => {
       autoCompleteValue: null,
     }));
 
-    // If query is changed
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
@@ -109,9 +105,6 @@ const Activities = ({ state, setState }) => {
     setState((prevState) => {
       return {
         ...prevState,
-        activitiesList: [...prevState.activitiesList, selectedActivity].sort(
-          (a, b) => a.name.localeCompare(b.name)
-        ),
         selectedActivitiesList: prevState.selectedActivitiesList.filter(
           (item) => item.id !== selectedActivity.id
         ),
@@ -134,7 +127,6 @@ const Activities = ({ state, setState }) => {
         }
       }
 
-      // If query is changed
       setAnalysisRef((prevState) => ({
         ...prevState,
         analyzedData: {},
@@ -157,18 +149,62 @@ const Activities = ({ state, setState }) => {
     });
   };
 
-  // let onlytype;
-  // let flatoptions = []
-  let flatoptions = state.activitiesList.flatMap(option => {
+  // Für "Alle auswählen"-Checkbox
+  const allChecked =
+    state.activitiesList.length > 0 &&
+    state.activitiesList.every((option) => isChecked(option.id));
+  const anyChecked =
+    state.activitiesList.some((option) => isChecked(option.id));
 
-    return {
-      ...option,
-      type: option.activityType.split('/').pop()
+  const handleSelectAll = () => {
+    if (allChecked) {
+      // Alle abwählen
+      setState((prevState) => ({
+        ...prevState,
+        selectedActivitiesList: [],
+      }));
+      setIndicatorQuery((prevState) => ({
+        ...prevState,
+        activities: {},
+      }));
+    } else {
+      // Alle auswählen
+      setState((prevState) => ({
+        ...prevState,
+        selectedActivitiesList: [...state.activitiesList],
+      }));
+      // Optional: Query-Update für alle Aktivitäten
+      const tempActivities = {};
+      state.activitiesList.forEach((activity) => {
+        if (!tempActivities[activity.queryId]) tempActivities[activity.queryId] = [];
+        if (!tempActivities[activity.queryId].includes(activity.name)) {
+          tempActivities[activity.queryId].push(activity.name);
+        }
+      });
+      setIndicatorQuery((prevState) => ({
+        ...prevState,
+        activities: tempActivities,
+      }));
     }
-  })
-  console.log(state.activitiesList)
+  };
 
+  // Gruppierung nach Typ (ohne MUI groupBy!)
+  const grouped = {};
+  state.activitiesList.forEach((activity) => {
+    const type = activity.activityType.split("/").pop() || "Unknown Type";
+    if (!grouped[type]) grouped[type] = [];
+    grouped[type].push(activity);
+  });
 
+  // Sticky-Header als Option!
+  const stickyHeaderOption = { sticky: true, id: "sticky-header" };
+  const groupedFlatList = [
+    stickyHeaderOption,
+    ...Object.entries(grouped).flatMap(([type, items]) => [
+      { header: true, type, id: `header-${type}` },
+      ...items,
+    ]),
+  ];
 
   return (
     <>
@@ -202,68 +238,124 @@ const Activities = ({ state, setState }) => {
                     indicatorQuery.activityTypes.length === 0 ||
                     state.selectedActionsList.length > 0
                   }
-
                   disablePortal
                   disableCloseOnSelect
-                  id="combo-box-lrs"
-                  options={flatoptions}
-                  // options={state.selectedActivityTypesList.map((activitytype)=>activitytype.name)}
-                  groupBy={(options) => options.type || 'Unknown Type'}
+                  id="combo-box-activities"
+                  options={groupedFlatList}
+                  groupBy={undefined}
                   fullWidth
                   slotProps={{
                     listbox: {
                       style: {
                         maxHeight: "240px",
+                        paddingTop: 0,
+                        marginTop: 0,
                       },
                     },
                   }}
-                  getOptionLabel={(option) => option.name}
-                  renderGroup={(params) => {
-                    const { group, children } = params;
-                    console.log(params)
-                    // console.log(activitiesData)
-                    return (
-                      <>
-
-                        <li>
-                          {group}
+                  getOptionLabel={(option) =>
+                    option.header ? option.type : option.name || ""
+                  }
+                  ListboxComponent="ul"
+                  renderOption={(props, option) => {
+                    // Sticky-Header
+                    if (option.sticky) {
+                      // ref und tabIndex entfernen!
+                      const { ref, tabIndex, ...restProps } = props;
+                      return (
+                        <li
+                          {...restProps}
+                          tabIndex={-1}
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 2,
+                            background: "#fff",
+                            borderBottom: "1px solid #eee",
+                            width: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            height: "40px",
+                            paddingLeft: 16,
+                          }}
+                        >
+                          <Checkbox
+                            checked={allChecked}
+                            indeterminate={anyChecked && !allChecked}
+                            onChange={handleSelectAll}
+                            sx={{ mr: 1 }}
+                          />
+                          <Typography variant="body2" color="text.secondary">
+                            {state.selectedActivitiesList.length} selected
+                          </Typography>
                         </li>
-                        <ul>
-                          {children}
-                        </ul>
-                      </>
-                      // <li>hello</li>
-                      // <b><li {...restProps} key={key}>
-                      // (state.selectedActivityTypesList.map((activitytype)=>(
-                      // <li>{activitytype.name}</li>
-                      // )))
-                      // </li></b>
-                      // <li>hello</li>
+                      );
+                    }
+                    // Gruppen-Header
+                    if (option.header) {
+                      const { ref, tabIndex, ...restProps } = props;
+                      return (
+                        <li
+                          {...restProps}
+                          tabIndex={-1}
+                          style={{
+                            background: "#fff",
+                            padding: "8px 16px",
+                            fontWeight: "bold",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {option.type}
+                        </li>
+                      );
+                    }
+                    // Normale Einträge:
+                    return (
+                      <li
+                        {...props}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          transition: "background 0.15s",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = "#f5f5f5")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "")
+                        }
+                      >
+                        <Checkbox
+                          checked={isChecked(option.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCheckboxChange(option);
+                          }}
+                          sx={{ mr: 1 }}
+                        />
+                        <Grid
+                          container
+                          sx={{ py: 0.5 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCheckboxChange(option);
+                          }}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <Grid item xs={12}>
+                            <Typography>{option.name}</Typography>
+                          </Grid>
+                          <Grid item xs={12}>
+                            <Typography variant="body2">{option.id}</Typography>
+                          </Grid>
+                        </Grid>
+                      </li>
                     );
                   }}
-                  // renderOption={(props, option) => {
-                  //   const { key, ...restProps } = props;
-                  //   // console.log(state.selectedActivityTypesList.map((activitytype)=>activitytype.name))
-                  //   console.log(option)
-                  //   return (
-                  //     <>
-                  //       <li {...restProps} key={key}>
-                  //         {option}
-                  //       </li>
-                  //       {state.activitiesList.map((activity) => (
-                  //         <li>{activity.id}</li>
-                  //       ))}
-                  //     </>
-
-                  //   );
-                  // }}
-
                   renderInput={(params) => (
                     <TextField {...params} placeholder="*Activities" />
                   )}
-                  onChange={(event, value) => {
-                    if (value) handleSelectActivities(value);
-                  }}
                 />
               </Tooltip>
             </Grid>
