@@ -16,11 +16,17 @@ import { getLastWordAndCapitalize } from "../../../utils/utils.js";
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const ActivityTypes = ({ state, setState }) => {
+  // State for managing autocomplete dropdown visibility
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  // State for shift-click range selection
   const [lastCheckedIndex, setLastCheckedIndex] = useState(null);
+  
+  // Get API and context functions
   const { api } = useContext(AuthContext);
   const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(BasicIndicatorContext);
 
+  // Load activity types data when platforms change
+  // Load activity types data when platforms change
   useEffect(() => {
     const loadActivityTypesData = async () => {
       try {
@@ -33,6 +39,7 @@ const ActivityTypes = ({ state, setState }) => {
           ...prevState,
           activityTypesList: activityTypesData,
         }));
+        // Reset range selection when data changes
         setLastCheckedIndex(null);
       } catch (error) {
         console.log("Failed to load Activity types list", error);
@@ -44,13 +51,17 @@ const ActivityTypes = ({ state, setState }) => {
     }
   }, [indicatorQuery.platforms.length]);
 
+  // Check if an activity type is currently selected
   const isChecked = (id) =>
     state.selectedActivityTypesList.some((type) => type.id === id);
 
+  // Handle checkbox changes with support for shift-click range selection
+  // Handle checkbox changes with support for shift-click range selection
   const handleCheckboxChange = (option, realIndex, event) => {
     let newSelected = [...state.selectedActivityTypesList];
     let newActivityTypes = [...indicatorQuery.activityTypes];
 
+    // Handle shift-click for range selection
     if (event && event.shiftKey && lastCheckedIndex !== null) {
       const start = Math.min(lastCheckedIndex, realIndex);
       const end = Math.max(lastCheckedIndex, realIndex);
@@ -59,6 +70,7 @@ const ActivityTypes = ({ state, setState }) => {
       const shouldCheck = !isChecked(option.id);
 
       if (shouldCheck) {
+        // Select all items in range
         rangeOptions.forEach((opt) => {
           if (!isChecked(opt.id)) {
             newSelected.push(opt);
@@ -66,6 +78,7 @@ const ActivityTypes = ({ state, setState }) => {
           }
         });
       } else {
+        // Deselect all items in range
         newSelected = newSelected.filter(
           (type) => !rangeOptions.some((opt) => opt.id === type.id)
         );
@@ -75,6 +88,7 @@ const ActivityTypes = ({ state, setState }) => {
       }
       setLastCheckedIndex(realIndex);
     } else {
+      // Handle single click selection/deselection
       if (isChecked(option.id)) {
         newSelected = newSelected.filter((type) => type.id !== option.id);
         newActivityTypes = newActivityTypes.filter((id) => id !== option.id);
@@ -85,6 +99,7 @@ const ActivityTypes = ({ state, setState }) => {
       setLastCheckedIndex(realIndex);
     }
 
+    // Update state and query with new selection
     setState((prevState) => ({
       ...prevState,
       selectedActivityTypesList: newSelected,
@@ -93,12 +108,14 @@ const ActivityTypes = ({ state, setState }) => {
       ...prevState,
       activityTypes: newActivityTypes,
     }));
+    // Clear analyzed data when selection changes
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
     }));
   };
 
+  // Check states for "Select All" checkbox
   const allChecked =
     state.activityTypesList.length > 0 &&
     state.activityTypesList.every((option) => isChecked(option.id));
@@ -106,8 +123,11 @@ const ActivityTypes = ({ state, setState }) => {
   const anyChecked =
     state.activityTypesList.some((option) => isChecked(option.id));
 
+  // Handle "Select All" / "Deselect All" functionality
+  // Handle "Select All" / "Deselect All" functionality
   const handleSelectAll = () => {
     if (allChecked) {
+      // Deselect all activity types
       setState((prevState) => ({
         ...prevState,
         selectedActivityTypesList: prevState.selectedActivityTypesList.filter(
@@ -121,6 +141,7 @@ const ActivityTypes = ({ state, setState }) => {
         ),
       }));
     } else {
+      // Select all activity types
       const newSelected = [
         ...state.selectedActivityTypesList,
         ...state.activityTypesList.filter(
@@ -141,12 +162,15 @@ const ActivityTypes = ({ state, setState }) => {
         ],
       }));
     }
+    // Clear analyzed data when selection changes
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
     }));
   };
 
+  // Handle deselecting a single activity type
+  // Handle deselecting a single activity type
   const handleDeselectActivityTypes = (selectedActivityType) => {
     setState((prevState) => ({
       ...prevState,
@@ -160,6 +184,7 @@ const ActivityTypes = ({ state, setState }) => {
         (id) => id !== selectedActivityType.id
       ),
     }));
+    // Clear analyzed data when selection changes
     setAnalysisRef((prevState) => ({
       ...prevState,
       analyzedData: {},
@@ -169,6 +194,7 @@ const ActivityTypes = ({ state, setState }) => {
   return (
     <>
       <Grid container spacing={4} sx={{ mb: 2 }}>
+        {/* Left column: Search and filter activity types */}
         <Grid item xs={12} md={4}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
@@ -216,6 +242,7 @@ const ActivityTypes = ({ state, setState }) => {
                     );
                     return (
                       <>
+                        {/* Render sticky "Select All" header for first item */}
                         {realIndex === 0 && (
                           <li
                             style={{
@@ -258,6 +285,7 @@ const ActivityTypes = ({ state, setState }) => {
                             </Box>
                           </li>
                         )}
+                        {/* Render individual activity type options */}
                         <li {...props} style={{ display: "flex", alignItems: "center" }}>
                           <Checkbox
                             checked={isChecked(option.id)}
@@ -290,6 +318,7 @@ const ActivityTypes = ({ state, setState }) => {
           </Grid>
         </Grid>
 
+        {/* Right column: Selected activity types display */}
         <Grid item xs={12} md={8}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
@@ -301,6 +330,7 @@ const ActivityTypes = ({ state, setState }) => {
                 >
                   Selected <b>Activity type(s)</b>
                 </Typography>
+                {/* Clear All button - only visible when activity types are selected */}
                 {state.selectedActivityTypesList.length > 0 && (
                   <Typography 
                     variant="body2" 
@@ -330,6 +360,7 @@ const ActivityTypes = ({ state, setState }) => {
                 )}
               </Box>
             </Grid>
+            {/* Display selected activity types as chips */}
             <Grid
               item
               xs={12}
@@ -347,6 +378,7 @@ const ActivityTypes = ({ state, setState }) => {
                 ))}
               </Grid>
             </Grid>
+            {/* Divider at bottom */}
             <Grid
               item
               xs={12}

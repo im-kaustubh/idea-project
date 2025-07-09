@@ -20,6 +20,7 @@ import { blue } from "@mui/material/colors";
 import { useRef } from "react";
 
 const Activities = ({ state, setState }) => {
+  // Get API and context functions
   const { api } = useContext(AuthContext);
   const {
     setAnalysisRef,
@@ -28,20 +29,50 @@ const Activities = ({ state, setState }) => {
     setAnalysisInputMenu,
   } = useContext(BasicIndicatorContext);
 
-  // Gruppierung nach Typ
+  // Filter activities to only show those from selected activity types
+  const filteredActivitiesByType = state.activitiesList.filter((activity) =>
+    indicatorQuery.activityTypes.includes(activity.activityType)
+  );
+
+  // Group filtered activities by the display name (last part of activityType)
+  // Remove duplicates based on activity ID to ensure each activity appears only once
   const grouped = {};
-  state.activitiesList.forEach((activity) => {
+  const seenActivityIds = new Set();
+  
+  filteredActivitiesByType.forEach((activity) => {
+    // Skip if we've already seen this activity ID
+    if (seenActivityIds.has(activity.id)) {
+      return;
+    }
+    seenActivityIds.add(activity.id);
+    
     const type = activity.activityType.split("/").pop() || "Unknown Type";
     if (!grouped[type]) grouped[type] = [];
     grouped[type].push(activity);
   });
   const groupKeys = Object.keys(grouped);
 
-  // State für geöffnete Gruppen
+  // Create a flat list for the autocomplete that maintains the grouping information
+  const flattenedOptions = [];
+  flattenedOptions.push('__ALL__'); // Add the "Select All" option first
+  
+  // Add activities from each group, ensuring each activity knows its proper group
+  groupKeys.forEach(groupName => {
+    grouped[groupName].forEach(activity => {
+      // Ensure each activity has the correct group name for rendering
+      flattenedOptions.push({
+        ...activity,
+        displayGroup: groupName
+      });
+    });
+  });
+
+  // State for tracking which groups are expanded/collapsed
   const [openGroups, setOpenGroups] = useState(() =>
     Object.fromEntries(groupKeys.map((k) => [k, true]))
   );
 
+  // Toggle group expand/collapse state
   const toggleGroup = (group) => {
     setOpenGroups((prev) => ({
       ...prev,
@@ -49,28 +80,29 @@ const Activities = ({ state, setState }) => {
     }));
   };
 
-  // State für ausgewählte Gruppe
+  // State for currently selected group
   const [selectedGroup, setSelectedGroup] = useState(groupKeys[0] || "");
 
-  // Filtered List nach ausgewählter Gruppe
+  // Filter activities based on selected group
   const filteredActivitiesList = selectedGroup ? grouped[selectedGroup] || [] : [];
 
-  // Checkbox-Status prüfen
+  // Check if an activity is currently selected
   const isChecked = (id) =>
     state.selectedActivitiesList.some((activity) => activity.id === id);
 
-  // State für Shift-Range
+  // State for shift-click range selection
   const [lastCheckedIndex, setLastCheckedIndex] = useState(null);
 
-  // Flache Liste aller Aktivitäten (für Shift-Range)
+  // Flatten activities list for range selection functionality
   const flatActivityList = groupKeys.flatMap((group) =>
     grouped[group].map((activity) => ({ ...activity, group }))
   );
 
-  // Checkbox-Handler mit Shift-Range
+  // Handle checkbox changes with support for shift-click range selection
   const handleCheckboxChange = (option, event) => {
     const currentIndex = flatActivityList.findIndex((a) => a.id === option.id);
 
+    // Handle shift-click for range selection
     if (event && event.shiftKey && lastCheckedIndex !== null) {
       const start = Math.min(lastCheckedIndex, currentIndex);
       const end = Math.max(lastCheckedIndex, currentIndex);
@@ -96,7 +128,7 @@ const Activities = ({ state, setState }) => {
         selectedActivitiesList: newSelected,
       }));
 
-      // Query-Update analog zu handleSelectAll
+      // Update query with selected activities
       const tempActivities = {};
       newSelected.forEach((activity) => {
         if (!tempActivities[activity.queryId]) tempActivities[activity.queryId] = [];
@@ -111,6 +143,7 @@ const Activities = ({ state, setState }) => {
 
       setLastCheckedIndex(currentIndex);
     } else {
+      // Handle single click selection/deselection
       if (isChecked(option.id)) {
         handleDeselectActivity(option);
       } else {
@@ -120,6 +153,7 @@ const Activities = ({ state, setState }) => {
     }
   };
 
+  // Load activities data when activity types change
   useEffect(() => {
     const loadActivitiesData = async () => {
       try {
@@ -140,9 +174,9 @@ const Activities = ({ state, setState }) => {
     if (indicatorQuery.activityTypes.length > 0) {
       loadActivitiesData();
     }
-    // eslint-disable-next-line
   }, [indicatorQuery.activityTypes.length]);
 
+  // Handle selecting a single activity
   const handleSelectActivities = (selectedActivity) => {
     setState((prevState) => ({
       ...prevState,
@@ -158,6 +192,7 @@ const Activities = ({ state, setState }) => {
       analyzedData: {},
     }));
 
+    // Update indicator query with selected activity
     setIndicatorQuery((prevState) => {
       const { queryId, name } = selectedActivity;
       let tempActivities = { ...prevState.activities };
@@ -169,6 +204,7 @@ const Activities = ({ state, setState }) => {
         tempActivities[queryId] = [name];
       }
       let tempActivityKeys = Object.keys(tempActivities);
+      // Update analysis input menu with activity options
       setAnalysisInputMenu((prevState) => ({
         ...prevState,
         activities: {
@@ -185,6 +221,7 @@ const Activities = ({ state, setState }) => {
     });
   };
 
+  // Handle deselecting a single activity
   const handleDeselectActivity = (selectedActivity) => {
     setState((prevState) => {
       return {
@@ -196,6 +233,7 @@ const Activities = ({ state, setState }) => {
       };
     });
 
+    // Update indicator query by removing deselected activity
     setIndicatorQuery((prevState) => {
       let tempActivities = { ...prevState.activities };
       if (tempActivities[selectedActivity.queryId]) {
@@ -211,12 +249,14 @@ const Activities = ({ state, setState }) => {
         }
       }
 
+      // Clear analyzed data when selection changes
       setAnalysisRef((prevState) => ({
         ...prevState,
         analyzedData: {},
       }));
 
       let tempActivityKeys = Object.keys(tempActivities);
+      // Update analysis input menu
       setAnalysisInputMenu((prevState) => ({
         ...prevState,
         activities: {
@@ -233,15 +273,18 @@ const Activities = ({ state, setState }) => {
     });
   };
 
-  // Für "Alle auswählen"-Checkbox (über alle Gruppen)
+  // Check states for "Select All" checkbox based on the flattened unique activities
+  const uniqueActivities = flattenedOptions.filter(option => option !== '__ALL__');
   const allChecked =
-    state.activitiesList.length > 0 &&
-    state.activitiesList.every((option) => isChecked(option.id));
+    uniqueActivities.length > 0 &&
+    uniqueActivities.every((option) => isChecked(option.id));
   const anyChecked =
-    state.activitiesList.some((option) => isChecked(option.id));
+    uniqueActivities.some((option) => isChecked(option.id));
 
+  // Handle "Select All" / "Deselect All" functionality
   const handleSelectAll = () => {
     if (allChecked) {
+      // Deselect all activities
       setState((prevState) => ({
         ...prevState,
         selectedActivitiesList: [],
@@ -251,12 +294,14 @@ const Activities = ({ state, setState }) => {
         activities: {},
       }));
     } else {
+      // Select all activities from the unique flattened list
       setState((prevState) => ({
         ...prevState,
-        selectedActivitiesList: [...state.activitiesList],
+        selectedActivitiesList: [...uniqueActivities],
       }));
+      // Build activities query object
       const tempActivities = {};
-      state.activitiesList.forEach((activity) => {
+      uniqueActivities.forEach((activity) => {
         if (!tempActivities[activity.queryId]) tempActivities[activity.queryId] = [];
         if (!tempActivities[activity.queryId].includes(activity.name)) {
           tempActivities[activity.queryId].push(activity.name);
@@ -269,7 +314,7 @@ const Activities = ({ state, setState }) => {
     }
   };
 
-  // Checkbox für Gruppen (alle Aktivitäten dieser Gruppe)
+  // Check states for group-level checkboxes
   const isGroupChecked = (group) =>
     grouped[group].length > 0 &&
     grouped[group].every((activity) => isChecked(activity.id));
@@ -277,15 +322,18 @@ const Activities = ({ state, setState }) => {
     grouped[group].some((activity) => isChecked(activity.id)) &&
     !isGroupChecked(group);
 
+  // Handle selecting/deselecting all activities in a group
   const handleGroupSelect = (group) => {
     const groupActivities = grouped[group];
     const allSelected = isGroupChecked(group);
     let newSelected;
     if (allSelected) {
+      // Deselect all activities in this group
       newSelected = state.selectedActivitiesList.filter(
         (activity) => !groupActivities.some((g) => g.id === activity.id)
       );
     } else {
+      // Select all activities in this group
       newSelected = [
         ...state.selectedActivitiesList,
         ...groupActivities.filter(
@@ -297,7 +345,7 @@ const Activities = ({ state, setState }) => {
       ...prevState,
       selectedActivitiesList: newSelected,
     }));
-    // Query-Update analog zu handleSelectAll
+    // Update query with new selection
     const tempActivities = {};
     newSelected.forEach((activity) => {
       if (!tempActivities[activity.queryId]) tempActivities[activity.queryId] = [];
@@ -311,14 +359,15 @@ const Activities = ({ state, setState }) => {
     }));
   };
 
+  // Clean up selected activities when activity types are removed
+  // Clean up selected activities when activity types are removed
   useEffect(() => {
-    // Wenn ein Activity Type entfernt wurde, entferne auch die zugehörigen Activities
-    // Hole alle noch aktiven ActivityTypes (IDs)
+    // Get all currently active activity type IDs
     const activeActivityTypeIds = new Set(
       indicatorQuery.activityTypes || []
     );
 
-    // Filtere alle Activities, deren activityType NICHT mehr aktiv ist
+    // Filter selected activities to only include those with active activity types
     const filteredSelectedActivities = state.selectedActivitiesList.filter(
       (activity) =>
         activeActivityTypeIds.has(
@@ -326,14 +375,14 @@ const Activities = ({ state, setState }) => {
         )
     );
 
-    // Wenn sich etwas geändert hat, update State und Query
+    // Update state and query if anything changed
     if (filteredSelectedActivities.length !== state.selectedActivitiesList.length) {
       setState((prevState) => ({
         ...prevState,
         selectedActivitiesList: filteredSelectedActivities,
       }));
 
-      // Auch Query anpassen
+      // Update query to match filtered selection
       const tempActivities = {};
       filteredSelectedActivities.forEach((activity) => {
         if (!tempActivities[activity.queryId]) tempActivities[activity.queryId] = [];
@@ -350,6 +399,7 @@ const Activities = ({ state, setState }) => {
 
   return (
     <Grid container spacing={4} sx={{ mb: 2 }}>
+      {/* Left column: Search and filter activities */}
       <Grid item xs={12} md={4}>
         <Grid container spacing={1}>
           <Grid item xs={12}>
@@ -374,17 +424,19 @@ const Activities = ({ state, setState }) => {
                 disableCloseOnSelect
                 disabled={indicatorQuery.activityTypes.length === 0}
                 id="combo-box-activities"
-                options={['__ALL__', ...state.activitiesList]}
-                groupBy={(option) => option === '__ALL__' ? null : option.activityType.split("/").pop() || "Unknown Type"}
+                options={flattenedOptions}
+                groupBy={(option) => option === '__ALL__' ? null : (option.displayGroup || "Unknown Type")}
                 onOpen={() => {
-                  // Alle Gruppen schließen beim Öffnen
+                  // Collapse all groups when dropdown opens
                   setOpenGroups(Object.fromEntries(groupKeys.map((k) => [k, false])));
                 }}
                 renderGroup={(params) => {
-                  if (params.group === null) return params.children; // Kein Grouping für den Dummy-Header
+                  // Special handling for sticky header (no grouping)
+                  if (params.group === null) return params.children;
                   const group = params.group;
                   return (
                     <li key={params.key}>
+                      {/* Group header with checkbox and expand/collapse button */}
                       <Box
                         sx={{ px: 2, py: 0.5, background: '#f5f5f5', borderRadius: 1, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', minHeight: 28 }}
                         onClick={() => toggleGroup(group)}
@@ -412,11 +464,13 @@ const Activities = ({ state, setState }) => {
                           {openGroups[group] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </IconButton>
                       </Box>
+                      {/* Show group content only when expanded */}
                       {openGroups[group] && <ul style={{ paddingLeft: 0 }}>{params.children}</ul>}
                     </li>
                   );
                 }}
                 renderOption={(props, option, { selected }) => {
+                  // Render sticky "Select All" header
                   if (option === '__ALL__') {
                     return (
                       <li {...props} style={{
@@ -434,7 +488,7 @@ const Activities = ({ state, setState }) => {
                         display: 'flex',
                         alignItems: 'center',
                         height: '40px',
-                        paddingLeft: 12 // Checkbox etwas nach rechts für bessere Ausrichtung
+                        paddingLeft: 12
                       }}>
                         <Checkbox
                           checked={allChecked}
@@ -443,7 +497,7 @@ const Activities = ({ state, setState }) => {
                             e.stopPropagation();
                             handleSelectAll();
                           }}
-                          sx={{ ml: 0, mr: 1 }} // Kein margin-left, damit sie ganz links ist
+                          sx={{ ml: 0, mr: 1 }}
                         />
                         <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
                           {state.selectedActivitiesList.length} selected
@@ -451,7 +505,7 @@ const Activities = ({ state, setState }) => {
                       </li>
                     );
                   }
-                  // Normalerweise Optionen
+                  // Render individual activity options
                   const realIndex = flatActivityList.findIndex((a) => a.id === option.id);
                   return (
                     <li {...props} style={{ display: 'flex', alignItems: 'center' }}>
@@ -472,9 +526,6 @@ const Activities = ({ state, setState }) => {
                         <Grid item xs={12}>
                           <Typography>{option.name}</Typography>
                         </Grid>
-                        <Grid item xs={12}>
-                          <Typography variant="body2">{option.id}</Typography>
-                        </Grid>
                       </Grid>
                     </li>
                   );
@@ -494,6 +545,7 @@ const Activities = ({ state, setState }) => {
           </Grid>
         </Grid>
       </Grid>
+      {/* Right column: Selected activities display */}
       <Grid item xs={12} md={8}>
         <Grid container spacing={1}>
           <Grid item xs={12}>
@@ -501,6 +553,7 @@ const Activities = ({ state, setState }) => {
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Selected <b>Activity(ies)</b>
               </Typography>
+              {/* Clear All button - only visible when activities are selected */}
               {state.selectedActivitiesList.length > 0 && (
                 <Typography 
                   variant="body2" 
@@ -526,6 +579,7 @@ const Activities = ({ state, setState }) => {
               )}
             </Box>
           </Grid>
+          {/* Display selected activities as chips */}
           <Grid
             item
             xs={12}
@@ -543,6 +597,7 @@ const Activities = ({ state, setState }) => {
               ))}
             </Grid>
           </Grid>
+          {/* Divider at bottom */}
           <Grid
             item
             xs={12}
