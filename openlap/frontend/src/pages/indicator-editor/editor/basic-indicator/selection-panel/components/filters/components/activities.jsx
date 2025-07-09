@@ -358,114 +358,173 @@ const Activities = ({ state, setState }) => {
             </Typography>
           </Grid>
           <Grid item xs={12}>
-            <Box
-              sx={{
-                maxHeight: 320,
-                overflowY: "auto",
-                border: "1px solid #eee",
-                borderRadius: 1,
-                background: "#fff",
-                p: 1,
-              }}
+            <Tooltip
+              arrow
+              title={
+                indicatorQuery.activityTypes.length === 0 ? (
+                  <Typography variant="body2">
+                    Select at least one Activity Type to view the list of Activities.
+                  </Typography>
+                ) : undefined
+              }
             >
-              {/* Sticky Header für "Alle auswählen" */}
-              <Box
-                sx={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 2,
-                  background: "#fff",
-                  borderBottom: "1px solid #eee",
-                  display: "flex",
-                  alignItems: "center",
-                  height: "40px",
-                  px: 1,
+              <Autocomplete
+                openOnFocus
+                disablePortal
+                disableCloseOnSelect
+                disabled={indicatorQuery.activityTypes.length === 0}
+                id="combo-box-activities"
+                options={['__ALL__', ...state.activitiesList]}
+                groupBy={(option) => option === '__ALL__' ? null : option.activityType.split("/").pop() || "Unknown Type"}
+                onOpen={() => {
+                  // Alle Gruppen schließen beim Öffnen
+                  setOpenGroups(Object.fromEntries(groupKeys.map((k) => [k, false])));
                 }}
-              >
-                <Checkbox
-                  checked={allChecked}
-                  indeterminate={anyChecked && !allChecked}
-                  onChange={handleSelectAll}
-                  sx={{ mr: 1 }}
-                />
-                <Typography variant="body2" color="text.secondary">
-                  {state.selectedActivitiesList.length} selected
-                </Typography>
-              </Box>
-              {/* Gruppen mit blauem Balken, Checkbox und Pfeil rechts */}
-              {groupKeys.map((group) => (
-                <Box key={group}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      cursor: "pointer",
-                      py: 1,
-                      px: 2,
-                      background: blue[50],
-                      borderRadius: 1,
-                      mb: 0.5,
-                    }}
-                    onClick={() => toggleGroup(group)}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                renderGroup={(params) => {
+                  if (params.group === null) return params.children; // Kein Grouping für den Dummy-Header
+                  const group = params.group;
+                  return (
+                    <li key={params.key}>
+                      <Box
+                        sx={{ px: 2, py: 0.5, background: '#f5f5f5', borderRadius: 1, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', minHeight: 28 }}
+                        onClick={() => toggleGroup(group)}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Checkbox
+                            checked={isGroupChecked(group)}
+                            indeterminate={isGroupIndeterminate(group)}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleGroupSelect(group);
+                            }}
+                            sx={{ mr: 1, p: 0.5 }}
+                          />
+                          <Typography sx={{ fontWeight: 'bold', fontSize: '0.97rem' }}>{group}</Typography>
+                        </Box>
+                        <IconButton
+                          size="small"
+                          onClick={e => {
+                            e.stopPropagation();
+                            toggleGroup(group);
+                          }}
+                          sx={{ ml: 1 }}
+                        >
+                          {openGroups[group] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </IconButton>
+                      </Box>
+                      {openGroups[group] && <ul style={{ paddingLeft: 0 }}>{params.children}</ul>}
+                    </li>
+                  );
+                }}
+                renderOption={(props, option, { selected }) => {
+                  if (option === '__ALL__') {
+                    return (
+                      <li {...props} style={{
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 2,
+                        background: '#fff',
+                        borderBottom: '1px solid #eee',
+                        width: '100%',
+                        margin: 0,
+                        padding: 0,
+                        left: 0,
+                        right: 0,
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        alignItems: 'center',
+                        height: '40px',
+                        paddingLeft: 12 // Checkbox etwas nach rechts für bessere Ausrichtung
+                      }}>
+                        <Checkbox
+                          checked={allChecked}
+                          indeterminate={anyChecked && !allChecked}
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleSelectAll();
+                          }}
+                          sx={{ ml: 0, mr: 1 }} // Kein margin-left, damit sie ganz links ist
+                        />
+                        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24, mr: 1 }}>
+                          {state.selectedActivitiesList.length} selected
+                        </Typography>
+                      </li>
+                    );
+                  }
+                  // Normalerweise Optionen
+                  const realIndex = flatActivityList.findIndex((a) => a.id === option.id);
+                  return (
+                    <li {...props} style={{ display: 'flex', alignItems: 'center' }}>
                       <Checkbox
-                        checked={isGroupChecked(group)}
-                        indeterminate={isGroupIndeterminate(group)}
+                        checked={isChecked(option.id)}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleGroupSelect(group);
+                          handleCheckboxChange(option, e);
                         }}
                         sx={{ mr: 1 }}
                       />
-                      <Typography sx={{ fontWeight: "bold" }}>{group}</Typography>
-                    </Box>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleGroup(group);
-                      }}
-                      sx={{ ml: 1 }}
-                    >
-                      {openGroups[group] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton>
-                  </Box>
-                  {openGroups[group] &&
-                    grouped[group].map((option) => (
-                      <Box
-                        key={option.id}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          pl: 5,
-                          py: 0.5,
-                        }}
+                      <Grid
+                        container
+                        sx={{ py: 0.5 }}
+                        onClick={(e) => handleCheckboxChange(option, e)}
+                        style={{ cursor: 'pointer' }}
                       >
-                        <Checkbox
-                          checked={isChecked(option.id)}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCheckboxChange(option, e);
-                          }}
-                          sx={{ mr: 1 }}
-                        />
-                        <Typography>{option.name}</Typography>
-                      </Box>
-                    ))}
-                </Box>
-              ))}
-            </Box>
+                        <Grid item xs={12}>
+                          <Typography>{option.name}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography variant="body2">{option.id}</Typography>
+                        </Grid>
+                      </Grid>
+                    </li>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} placeholder="*Activities" />
+                )}
+                ListboxProps={{
+                  style: {
+                    maxHeight: '240px',
+                    paddingTop: 0,
+                    marginTop: 0,
+                  },
+                }}
+              />
+            </Tooltip>
           </Grid>
         </Grid>
       </Grid>
       <Grid item xs={12} md={8}>
         <Grid container spacing={1}>
           <Grid item xs={12}>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Selected <b>Activity(ies)</b>
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Selected <b>Activity(ies)</b>
+              </Typography>
+              {state.selectedActivitiesList.length > 0 && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: blue[600], 
+                    cursor: 'pointer', 
+                    textDecoration: 'underline',
+                    '&:hover': { color: blue[800] }
+                  }}
+                  onClick={() => {
+                    setState((prevState) => ({
+                      ...prevState,
+                      selectedActivitiesList: [],
+                    }));
+                    setIndicatorQuery((prevState) => ({
+                      ...prevState,
+                      activities: {},
+                    }));
+                  }}
+                >
+                  Clear All
+                </Typography>
+              )}
+            </Box>
           </Grid>
           <Grid
             item

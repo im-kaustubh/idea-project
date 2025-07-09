@@ -293,15 +293,41 @@ const ActivityTypes = ({ state, setState }) => {
         <Grid item xs={12} md={8}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Box display="flex" alignItems="center" justifyContent="flex-start">
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  gutterBottom
                   sx={{ mr: 1 }}
                 >
                   Selected <b>Activity type(s)</b>
                 </Typography>
+                {state.selectedActivityTypesList.length > 0 && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: '#1976d2', 
+                      cursor: 'pointer', 
+                      textDecoration: 'underline',
+                      '&:hover': { color: '#1565c0' }
+                    }}
+                    onClick={() => {
+                      setState((prevState) => ({
+                        ...prevState,
+                        selectedActivityTypesList: [],
+                      }));
+                      setIndicatorQuery((prevState) => ({
+                        ...prevState,
+                        activityTypes: [],
+                      }));
+                      setAnalysisRef((prevState) => ({
+                        ...prevState,
+                        analyzedData: {},
+                      }));
+                    }}
+                  >
+                    Clear All
+                  </Typography>
+                )}
               </Box>
             </Grid>
             <Grid
