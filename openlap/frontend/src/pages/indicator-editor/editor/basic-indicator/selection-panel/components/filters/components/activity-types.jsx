@@ -129,6 +129,7 @@ const ActivityTypes = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+                  className="joyride-activity-type-selector"
                   disabled={
                     indicatorQuery.platforms.length === 0 ||
                     state.selectedActivitiesList.length > 0

@@ -30,7 +30,7 @@ const Params = ({ analysisRef, setAnalysisRef }) => {
 
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} className="joyride-analysis-params">
         <Grid item xs={12}>
           <Typography>Additional parameters</Typography>
         </Grid>

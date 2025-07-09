@@ -101,6 +101,7 @@ const LRS = ({ state, setState }) => {
             </Grid>
             <Grid item xs={12}>
               <Autocomplete
+                className="joyride-lrs-selector"
                 disabled={indicatorQuery.platforms.length > 0}
                 autoFocus
                 disablePortal

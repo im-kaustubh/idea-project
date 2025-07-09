@@ -166,6 +166,7 @@ const AnalyticsTechnique = ({
             </Grid>
             <Grid item xs={12}>
               <Autocomplete
+                className="joyride-analysis-technique"
                 disabled={analysisRef.analyticsTechniqueId !== ""}
                 disablePortal
                 id="combo-box-lrs"
