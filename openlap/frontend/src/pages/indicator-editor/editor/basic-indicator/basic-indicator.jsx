@@ -303,7 +303,7 @@ useEffect(() => {
   if (!joyrideState.run) return;
 
   const currentStep = joyrideState.steps[joyrideState.stepIndex];
-  const isNextButtonStep = currentStep?.target === '.joyride-next-btn';
+  const isNextButtonStep = currentStep?.target === '.joyride-next-btn-dataset';
 
   if (isNextButtonStep && isPlatformSelected(indicatorQuery)) {
     // When user reaches Next button step and has selected platform,

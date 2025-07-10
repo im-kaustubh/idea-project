@@ -65,18 +65,29 @@ export const createTourSteps = (context) => {
     },
     // STEP 1.5: Next Button
     {
-      target: '.joyride-next-btn',
+      target: '.joyride-next-btn-dataset',
       content: (
         <div>
           <h3>Continue to Activities</h3>
           <p>Click this button to proceed to activity selection after choosing your platform.</p>
         </div>
       ),
-      placement: 'top',
+      placement: 'right',
       disableBeacon: true,
+      hideCloseButton: false,
+      hideFooter: false,
       spotlightClicks: true,
       // Only show if platform is selected but not yet proceeded
-      when: () => validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator })
+      when: () => validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator }),
+      styles: {
+        options: {
+          primaryColor: '#1976d2',
+        },
+        tooltip: {
+          borderRadius: 8,
+          fontSize: 16,
+        },
+      },
     },
 
 
