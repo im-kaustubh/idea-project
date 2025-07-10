@@ -107,7 +107,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
 
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} className="joyride-analysis inputs" style={{ position: 'relative' }}>
         <Grid item xs={12}>
           <Grid container alignItems="center">
             <Typography>Analysis method inputs</Typography>

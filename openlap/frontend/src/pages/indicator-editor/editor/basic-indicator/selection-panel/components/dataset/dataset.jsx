@@ -59,6 +59,20 @@ const Dataset = () => {
     }));
   };
 
+  const handleNextSection = () => {
+    // Your existing next logic
+    proceedToNextSection(); 
+
+    // If tour is running, advance to next step
+    if (joyrideState.run) {
+      const nextStep = joyrideState.stepIndex + 1;
+      setJoyrideState(prev => ({
+        ...prev,
+        stepIndex: nextStep
+      }));
+    }
+  };
+
   return (
     <>
       <Accordion expanded={state.openPanel}>
@@ -87,6 +101,7 @@ const Dataset = () => {
           <Grid container justifyContent="center">
             <Grid item xs={12} md={6}>
               <Button
+                className="joyride-next-btn-dataset"
                 variant="contained"
                 fullWidth
                 disabled={

@@ -109,6 +109,7 @@ const VisualizationLibrary = ({
             </Grid>
             <Grid item xs={12}>
               <Autocomplete
+                className="joyride-viz-library"
                 disabled={visRef.visualizationLibraryId !== ""}
                 disablePortal
                 id="combo-box-lrs"

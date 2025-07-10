@@ -91,7 +91,7 @@ const LRS = ({ state, setState }) => {
 
   return (
     <>
-      <Grid container spacing={4} >
+      <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
@@ -102,6 +102,7 @@ const LRS = ({ state, setState }) => {
             <Grid item xs={12}>
               <Autocomplete
                 disabled={indicatorQuery.platforms.length > 0}
+                className="joyride-lrs-selector"
                 autoFocus
                 disablePortal
                 disableCloseOnSelect

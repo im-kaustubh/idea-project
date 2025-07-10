@@ -9,7 +9,7 @@ const PlatformChips = () => {
     <>
       {/* Platform */}
       {indicatorQuery.platforms.length !== 0 && (
-        <Grid item xs={12}>
+        <Grid item xs={12} className="joyride-platform-selection">
           <Grid container alignItems="center" spacing={1}>
             <Grid item>
               <Typography>Platform(s):</Typography>

@@ -9,7 +9,7 @@ const LRSChips = () => {
     <>
       {/* LRS */}
       {indicatorQuery.lrsStores.length !== 0 && (
-        <Grid item xs={12}>
+        <Grid item xs={12} >
           <Grid container alignItems="center" spacing={1}>
             <Grid item>
               <Typography>LRS(s):</Typography>
