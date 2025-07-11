@@ -13,7 +13,7 @@ import { BasicIndicatorContext } from "../../../basic-indicator.jsx";
 import DatasetSummary from "./components/dataset-summary.jsx";
 
 const Dataset = () => {
-  const { indicatorQuery, setLockedStep } = useContext(BasicIndicatorContext);
+  const { indicatorQuery, setLockedStep, joyrideState } = useContext(BasicIndicatorContext);
   const [state, setState] = useState(() => {
     const savedState = sessionStorage.getItem("dataset");
     return savedState
@@ -48,7 +48,11 @@ const Dataset = () => {
   };
 
   const handleUnlockFilters = () => {
-    handleTogglePanel();
+    // Only close the panel if the tour is not running
+    // This prevents the Next button from disappearing while Joyride is targeting it
+    if (!joyrideState?.run) {
+      handleTogglePanel();
+    }
     setLockedStep((prevState) => ({
       ...prevState,
       filter: {
