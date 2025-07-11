@@ -78,14 +78,16 @@ export const createTourSteps = (context) => {
       hideCloseButton: false,
       hideFooter: false,
       spotlightClicks: true,
-      // Only show if platform is selected, filters not yet unlocked, and button is available
+      // Only show if platform is selected and next step (activity types) is not yet available
       when: () => {
         const platformSelected = validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator });
+        const activityTypesNotSelected = !validateStepCompletion(2, { indicatorQuery, analysisRef, visRef, indicator });
         const filtersLocked = lockedStep?.filter?.locked === true;
         const buttonExists = document.querySelector('.joyride-next-btn-dataset');
         const buttonEnabled = buttonExists && !buttonExists.disabled;
         
-        return platformSelected && filtersLocked && buttonEnabled;
+        // Show this step if platform is selected but activity types step is not ready yet
+        return platformSelected && activityTypesNotSelected && filtersLocked && buttonEnabled;
       },
       styles: {
         options: {
@@ -114,8 +116,15 @@ export const createTourSteps = (context) => {
       hideCloseButton: false,
       hideFooter: false,
       spotlightClicks: true,
-      when: () => validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator }) && 
-                  !validateStepCompletion(2, { indicatorQuery, analysisRef, visRef, indicator }),
+      when: () => {
+        const platformSelected = validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator });
+        const activityTypesNotSelected = !validateStepCompletion(2, { indicatorQuery, analysisRef, visRef, indicator });
+        const filtersUnlocked = lockedStep?.filter?.locked === false;
+        const filtersOpen = lockedStep?.filter?.openPanel === true;
+        const targetExists = document.querySelector('.joyride-activity-type-selector');
+        
+        return platformSelected && activityTypesNotSelected && filtersUnlocked && filtersOpen && targetExists;
+      },
       styles: {
         options: {
           primaryColor: '#1976d2',

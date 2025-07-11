@@ -283,6 +283,47 @@ const BasicIndicator = () => {
 
   // Handle step completion
   if (type === EVENTS.STEP_AFTER) {
+    const currentStep = joyrideState.steps[index];
+    const isNextButtonStep = currentStep?.target === '.joyride-next-btn-dataset';
+    
+    // Special handling for Next button step - wait for filters to unlock and activity types to be available
+    if (isNextButtonStep && action === ACTIONS.NEXT) {
+      console.log('Next button clicked, waiting for filters to unlock...');
+      // The Next button was clicked, now wait for the filters to unlock and DOM to update
+      setTimeout(() => {
+        const updatedContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+        const steps = createTourSteps(updatedContext);
+        
+        console.log('Updated steps after Next button:', steps.length, 'steps available');
+        console.log('Looking for activity type selector:', document.querySelector('.joyride-activity-type-selector'));
+        
+        // Find the activity type step in the updated steps
+        const activityTypeStepIndex = steps.findIndex(step => 
+          step.target === '.joyride-activity-type-selector'
+        );
+        
+        if (activityTypeStepIndex !== -1) {
+          console.log('Found activity type step at index:', activityTypeStepIndex);
+          setJoyrideState(prev => ({
+            ...prev,
+            steps,
+            stepIndex: activityTypeStepIndex
+          }));
+        } else {
+          console.log('Activity type step not found, finding next available step...');
+          // If activity type step not found, try to find the next available step
+          const nextAvailableStep = getNextAvailableStep(updatedContext);
+          console.log('Next available step:', nextAvailableStep);
+          setJoyrideState(prev => ({
+            ...prev,
+            steps,
+            stepIndex: nextAvailableStep
+          }));
+        }
+      }, 500); // Wait for DOM updates
+      return;
+    }
+
     const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
 
     // Special case: If user interacts with the target (like selecting LRS)
