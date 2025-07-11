@@ -20,7 +20,8 @@ import {
   validateStepCompletion, 
   canProceedToStep, 
   getNextAvailableStep, 
-  getStepTooltipContent 
+  getStepTooltipContent,
+  isPlatformSelected
 } from "./utils/joyride-utils.js";
 import "./utils/joyride-styles.css";
 
