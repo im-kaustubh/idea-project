@@ -69,7 +69,8 @@ export const createTourSteps = (context) => {
       content: (
         <div>
           <h3>Continue to Activities</h3>
-          <p>Click this button to proceed to activity selection after choosing your platform.</p>
+          <p>Perfect! Now click this <strong>Next</strong> button to proceed to activity selection.</p>
+          <p>This will unlock the Activity Filters section where you can specify what learning activities to analyze.</p>
         </div>
       ),
       placement: 'right',
@@ -77,8 +78,15 @@ export const createTourSteps = (context) => {
       hideCloseButton: false,
       hideFooter: false,
       spotlightClicks: true,
-      // Only show if platform is selected but not yet proceeded
-      when: () => validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator }),
+      // Only show if platform is selected, filters not yet unlocked, and button is available
+      when: () => {
+        const platformSelected = validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator });
+        const filtersLocked = lockedStep?.filter?.locked === true;
+        const buttonExists = document.querySelector('.joyride-next-btn-dataset');
+        const buttonEnabled = buttonExists && !buttonExists.disabled;
+        
+        return platformSelected && filtersLocked && buttonEnabled;
+      },
       styles: {
         options: {
           primaryColor: '#1976d2',

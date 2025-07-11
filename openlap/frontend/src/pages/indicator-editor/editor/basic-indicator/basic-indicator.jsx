@@ -5,8 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Divider, Grid, IconButton, Tooltip, Typography, Fab } from "@mui/material";
-import { ArrowBack, TourOutlined, RestartAlt } from "@mui/icons-material";
+import { Divider, Grid, IconButton, Tooltip, Typography } from "@mui/material";
+import { ArrowBack, TourOutlined } from "@mui/icons-material";
 import Joyride, { ACTIONS, EVENTS, STATUS, LIFECYCLE } from 'react-joyride';
 import SelectionPanel from "./selection-panel/selection-panel.jsx";
 import dayjs from "dayjs";
@@ -249,12 +249,39 @@ const BasicIndicator = () => {
   // Joyride callback handler
   const handleJoyrideCallback = (data) => {
   const { action, index, status, type, lifecycle } = data;
-  const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+  const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
 
   console.log('Joyride callback:', { action, index, status, type, lifecycle });
 
+  // Handle target not found - try to find next available step
+  if (type === EVENTS.TARGET_NOT_FOUND) {
+    console.warn('Target not mounted for step:', joyrideState.steps[index]);
+    
+    // Wait a bit and try to find next available step
+    setTimeout(() => {
+      const nextAvailableStep = getNextAvailableStep(currentContext);
+      if (nextAvailableStep !== index) {
+        setJoyrideState(prev => ({
+          ...prev,
+          stepIndex: nextAvailableStep
+        }));
+      } else {
+        // If no other step available, stop the tour
+        enqueueSnackbar('Tour step not available. Stopping tour.', { 
+          variant: "info",
+          autoHideDuration: 3000,
+        });
+        setJoyrideState(prev => ({
+          ...prev,
+          run: false
+        }));
+      }
+    }, 500);
+    return;
+  }
+
   // Handle step completion
-  if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+  if (type === EVENTS.STEP_AFTER) {
     const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
 
     // Special case: If user interacts with the target (like selecting LRS)
@@ -298,28 +325,49 @@ const BasicIndicator = () => {
   }
 };
 
-// Add this effect to sync tour with manual Next button clicks
+// Add this effect to sync tour with user actions and handle Next button timing
 useEffect(() => {
   if (!joyrideState.run) return;
 
   const currentStep = joyrideState.steps[joyrideState.stepIndex];
   const isNextButtonStep = currentStep?.target === '.joyride-next-btn-dataset';
 
-  if (isNextButtonStep && isPlatformSelected(indicatorQuery)) {
-    // When user reaches Next button step and has selected platform,
-    // but hasn't clicked Next yet, keep showing the Next button step
-    return;
+  // If we're on a platform selection step and platform gets selected,
+  // advance to the next available step after a brief delay to ensure DOM updates
+  if (currentStep?.target === '.joyride-platform-selector' && isPlatformSelected(indicatorQuery)) {
+    const timer = setTimeout(() => {
+      // Find the next button step in the current steps array
+      const nextButtonStepIndex = joyrideState.steps.findIndex(
+        step => step.target === '.joyride-next-btn-dataset'
+      );
+      
+      if (nextButtonStepIndex !== -1) {
+        // Ensure the button is actually in the DOM before advancing
+        const nextButton = document.querySelector('.joyride-next-btn-dataset');
+        if (nextButton) {
+          setJoyrideState(prev => ({ 
+            ...prev, 
+            stepIndex: nextButtonStepIndex 
+          }));
+        }
+      }
+    }, 300); // Increased delay to ensure DOM stability
+    
+    return () => clearTimeout(timer);
   }
 
-  const nextStep = getNextAvailableStep({ indicatorQuery, analysisRef, visRef, indicator });
-  if (nextStep !== joyrideState.stepIndex) {
-    setJoyrideState(prev => ({ ...prev, stepIndex: nextStep }));
+  // For other steps, use the normal progression logic
+  if (!isNextButtonStep && !currentStep?.target?.includes('platform-selector')) {
+    const nextStep = getNextAvailableStep({ indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+    if (nextStep !== joyrideState.stepIndex) {
+      setJoyrideState(prev => ({ ...prev, stepIndex: nextStep }));
+    }
   }
-}, [indicatorQuery, joyrideState.run, joyrideState.stepIndex]);
+}, [indicatorQuery, joyrideState.run, joyrideState.stepIndex, joyrideState.steps]);
 
   // Start the tour
   const startTour = () => {
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const nextStep = getNextAvailableStep(currentContext);
     
     setJoyrideState(prev => ({
@@ -329,14 +377,7 @@ useEffect(() => {
     }));
   };
 
-  // Restart the tour from beginning
-  const restartTour = () => {
-    setJoyrideState(prev => ({
-      ...prev,
-      run: true,
-      stepIndex: 0
-    }));
-  };
+
 
   // Stop the tour
   const stopTour = () => {
@@ -415,7 +456,6 @@ useEffect(() => {
         // Joyride functions
         startTour,
         stopTour,
-        restartTour,
       }}
     >
       {/* Joyride Component */}
@@ -425,7 +465,7 @@ useEffect(() => {
         run={joyrideState.run}
         scrollToFirstStep={true}
         showProgress={true}
-        showSkipButton={true}
+        showSkipButton={false}
         stepIndex={joyrideState.stepIndex}
         steps={joyrideState.steps}
         styles={joyrideStyles}
@@ -434,48 +474,13 @@ useEffect(() => {
           close: 'Close',
           last: 'Finish',
           next: 'Next',
-          skip: 'Skip Tour',
         }}
         floaterProps={{
           disableAnimation: true,
         }}
       />
 
-      {/* Tour Control FABs */}
-      <div style={{ 
-        position: 'fixed', 
-        bottom: 24, 
-        right: 24, 
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8
-      }}>
-        {!joyrideState.run && (
-          <Tooltip title="Start guided tour" placement="left">
-            <Fab
-              color="primary"
-              size="small"
-              onClick={startTour}
-              sx={{ mb: 1 }}
-            >
-              <TourOutlined />
-            </Fab>
-          </Tooltip>
-        )}
-        
-        {joyrideState.run && (
-          <Tooltip title="Restart tour from beginning" placement="left">
-            <Fab
-              color="secondary"
-              size="small"
-              onClick={restartTour}
-            >
-              <RestartAlt />
-            </Fab>
-          </Tooltip>
-        )}
-      </div>
+
 
       <Grid container spacing={2}>
         <Grid item xs={12}>
