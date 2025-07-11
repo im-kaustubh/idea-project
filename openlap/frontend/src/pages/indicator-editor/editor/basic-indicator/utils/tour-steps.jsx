@@ -122,8 +122,9 @@ export const createTourSteps = (context) => {
         const filtersUnlocked = lockedStep?.filter?.locked === false;
         const filtersOpen = lockedStep?.filter?.openPanel === true;
         const targetExists = document.querySelector('.joyride-activity-type-selector');
+        const targetVisible = targetExists && targetExists.offsetParent !== null; // Check if actually visible
         
-        return platformSelected && activityTypesNotSelected && filtersUnlocked && filtersOpen && targetExists;
+        return platformSelected && activityTypesNotSelected && filtersUnlocked && filtersOpen && targetVisible;
       },
       styles: {
         options: {

@@ -283,6 +283,55 @@ const BasicIndicator = () => {
 
   // Handle step completion
   if (type === EVENTS.STEP_AFTER) {
+    const currentStep = joyrideState.steps[index];
+    const isNextButtonStep = currentStep?.target === '.joyride-next-btn-dataset';
+    
+    // Special handling for Next button step - pause tour during layout shift
+    if (isNextButtonStep && action === ACTIONS.NEXT) {
+      console.log('Next button step completed, pausing tour for layout shift...');
+      
+      // Temporarily stop the tour to prevent issues during layout changes
+      setJoyrideState(prev => ({
+        ...prev,
+        run: false
+      }));
+      
+      // Wait for layout to stabilize, then restart tour at activity type step
+      setTimeout(() => {
+        console.log('Restarting tour after layout stabilization...');
+        const updatedContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+        const steps = createTourSteps(updatedContext);
+        
+        // Find the activity type step
+        const activityTypeStepIndex = steps.findIndex(step => 
+          step.target === '.joyride-activity-type-selector'
+        );
+        
+        console.log('Activity type step index:', activityTypeStepIndex);
+        console.log('Activity type selector exists:', !!document.querySelector('.joyride-activity-type-selector'));
+        
+        if (activityTypeStepIndex !== -1 && document.querySelector('.joyride-activity-type-selector')) {
+          setJoyrideState(prev => ({
+            ...prev,
+            steps,
+            run: true,
+            stepIndex: activityTypeStepIndex
+          }));
+        } else {
+          console.log('Activity type step not ready, trying next available step...');
+          const nextAvailableStep = getNextAvailableStep(updatedContext);
+          setJoyrideState(prev => ({
+            ...prev,
+            steps,
+            run: true,
+            stepIndex: nextAvailableStep
+          }));
+        }
+      }, 800); // Longer delay to allow for accordion expansion and layout shifts
+      
+      return;
+    }
+
     const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
 
     // Normal step progression
