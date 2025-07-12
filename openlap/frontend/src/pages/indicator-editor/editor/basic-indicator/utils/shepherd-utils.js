@@ -113,12 +113,28 @@ export const canProceedToStep = (targetStepIndex, { indicatorQuery, analysisRef,
 // Get next available step
 export const getNextAvailableStep = ({ indicatorQuery, analysisRef, visRef, indicator, lockedStep }) => {
   const maxSteps = 16;
+  
+  // Find the first step that is either incomplete or not shown
   for (let i = 0; i < maxSteps; i++) {
-    if (!validateStepCompletion(i, { indicatorQuery, analysisRef, visRef, indicator }) ||
-        !shouldShowStep(i, { indicatorQuery, analysisRef, visRef, indicator, lockedStep })) {
+    const isStepComplete = validateStepCompletion(i, { indicatorQuery, analysisRef, visRef, indicator });
+    const shouldShow = shouldShowStep(i, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+    
+    // If step is not complete but should be shown, this is our next step
+    if (!isStepComplete && shouldShow) {
       return i;
     }
+    
+    // If step is complete but the next step should be shown, continue
+    if (isStepComplete && shouldShow) {
+      continue;
+    }
+    
+    // If step should not be shown, skip it
+    if (!shouldShow) {
+      continue;
+    }
   }
+  
   return maxSteps - 1; // Return final step if all completed
 };
 

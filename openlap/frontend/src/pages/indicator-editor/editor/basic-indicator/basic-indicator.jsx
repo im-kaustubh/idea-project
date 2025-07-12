@@ -20,7 +20,12 @@ import {
   validateStepCompletion, 
   canProceedToStep, 
   getNextAvailableStep, 
-  getStepTooltipContent 
+  getStepTooltipContent,
+  isLrsSelected,
+  isPlatformSelected,
+  isActivityTypeSelected,
+  isActivitySelected,
+  isActionSelected
 } from "./utils/shepherd-utils.js";
 import "./utils/shepherd-styles.css";
 
@@ -202,8 +207,8 @@ const BasicIndicator = () => {
     // Create new tour
     const tour = new Shepherd.Tour({
       useModalOverlay: true,
-      modalOverlayOpeningPadding: 4,
-      modalOverlayOpeningRadius: 8,
+      modalOverlayOpeningPadding: 8,
+      modalOverlayOpeningRadius: 12,
       defaultStepOptions: {
         classes: 'shepherd-theme-custom',
         scrollTo: { behavior: 'smooth', block: 'center' },
@@ -211,6 +216,22 @@ const BasicIndicator = () => {
         cancelIcon: {
           enabled: true,
         },
+        when: {
+          show: function() {
+            // Ensure autocomplete dropdowns are properly highlighted
+            setTimeout(() => {
+              const stepElement = this.el;
+              if (stepElement) {
+                const stepId = stepElement.getAttribute('data-shepherd-step-id');
+                const autocompleteElements = document.querySelectorAll('.MuiAutocomplete-popper');
+                autocompleteElements.forEach(el => {
+                  el.style.zIndex = '10001';
+                  el.style.position = 'relative';
+                });
+              }
+            }, 100);
+          }
+        }
       }
     });
     
@@ -321,21 +342,32 @@ const BasicIndicator = () => {
     return true;
   };
 
-// Sync tour with context changes
+// Sync tour with context changes - with improved timing
 useEffect(() => {
   if (!tourState.isActive || !tourRef.current) return;
 
-  const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-  const nextStep = getNextAvailableStep(currentContext);
-  
-  if (nextStep !== tourState.currentStep) {
-    // Update the tour to show the correct step
-    const tour = tourRef.current;
-    if (tour && tour.steps[nextStep]) {
-      tour.show(nextStep);
+  // Add a small delay to allow UI to update
+  const timeoutId = setTimeout(() => {
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    
+    // Check what the next logical step should be
+    const nextAvailableStep = getNextAvailableStep(currentContext);
+    const currentStep = tourRef.current?.getCurrentStep();
+    const currentStepIndex = currentStep ? 
+      tourRef.current.steps.findIndex(s => s.id === currentStep.id) : 0;
+    
+    // Only advance if we're not already on the correct step and the step has been completed
+    if (nextAvailableStep > currentStepIndex) {
+      console.log(`Auto-advancing tour from step ${currentStepIndex} to step ${nextAvailableStep}`);
+      const tour = tourRef.current;
+      if (tour && tour.steps[nextAvailableStep]) {
+        tour.show(nextAvailableStep);
+      }
     }
-  }
-  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive, tourState.currentStep]);
+  }, 500); // 500ms delay to allow for UI updates
+
+  return () => clearTimeout(timeoutId);
+}, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
 
 // Special handling for when user clicks the actual "Next" button to unlock filters
 useEffect(() => {
@@ -348,10 +380,69 @@ useEffect(() => {
     // Advance to the activity type selection step
     const tour = tourRef.current;
     if (tour) {
-      tour.show('activity-type-selection');
+      setTimeout(() => {
+        tour.show('activity-type-selection');
+      }, 1000); // Give time for the UI to update
     }
   }
 }, [lockedStep.filter.locked, lockedStep.filter.openPanel, tourState.isActive]);
+
+// Smart tour progression for specific step completions
+useEffect(() => {
+  if (!tourState.isActive || !tourRef.current) return;
+
+  const currentStep = tourRef.current.getCurrentStep();
+  if (!currentStep) return;
+
+  const currentStepId = currentStep.id;
+  
+  // Handle automatic progression for specific steps
+  const timeoutId = setTimeout(() => {
+    let shouldAdvance = false;
+    let nextStepId = null;
+    
+    switch (currentStepId) {
+      case 'lrs-selection':
+        if (isLrsSelected(indicatorQuery)) {
+          shouldAdvance = true;
+          nextStepId = 'platform-selection';
+        }
+        break;
+      case 'platform-selection':
+        if (isPlatformSelected(indicatorQuery)) {
+          shouldAdvance = true;
+          nextStepId = 'next-button';
+        }
+        break;
+      case 'activity-type-selection':
+        if (isActivityTypeSelected(indicatorQuery)) {
+          shouldAdvance = true;
+          nextStepId = 'activity-selection';
+        }
+        break;
+      case 'activity-selection':
+        if (isActivitySelected(indicatorQuery)) {
+          shouldAdvance = true;
+          nextStepId = 'action-selection';
+        }
+        break;
+      case 'action-selection':
+        if (isActionSelected(indicatorQuery)) {
+          shouldAdvance = true;
+          nextStepId = 'date-range-selection';
+        }
+        break;
+    }
+    
+    if (shouldAdvance && nextStepId) {
+      console.log(`Auto-advancing from ${currentStepId} to ${nextStepId}`);
+      tourRef.current.show(nextStepId);
+    }
+  }, 1500); // Wait 1.5 seconds for user to make selection
+  
+  return () => clearTimeout(timeoutId);
+}, [indicatorQuery.lrsStores, indicatorQuery.platforms, indicatorQuery.activityTypes, 
+    indicatorQuery.activities, indicatorQuery.actionOnActivities, tourState.isActive]);
 
   // Cleanup tour on component unmount
   useEffect(() => {
@@ -376,9 +467,16 @@ useEffect(() => {
       currentStep: nextStep
     }));
     
+    // Always start from the beginning for initial tour, show next step if progressed
     tourRef.current.start();
+    
+    // If we're not at step 0, show the appropriate step after a delay
     if (nextStep > 0) {
-      tourRef.current.show(nextStep);
+      setTimeout(() => {
+        if (tourRef.current) {
+          tourRef.current.show(nextStep);
+        }
+      }, 500);
     }
   };
 

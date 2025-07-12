@@ -217,6 +217,34 @@
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6) !important;
 }
 
+/* Enhanced highlighting for autocomplete dropdowns */
+.shepherd-lrs-selector,
+.shepherd-platform-selector,
+.shepherd-activity-type-selector,
+.shepherd-activity-selector,
+.shepherd-action-selector {
+  position: relative;
+}
+
+/* When tour is active, highlight the autocomplete container and dropdown */
+.shepherd-element[data-shepherd-step-id*="lrs"] ~ * .shepherd-lrs-selector,
+.shepherd-element[data-shepherd-step-id*="platform"] ~ * .shepherd-platform-selector,
+.shepherd-element[data-shepherd-step-id*="activity-type"] ~ * .shepherd-activity-type-selector,
+.shepherd-element[data-shepherd-step-id*="activity"] ~ * .shepherd-activity-selector,
+.shepherd-element[data-shepherd-step-id*="action"] ~ * .shepherd-action-selector {
+  z-index: 9999 !important;
+}
+
+/* Ensure dropdown menus are highlighted properly */
+.MuiAutocomplete-popper {
+  z-index: 10000 !important;
+}
+
+.MuiAutocomplete-popper .MuiPaper-root {
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
+  border-radius: 8px !important;
+}
+
 /* Animation for smooth transitions */
 .shepherd-element {
   animation: shepherdTooltipEnter 0.3s ease-out;

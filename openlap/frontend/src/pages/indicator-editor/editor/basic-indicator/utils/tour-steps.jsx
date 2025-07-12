@@ -20,6 +20,8 @@ export const createTourSteps = (context) => {
         element: '.shepherd-lrs-selector',
         on: 'right'
       },
+      modalOverlayOpeningPadding: 12,
+      modalOverlayOpeningRadius: 8,
       buttons: [
         {
           text: 'Skip Tour',
