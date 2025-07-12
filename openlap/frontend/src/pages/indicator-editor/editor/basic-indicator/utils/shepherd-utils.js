@@ -1,6 +1,6 @@
 /**
-+ * Utility functions for Joyride tour step validation and configuration
-+ */
+ * Utility functions for Shepherd.js tour step validation and configuration
+ */
 
 // Step validation functions
 export const isLrsSelected = (indicatorQuery) => {
@@ -138,4 +138,47 @@ export const getStepTooltipContent = (stepIndex) => {
     14: "Please generate the preview first",
   };
   return tooltips[stepIndex] || "Please complete the previous steps first";
+};
+
+// Check if a step should be shown based on conditions
+export const shouldShowStep = (stepIndex, { indicatorQuery, analysisRef, visRef, indicator, lockedStep }) => {
+  switch (stepIndex) {
+    case 0: // LRS Selection - always show
+      return true;
+    case 1: // Platform Selection - show if LRS is selected
+      return validateStepCompletion(0, { indicatorQuery, analysisRef, visRef, indicator });
+    case 2: // Next Button - show if platform is selected
+      return validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator });
+    case 3: // Activity Type Selection - show if platform is selected
+      return validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator });
+    case 4: // Activity Selection - show if activity type is selected
+      return validateStepCompletion(2, { indicatorQuery, analysisRef, visRef, indicator });
+    case 5: // Action Selection - show if activity is selected
+      return validateStepCompletion(3, { indicatorQuery, analysisRef, visRef, indicator });
+    case 6: // Date Range - show if action is selected
+      return validateStepCompletion(4, { indicatorQuery, analysisRef, visRef, indicator });
+    case 7: // Analysis Technique - show if date range is valid and analysis panel is open
+      return validateStepCompletion(5, { indicatorQuery, analysisRef, visRef, indicator }) && 
+             !lockedStep.analysis.locked && lockedStep.analysis.openPanel;
+    case 8: // Analysis Inputs - show if analysis technique is selected
+      return validateStepCompletion(6, { indicatorQuery, analysisRef, visRef, indicator });
+    case 9: // Analysis Parameters - show if analysis inputs are mapped
+      return validateStepCompletion(7, { indicatorQuery, analysisRef, visRef, indicator });
+    case 10: // Preview Analysis Data - show if analysis parameters are set
+      return validateStepCompletion(8, { indicatorQuery, analysisRef, visRef, indicator });
+    case 11: // Visualization Library - show if analysis data is generated and viz panel is open
+      return validateStepCompletion(9, { indicatorQuery, analysisRef, visRef, indicator }) && 
+             !lockedStep.visualization.locked && lockedStep.visualization.openPanel;
+    case 12: // Visualization Type - show if viz library is selected
+      return validateStepCompletion(10, { indicatorQuery, analysisRef, visRef, indicator });
+    case 13: // Visualization Inputs - show if viz type is selected
+      return validateStepCompletion(11, { indicatorQuery, analysisRef, visRef, indicator });
+    case 14: // Generate Preview - show if viz inputs are mapped
+      return validateStepCompletion(12, { indicatorQuery, analysisRef, visRef, indicator });
+    case 15: // Save Indicator - show if preview is generated and finalize panel is open
+      return validateStepCompletion(13, { indicatorQuery, analysisRef, visRef, indicator }) && 
+             !lockedStep.finalize.locked && lockedStep.finalize.openPanel;
+    default:
+      return false;
+  }
 };

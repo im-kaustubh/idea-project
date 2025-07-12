@@ -87,7 +87,7 @@ const Platform = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
-                  className="joyride-platform-selector"
+                  className="shepherd-platform-selector"
                   disablePortal
                   disableCloseOnSelect
                   disabled={

@@ -173,7 +173,7 @@ const Activities = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
-                  className="joyride-activity-selector"
+                  className="shepherd-activity-selector"
                   disabled={
                     indicatorQuery.activityTypes.length === 0 ||
                     state.selectedActionsList.length > 0

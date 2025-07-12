@@ -101,7 +101,7 @@ const Dataset = () => {
           <Grid container justifyContent="center">
             <Grid item xs={12} md={6}>
               <Button
-                className="joyride-next-btn-dataset"
+                className="shepherd-next-btn-dataset"
                 variant="contained"
                 fullWidth
                 disabled={

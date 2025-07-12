@@ -336,7 +336,7 @@ const Analysis = ({
           <Grid container spacing={2}>
             <Grid item xs>
               <LoadingButton
-                className="joyride-preview-data-btn"
+                className="shepherd-preview-data-btn"
                 loading={state.loadingPreview}
                 loadingIndicator="Loading…"
                 variant="contained"

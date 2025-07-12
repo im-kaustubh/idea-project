@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Divider, Grid, IconButton, Tooltip, Typography, Fab } from "@mui/material";
 import { ArrowBack, TourOutlined, RestartAlt } from "@mui/icons-material";
-import Joyride, { ACTIONS, EVENTS, STATUS, LIFECYCLE } from 'react-joyride';
+import Shepherd from 'shepherd.js';
 import SelectionPanel from "./selection-panel/selection-panel.jsx";
 import dayjs from "dayjs";
 import Condition from "./selection-panel/utils/condition.js";
@@ -15,14 +15,14 @@ import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import { requestCreateBasicIndicator } from "../components/preview-panel/utils/preview-api.js";
 import { AuthContext } from "../../../../setup/auth-context-manager/auth-context-manager.jsx";
-import { createTourSteps, joyrideStyles } from "./utils/tour-steps.jsx";
+import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
 import { 
   validateStepCompletion, 
   canProceedToStep, 
   getNextAvailableStep, 
   getStepTooltipContent 
-} from "./utils/joyride-utils.js";
-import "./utils/joyride-styles.css";
+} from "./utils/shepherd-utils.js";
+import "./utils/shepherd-styles.css";
 
 export const BasicIndicatorContext = createContext(undefined);
 
@@ -34,14 +34,13 @@ const BasicIndicator = () => {
   const [loading, setLoading] = useState(false);
   const [chartConfiguration, setChartConfiguration] = useState(null);
 
-  // Joyride state
-  const [joyrideState, setJoyrideState] = useState({
-    run: false,
-    continuous: true,
-    loading: false,
-    stepIndex: 0,
-    steps: [],
+  // Shepherd.js tour state
+  const [tourState, setTourState] = useState({
+    isActive: false,
+    currentStep: 0,
+    tour: null,
   });
+  const tourRef = useRef(null);
 
   const [indicator, setIndicator] = useState(() => {
     const savedState = sessionStorage.getItem("session");
@@ -189,14 +188,68 @@ const BasicIndicator = () => {
     indicator,
   });
 
-  // Update Joyride steps when context changes
+  // Initialize and update Shepherd.js tour when context changes
   useEffect(() => {
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const steps = createTourSteps(currentContext);
-    setJoyrideState(prev => ({
+    
+    // Clean up existing tour
+    if (tourRef.current) {
+      tourRef.current.complete();
+      tourRef.current = null;
+    }
+    
+    // Create new tour
+    const tour = new Shepherd.Tour({
+      useModalOverlay: true,
+      modalOverlayOpeningPadding: 4,
+      modalOverlayOpeningRadius: 8,
+      defaultStepOptions: {
+        classes: 'shepherd-theme-custom',
+        scrollTo: { behavior: 'smooth', block: 'center' },
+        showCancelLink: true,
+        cancelIcon: {
+          enabled: true,
+        },
+      }
+    });
+    
+    // Add steps to tour
+    steps.forEach(step => {
+      tour.addStep(step);
+    });
+    
+    // Tour event handlers
+    tour.on('complete', () => {
+      setTourState(prev => ({
+        ...prev,
+        isActive: false,
+        currentStep: 0
+      }));
+    });
+    
+    tour.on('cancel', () => {
+      setTourState(prev => ({
+        ...prev,
+        isActive: false,
+        currentStep: 0
+      }));
+    });
+    
+    tour.on('show', (event) => {
+      setTourState(prev => ({
+        ...prev,
+        currentStep: event.step ? steps.findIndex(s => s.id === event.step.id) : 0
+      }));
+    });
+    
+    tourRef.current = tour;
+    
+    setTourState(prev => ({
       ...prev,
-      steps
+      tour
     }));
+    
   }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep]);
 
   // Auto-save functionality
@@ -246,104 +299,96 @@ const BasicIndicator = () => {
     indicator,
   ]);
 
-  // Joyride callback handler
-  const handleJoyrideCallback = (data) => {
-  const { action, index, status, type, lifecycle } = data;
-  const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
-
-  console.log('Joyride callback:', { action, index, status, type, lifecycle });
-
-  // Handle step completion
-  if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-    const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
-
-    // Special case: If user interacts with the target (like selecting LRS)
-    if (lifecycle === LIFECYCLE.COMPLETE && action === ACTIONS.NEXT) {
-      const isCurrentStepComplete = validateStepCompletion(index, currentContext);
+  // Shepherd.js tour validation and navigation
+  const validateAndNavigate = (tour, direction = 'next') => {
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+    const currentStepIndex = tour.getCurrentStep()?.id ? 
+      tour.steps.findIndex(s => s.id === tour.getCurrentStep().id) : 0;
+    
+    if (direction === 'next') {
+      const nextStepIndex = currentStepIndex + 1;
       
-      if (isCurrentStepComplete) {
-        // Auto-proceed to next step if available
-        const nextAvailableStep = getNextAvailableStep(currentContext);
-        setJoyrideState(prev => ({
-          ...prev,
-          stepIndex: nextAvailableStep
-        }));
-        return;
-      }
-    }
-
-    // Normal step progression
-    if (action === ACTIONS.NEXT) {
       if (!canProceedToStep(nextStepIndex, currentContext)) {
         const tooltipContent = getStepTooltipContent(nextStepIndex);
         enqueueSnackbar(tooltipContent, { 
           variant: "warning",
           autoHideDuration: 4000,
         });
-        return;
+        return false;
       }
     }
+    
+    return true;
+  };
 
-    setJoyrideState(prev => ({
-      ...prev,
-      stepIndex: nextStepIndex
-    }));
-  }
-  else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-    setJoyrideState(prev => ({
-      ...prev,
-      run: false,
-      stepIndex: 0
-    }));
-  }
-};
-
-// Add this effect to sync tour with manual Next button clicks
+// Sync tour with context changes
 useEffect(() => {
-  if (!joyrideState.run) return;
+  if (!tourState.isActive || !tourRef.current) return;
 
-  const currentStep = joyrideState.steps[joyrideState.stepIndex];
-  const isNextButtonStep = currentStep?.target === '.joyride-next-btn-dataset';
-
-  if (isNextButtonStep && isPlatformSelected(indicatorQuery)) {
-    // When user reaches Next button step and has selected platform,
-    // but hasn't clicked Next yet, keep showing the Next button step
-    return;
+  const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+  const nextStep = getNextAvailableStep(currentContext);
+  
+  if (nextStep !== tourState.currentStep) {
+    // Update the tour to show the correct step
+    const tour = tourRef.current;
+    if (tour && tour.steps[nextStep]) {
+      tour.show(nextStep);
+    }
   }
+  }, [indicatorQuery, analysisRef, visRef, indicator, tourState.isActive, tourState.currentStep]);
 
-  const nextStep = getNextAvailableStep({ indicatorQuery, analysisRef, visRef, indicator });
-  if (nextStep !== joyrideState.stepIndex) {
-    setJoyrideState(prev => ({ ...prev, stepIndex: nextStep }));
-  }
-}, [indicatorQuery, joyrideState.run, joyrideState.stepIndex]);
+  // Cleanup tour on component unmount
+  useEffect(() => {
+    return () => {
+      if (tourRef.current) {
+        tourRef.current.complete();
+        tourRef.current = null;
+      }
+    };
+  }, []);
 
   // Start the tour
   const startTour = () => {
+    if (!tourRef.current) return;
+    
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
     const nextStep = getNextAvailableStep(currentContext);
     
-    setJoyrideState(prev => ({
+    setTourState(prev => ({
       ...prev,
-      run: true,
-      stepIndex: nextStep
+      isActive: true,
+      currentStep: nextStep
     }));
+    
+    tourRef.current.start();
+    if (nextStep > 0) {
+      tourRef.current.show(nextStep);
+    }
   };
 
   // Restart the tour from beginning
   const restartTour = () => {
-    setJoyrideState(prev => ({
+    if (!tourRef.current) return;
+    
+    setTourState(prev => ({
       ...prev,
-      run: true,
-      stepIndex: 0
+      isActive: true,
+      currentStep: 0
     }));
+    
+    tourRef.current.start();
   };
 
   // Stop the tour
   const stopTour = () => {
-    setJoyrideState(prev => ({
+    if (!tourRef.current) return;
+    
+    setTourState(prev => ({
       ...prev,
-      run: false
+      isActive: false
     }));
+    
+    tourRef.current.complete();
   };
 
   const handleSaveNewBasicIndicator = () => {
@@ -418,28 +463,7 @@ useEffect(() => {
         restartTour,
       }}
     >
-      {/* Joyride Component */}
-      <Joyride
-        callback={handleJoyrideCallback}
-        continuous={joyrideState.continuous}
-        run={joyrideState.run}
-        scrollToFirstStep={true}
-        showProgress={true}
-        showSkipButton={true}
-        stepIndex={joyrideState.stepIndex}
-        steps={joyrideState.steps}
-        styles={joyrideStyles}
-        locale={{
-          back: 'Back',
-          close: 'Close',
-          last: 'Finish',
-          next: 'Next',
-          skip: 'Skip Tour',
-        }}
-        floaterProps={{
-          disableAnimation: true,
-        }}
-      />
+      {/* Shepherd.js Tour - Initialized via useEffect */}
 
       {/* Tour Control FABs */}
       <div style={{ 
@@ -451,7 +475,7 @@ useEffect(() => {
         flexDirection: 'column',
         gap: 8
       }}>
-        {!joyrideState.run && (
+        {!tourState.isActive && (
           <Tooltip title="Start guided tour" placement="left">
             <Fab
               color="primary"
@@ -464,7 +488,7 @@ useEffect(() => {
           </Tooltip>
         )}
         
-        {joyrideState.run && (
+        {tourState.isActive && (
           <Tooltip title="Restart tour from beginning" placement="left">
             <Fab
               color="secondary"

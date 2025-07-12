@@ -49,7 +49,7 @@ const DateRange = () => {
       <Typography variant="body2" color="text.secondary" gutterBottom>
         Select a timeframe
       </Typography>
-      <Grid container spacing={2} className="joyride-date-range" style={{ position: 'relative' }}>
+      <Grid container spacing={2} className="shepherd-date-range" style={{ position: 'relative' }}>
         <Grid item>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={["DatePicker"]}>
