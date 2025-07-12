@@ -248,74 +248,145 @@ const BasicIndicator = () => {
 
   // Joyride callback handler
   const handleJoyrideCallback = (data) => {
-  const { action, index, status, type, lifecycle } = data;
-  const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+    const { action, index, status, type, lifecycle } = data;
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
 
-  console.log('Joyride callback:', { action, index, status, type, lifecycle });
+    console.log('Joyride callback:', { action, index, status, type, lifecycle });
 
-  // Handle step completion
-  if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-    const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
-
-    // Special case: If user interacts with the target (like selecting LRS)
-    if (lifecycle === LIFECYCLE.COMPLETE && action === ACTIONS.NEXT) {
-      const isCurrentStepComplete = validateStepCompletion(index, currentContext);
+    // Handle target not found - wait for layout to stabilize
+    if (type === EVENTS.TARGET_NOT_FOUND) {
+      console.log('Target not found, waiting for layout stabilization...');
       
-      if (isCurrentStepComplete) {
-        // Auto-proceed to next step if available
-        const nextAvailableStep = getNextAvailableStep(currentContext);
+      // Pause the tour temporarily
+      setJoyrideState(prev => ({
+        ...prev,
+        run: false
+      }));
+      
+      // Wait for layout stabilization, then restart
+      setTimeout(() => {
+        console.log('Restarting tour after layout has stabilized');
+        
+        // Check if target is now available before restarting
+        const currentStep = joyrideState.steps[joyrideState.stepIndex];
+        const targetElement = document.querySelector(currentStep?.target);
+        
+        if (targetElement) {
+          console.log('Target found, restarting tour');
+          setJoyrideState(prev => ({
+            ...prev,
+            run: true
+          }));
+        } else {
+          console.log('Target still not found, will retry on next state change');
+          // Don't restart yet, wait for the next state change
+        }
+      }, 800); // Wait for accordion animation to complete
+      
+      return;
+    }
+
+    // Handle step completion
+    if (type === EVENTS.STEP_AFTER) {
+      const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
+
+      // Special handling for the "Next" button step (step 2)
+      if (action === ACTIONS.NEXT && index === 2) {
+        // This is the Next button step, wait for layout change
+        console.log('Next button clicked, waiting for layout change...');
+        
+        // Pause briefly to allow layout change
         setJoyrideState(prev => ({
           ...prev,
-          stepIndex: nextAvailableStep
+          run: false
         }));
+        
+        setTimeout(() => {
+          console.log('Proceeding to Activity Type selection after layout change');
+          
+          // Check if Activity Type selector is available
+          const activityTypeSelector = document.querySelector('.joyride-activity-type-selector');
+          if (activityTypeSelector) {
+            setJoyrideState(prev => ({
+              ...prev,
+              run: true,
+              stepIndex: 3 // Go to Activity Type selection
+            }));
+          } else {
+            console.log('Activity Type selector not found yet, will retry...');
+            // Try again after a bit more time
+            setTimeout(() => {
+              setJoyrideState(prev => ({
+                ...prev,
+                run: true,
+                stepIndex: 3
+              }));
+            }, 500);
+          }
+        }, 1000);
+        
         return;
       }
-    }
 
-    // Normal step progression
-    if (action === ACTIONS.NEXT) {
-      if (!canProceedToStep(nextStepIndex, currentContext)) {
-        const tooltipContent = getStepTooltipContent(nextStepIndex);
-        enqueueSnackbar(tooltipContent, { 
-          variant: "warning",
-          autoHideDuration: 4000,
-        });
-        return;
+      // Special case: If user interacts with the target (like selecting LRS)
+      if (lifecycle === LIFECYCLE.COMPLETE && action === ACTIONS.NEXT) {
+        const isCurrentStepComplete = validateStepCompletion(index, currentContext);
+        
+        if (isCurrentStepComplete) {
+          // Auto-proceed to next step if available
+          const nextAvailableStep = getNextAvailableStep(currentContext);
+          setJoyrideState(prev => ({
+            ...prev,
+            stepIndex: nextAvailableStep
+          }));
+          return;
+        }
       }
+
+      // Normal step progression
+      if (action === ACTIONS.NEXT) {
+        if (!canProceedToStep(nextStepIndex, currentContext)) {
+          const tooltipContent = getStepTooltipContent(nextStepIndex);
+          enqueueSnackbar(tooltipContent, { 
+            variant: "warning",
+            autoHideDuration: 4000,
+          });
+          return;
+        }
+      }
+
+      setJoyrideState(prev => ({
+        ...prev,
+        stepIndex: nextStepIndex
+      }));
+    }
+    else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      setJoyrideState(prev => ({
+        ...prev,
+        run: false,
+        stepIndex: 0
+      }));
+    }
+  };
+
+  // Add this effect to sync tour with manual Next button clicks
+  useEffect(() => {
+    if (!joyrideState.run) return;
+
+    const currentStep = joyrideState.steps[joyrideState.stepIndex];
+    const isNextButtonStep = currentStep?.target === '.joyride-next-btn-dataset';
+
+    if (isNextButtonStep && isPlatformSelected(indicatorQuery)) {
+      // When user reaches Next button step and has selected platform,
+      // but hasn't clicked Next yet, keep showing the Next button step
+      return;
     }
 
-    setJoyrideState(prev => ({
-      ...prev,
-      stepIndex: nextStepIndex
-    }));
-  }
-  else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-    setJoyrideState(prev => ({
-      ...prev,
-      run: false,
-      stepIndex: 0
-    }));
-  }
-};
-
-// Add this effect to sync tour with manual Next button clicks
-useEffect(() => {
-  if (!joyrideState.run) return;
-
-  const currentStep = joyrideState.steps[joyrideState.stepIndex];
-  const isNextButtonStep = currentStep?.target === '.joyride-next-btn-dataset';
-
-  if (isNextButtonStep && isPlatformSelected(indicatorQuery)) {
-    // When user reaches Next button step and has selected platform,
-    // but hasn't clicked Next yet, keep showing the Next button step
-    return;
-  }
-
-  const nextStep = getNextAvailableStep({ indicatorQuery, analysisRef, visRef, indicator });
-  if (nextStep !== joyrideState.stepIndex) {
-    setJoyrideState(prev => ({ ...prev, stepIndex: nextStep }));
-  }
-}, [indicatorQuery, joyrideState.run, joyrideState.stepIndex]);
+    const nextStep = getNextAvailableStep({ indicatorQuery, analysisRef, visRef, indicator });
+    if (nextStep !== joyrideState.stepIndex) {
+      setJoyrideState(prev => ({ ...prev, stepIndex: nextStep }));
+    }
+  }, [indicatorQuery, joyrideState.run, joyrideState.stepIndex]);
 
   // Start the tour
   const startTour = () => {
