@@ -341,7 +341,7 @@
 }
 
 .shepherd-step-indicator::after {
-  content: ' of 15';
+  content: ' of 16';
 }
 
 /* Shepherd specific target class mappings */

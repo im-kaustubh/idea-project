@@ -325,7 +325,7 @@ const BasicIndicator = () => {
 useEffect(() => {
   if (!tourState.isActive || !tourRef.current) return;
 
-  const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+  const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
   const nextStep = getNextAvailableStep(currentContext);
   
   if (nextStep !== tourState.currentStep) {
@@ -335,7 +335,23 @@ useEffect(() => {
       tour.show(nextStep);
     }
   }
-  }, [indicatorQuery, analysisRef, visRef, indicator, tourState.isActive, tourState.currentStep]);
+  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive, tourState.currentStep]);
+
+// Special handling for when user clicks the actual "Next" button to unlock filters
+useEffect(() => {
+  if (!tourState.isActive || !tourRef.current) return;
+
+  // If the tour is currently on the "Next Button" step and the filters panel is now unlocked
+  const currentStepElement = tourRef.current.getCurrentStep();
+  if (currentStepElement && currentStepElement.id === 'next-button' && 
+      !lockedStep.filter.locked && lockedStep.filter.openPanel) {
+    // Advance to the activity type selection step
+    const tour = tourRef.current;
+    if (tour) {
+      tour.show('activity-type-selection');
+    }
+  }
+}, [lockedStep.filter.locked, lockedStep.filter.openPanel, tourState.isActive]);
 
   // Cleanup tour on component unmount
   useEffect(() => {
@@ -351,7 +367,7 @@ useEffect(() => {
   const startTour = () => {
     if (!tourRef.current) return;
     
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const nextStep = getNextAvailableStep(currentContext);
     
     setTourState(prev => ({
