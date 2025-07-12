@@ -457,7 +457,7 @@ useEffect(() => {
         setLoading,
         setChartConfiguration,
         handleSaveNewBasicIndicator,
-        // Joyride functions
+        // Shepherd.js tour functions
         startTour,
         stopTour,
         restartTour,
@@ -536,7 +536,7 @@ useEffect(() => {
                 <IconButton 
                   color="primary" 
                   onClick={startTour}
-                  disabled={joyrideState.run}
+                  disabled={tourState.isActive}
                 >
                   <TourOutlined />
                 </IconButton>

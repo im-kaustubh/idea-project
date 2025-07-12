@@ -60,17 +60,8 @@ const Dataset = () => {
   };
 
   const handleNextSection = () => {
-    // Your existing next logic
-    proceedToNextSection(); 
-
-    // If tour is running, advance to next step
-    if (joyrideState.run) {
-      const nextStep = joyrideState.stepIndex + 1;
-      setJoyrideState(prev => ({
-        ...prev,
-        stepIndex: nextStep
-      }));
-    }
+    // Tour advancement is now handled automatically by Shepherd.js
+    handleUnlockFilters();
   };
 
   return (
@@ -108,7 +99,7 @@ const Dataset = () => {
                   !indicatorQuery.lrsStores.length ||
                   !indicatorQuery.platforms.length
                 }
-                onClick={handleUnlockFilters}
+                onClick={handleNextSection}
               >
                 Next
               </Button>
