@@ -40,7 +40,7 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { handleDisplayType } from "../utils/utils.js";
 import DeleteDialog from "../../../../common/components/delete-dialog/delete-dialog.jsx";
-import {fetchAnalyzedData} from "../../editor/components/analysis/utils/analytics-api.js"; #added
+import {fetchAnalyzedData} from "../../editor/components/analysis/utils/analytics-api.js"; //added
 
 const MyIndicatorsTable = () => {
   const { api } = useContext(AuthContext);
