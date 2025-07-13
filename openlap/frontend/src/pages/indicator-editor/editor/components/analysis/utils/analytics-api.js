@@ -36,7 +36,9 @@ export const fetchAnalyzedData = async (api, indicatorQuery, analysisRef) => {
   try {
     const requestBody = {
       indicatorQuery: { ...indicatorQuery },
-      ...analysisRef,
+      analyticsTechniqueId: analysisRef.analyticsTechniqueId,
+      analyticsTechniqueMapping: analysisRef.analyticsTechniqueMapping,
+      analyticsTechniqueParams: analysisRef.analyticsTechniqueParams,
     };
     const response = await api.post("v1/indicators/basic/analyze", requestBody);
     return {

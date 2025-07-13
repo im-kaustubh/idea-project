@@ -23,6 +23,7 @@ import {
   requestIndicatorCode,
   requestIndicatorDeletion,
   requestMyIndicators,
+  requestIndicatorFullDetail #added
 } from "../utils/indicator-dashboard-api.js";
 import { AuthContext } from "../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import {
@@ -39,6 +40,7 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { handleDisplayType } from "../utils/utils.js";
 import DeleteDialog from "../../../../common/components/delete-dialog/delete-dialog.jsx";
+import {fetchAnalyzedData} from "../../editor/components/analysis/utils/analytics-api.js"; #added
 
 const MyIndicatorsTable = () => {
   const { api } = useContext(AuthContext);
@@ -163,6 +165,145 @@ const MyIndicatorsTable = () => {
   };
 
   const handleEdit = () => {
+    const loadIndicatorDetail = async (api, indicatorId) => {
+      try {
+        return await requestIndicatorFullDetail(api, indicatorId);
+      } catch (error) {
+        console.log("Error requesting my indicators");
+      }
+    };
+    const loadAnalyzedData = async (api, analysisRequest) => {
+      try {
+        return await fetchAnalyzedData(api, analysisRequest);
+      } catch (error) {
+        console.log("Error fetching analyzed data");
+        return {};
+      }
+    };
+
+    setState((prevState) => ({
+      ...prevState,
+      loadingIndicators: true,
+    }));
+
+    loadIndicatorDetail(api, selectedIndicator.id)
+        .then(async (indicatorData) => {
+          if (!indicatorData) return;
+
+          console.log("indicatorData", indicatorData);
+
+          // Build the analysis request for analyzedData
+          const analysisRequest = {
+            indicatorQuery: indicatorData.indicatorQuery || {
+              lrsStores: [],
+              platforms: [],
+              activityTypes: [],
+              activities: {},
+              actionOnActivities: [],
+              duration: {
+                from: new Date().toISOString(),
+                until: new Date().toISOString(),
+              },
+              outputs: [],
+              userQueryCondition: "only_me",
+            },
+            analyticsTechniqueId: indicatorData.analyticsTechniqueId || "",
+            analyticsTechniqueMapping: indicatorData.analyticsTechniqueMapping || { mapping: [] },
+            analyticsTechniqueParams: indicatorData.analyticsTechniqueParams || [],
+          };
+
+          console.log("analysisRequest", analysisRequest);
+
+
+          // Fetch analyzedData
+          const analyzedDataResponse = await loadAnalyzedData(api, analysisRequest);
+
+          // Build a complete session object with all required fields
+          const sessionData = {
+            indicatorQuery: analysisRequest.indicatorQuery,
+            analysisRef: {
+              analyticsTechniqueId: analysisRequest.analyticsTechniqueId,
+              analyticsTechniqueParams: analysisRequest.analyticsTechniqueParams,
+              analyticsTechniqueMapping: analysisRequest.analyticsTechniqueMapping,
+              analyzedData: analyzedDataResponse.data || {},
+            },
+            visRef: indicatorData.visRef || {
+              visualizationLibraryId: "",
+              visualizationTypeId: "",
+              visualizationParams: { height: 500, width: 500 },
+              visualizationMapping: { mapping: [] },
+            },
+            analysisInputMenu: indicatorData.analysisInputMenu || {
+              activities: {
+                id: undefined,
+                type: "Text",
+                required: true,
+                title: "Activities",
+                description:
+                    "Selected list of all the Activities specified in Activity Filter. " +
+                    'E.g. courses that are selected in Activity name section are "Learning Analytics", "Data Mining" etc.',
+                options: [],
+              },
+              activityTypes: {
+                id: "statement.object.definition.type",
+                type: "Text",
+                required: true,
+                title: "Activity Types",
+                description: "Types of activities",
+              },
+              actionOnActivities: {
+                id: undefined,
+                type: "Text",
+                required: true,
+                title: "Actions",
+                description:
+                    "Selected list of actions performed on the activity(ies). E.g. a list of actions that were " +
+                    'performed on a course such as "viewed", "enrolled" etc.',
+                options: [],
+              },
+              platforms: {
+                id: "statement.context.platform",
+                type: "Text",
+                required: true,
+                title: "Platforms",
+                description:
+                    'Selected list of sources specified in Dataset such as "Moodle" etc.',
+              },
+            },
+            lockedStep: indicatorData.lockedStep || {
+              filter: { locked: true, openPanel: false },
+              analysis: { locked: true, openPanel: false },
+              visualization: { locked: true, openPanel: false },
+              finalize: { locked: true, openPanel: false },
+            },
+            indicator: indicatorData.indicator || {
+              previewData: {
+                displayCode: [],
+                scriptData: "",
+              },
+              indicatorName: indicatorData.name || "",
+              type: indicatorData.type || "BASIC",
+            },
+            edit: true,
+          };
+
+          sessionStorage.setItem("session", JSON.stringify(sessionData));
+          return sessionData;
+        })
+        .then(() => {
+          setState((prevState) => ({
+            ...prevState,
+            loadingIndicators: false,
+          }));
+          navigate("/indicator/editor/basic");
+        })
+        .catch((error) => {
+          setState((prevState) => ({
+            ...prevState,
+            loadingIndicators: false,
+          }));
+          console.error(error);
+        });
     handleMenuClose();
   };
 
@@ -351,6 +492,13 @@ const MyIndicatorsTable = () => {
                             </ListItemIcon>
                             <ListItemText primary="Preview Indicator" />
                           </MenuItem>
+                        </MenuItem>
+                        <MenuItem onClick={handleEdit}>
+                          <ListItemIcon>
+                            <Edit fontSize="small" color="primary" />
+                          </ListItemIcon>
+                          <ListItemText primary="Edit" />
+                        </MenuItem>
                           <MenuItem
                             onClick={handleCopyCode}
                             disabled={state.copyCode.loading}
