@@ -23,7 +23,7 @@ import {
   requestIndicatorCode,
   requestIndicatorDeletion,
   requestMyIndicators,
-  requestIndicatorFullDetail #added
+  requestIndicatorFullDetail,
 } from "../utils/indicator-dashboard-api.js";
 import { AuthContext } from "../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import {
@@ -492,13 +492,12 @@ const MyIndicatorsTable = () => {
                             </ListItemIcon>
                             <ListItemText primary="Preview Indicator" />
                           </MenuItem>
-                        </MenuItem>
-                        <MenuItem onClick={handleEdit}>
-                          <ListItemIcon>
-                            <Edit fontSize="small" color="primary" />
-                          </ListItemIcon>
-                          <ListItemText primary="Edit" />
-                        </MenuItem>
+                          <MenuItem onClick={handleEdit}>
+                            <ListItemIcon>
+                              <Edit fontSize="small" color="primary" />
+                            </ListItemIcon>
+                            <ListItemText primary="Edit" />
+                          </MenuItem>
                           <MenuItem
                             onClick={handleCopyCode}
                             disabled={state.copyCode.loading}
