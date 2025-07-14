@@ -205,7 +205,14 @@ const BasicIndicator = () => {
     }
     
     const tour = tourRef.current;
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    // Get fresh state at the time of validation, not when function was created
+    const currentContext = { 
+      indicatorQuery: indicatorQuery, 
+      analysisRef: analysisRef, 
+      visRef: visRef, 
+      indicator: indicator, 
+      lockedStep: lockedStep 
+    };
     const currentStep = tour.getCurrentStep();
     
     if (!currentStep) {
@@ -221,15 +228,11 @@ const BasicIndicator = () => {
       const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
       console.log(`validateAndNavigate: Step ${currentStepIndex} completed: ${isCurrentStepComplete}`);
       
-      // Debug: Log the current context to see what state we have
-      console.log('Current context for validation:', {
-        stepIndex: currentStepIndex,
-        lrsStores: currentContext.indicatorQuery.lrsStores,
-        platforms: currentContext.indicatorQuery.platforms,
-        activityTypes: currentContext.indicatorQuery.activityTypes,
-        activities: currentContext.indicatorQuery.activities,
-        actionOnActivities: currentContext.indicatorQuery.actionOnActivities,
-        lockedStep: currentContext.lockedStep
+      // Debug: Log key validation state
+      console.log('Validation state:', {
+        step: currentStepIndex,
+        lrsCount: currentContext.indicatorQuery.lrsStores.length,
+        platformCount: currentContext.indicatorQuery.platforms.length
       });
       
       if (!isCurrentStepComplete) {

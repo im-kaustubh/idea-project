@@ -5,7 +5,7 @@
 // Step validation functions
 export const isLrsSelected = (indicatorQuery) => {
   const result = indicatorQuery.lrsStores.length > 0;
-  console.log('isLrsSelected check:', { lrsStores: indicatorQuery.lrsStores, result });
+  console.log('LRS validation:', { count: indicatorQuery.lrsStores.length, valid: result });
   return result;
 };
 
@@ -63,7 +63,6 @@ export const isPreviewGenerated = (indicator) => {
 
 // Main step validation function
 export const validateStepCompletion = (stepIndex, { indicatorQuery, analysisRef, visRef, indicator }) => {
-  console.log(`validateStepCompletion called for step ${stepIndex}`, { indicatorQuery });
   switch (stepIndex) {
     case 0: // LRS Selection
       return isLrsSelected(indicatorQuery);

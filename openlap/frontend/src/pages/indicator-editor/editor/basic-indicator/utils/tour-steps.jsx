@@ -31,7 +31,9 @@ export const createTourSteps = (context, validateAndNavigate) => {
         {
           text: 'Next',
           classes: 'shepherd-button-primary',
-          action: function() {
+          action: async function() {
+            // Small delay to allow React state to update before validation
+            await new Promise(resolve => setTimeout(resolve, 100));
             return validateAndNavigate('next');
           }
         }
@@ -63,7 +65,9 @@ export const createTourSteps = (context, validateAndNavigate) => {
         {
           text: 'Next',
           classes: 'shepherd-button-primary',
-          action: function() {
+          action: async function() {
+            // Small delay to allow React state to update before validation
+            await new Promise(resolve => setTimeout(resolve, 100));
             return validateAndNavigate('next');
           }
         }
