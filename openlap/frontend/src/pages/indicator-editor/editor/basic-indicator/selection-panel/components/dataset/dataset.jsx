@@ -13,7 +13,7 @@ import { BasicIndicatorContext } from "../../../basic-indicator.jsx";
 import DatasetSummary from "./components/dataset-summary.jsx";
 
 const Dataset = () => {
-  const { indicatorQuery, setLockedStep, handleTourProgress } = useContext(BasicIndicatorContext);
+  const { indicatorQuery, setLockedStep } = useContext(BasicIndicatorContext);
   const [state, setState] = useState(() => {
     const savedState = sessionStorage.getItem("dataset");
     return savedState
@@ -57,11 +57,6 @@ const Dataset = () => {
         openPanel: true,
       },
     }));
-
-    // Trigger tour progression after unlocking filters
-    if (handleTourProgress) {
-      setTimeout(() => handleTourProgress(), 10);
-    }
   };
 
   return (

@@ -13,7 +13,7 @@ import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const LRS = ({ state, setState }) => {
   const { api } = useContext(AuthContext);
-  const { indicatorQuery, setIndicatorQuery, handleTourProgress } = useContext(
+  const { indicatorQuery, setIndicatorQuery } = useContext(
     BasicIndicatorContext
   );
 
@@ -47,11 +47,6 @@ const LRS = ({ state, setState }) => {
         lrsStores: tempLrsStore,
       };
     });
-
-    // Trigger tour progression after state update
-    if (handleTourProgress) {
-      setTimeout(() => handleTourProgress(), 10);
-    }
   };
 
   const handleDeselectLrsList = (selectedLrs) => {

@@ -23,7 +23,7 @@ const ActivityTypes = ({ state, setState }) => {
   
   // Get API and context functions
   const { api } = useContext(AuthContext);
-  const { indicatorQuery, setIndicatorQuery, setAnalysisRef, handleTourProgress } = useContext(BasicIndicatorContext);
+  const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(BasicIndicatorContext);
 
   // Load activity types data when platforms change
   // Load activity types data when platforms change
@@ -113,11 +113,6 @@ const ActivityTypes = ({ state, setState }) => {
       ...prevState,
       analyzedData: {},
     }));
-
-    // Trigger tour progression after state update
-    if (handleTourProgress) {
-      setTimeout(() => handleTourProgress(), 10);
-    }
   };
 
   // Check states for "Select All" checkbox
@@ -172,11 +167,6 @@ const ActivityTypes = ({ state, setState }) => {
       ...prevState,
       analyzedData: {},
     }));
-
-    // Trigger tour progression after state update
-    if (handleTourProgress) {
-      setTimeout(() => handleTourProgress(), 10);
-    }
   };
 
   // Handle deselecting a single activity type

@@ -3,7 +3,7 @@ import { validateStepCompletion, canProceedToStep, shouldShowStep } from './shep
 /**
  * Tour steps configuration for the Basic Indicator Editor using Shepherd.js
  */
-export const createTourSteps = (context) => {
+export const createTourSteps = (context, validateAndNavigate) => {
   const { indicatorQuery, analysisRef, visRef, indicator, lockedStep } = context;
   
   const steps = [
@@ -32,7 +32,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -64,7 +65,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -110,8 +112,9 @@ export const createTourSteps = (context) => {
               // Wait for the action to complete
               await new Promise(resolve => setTimeout(resolve, 1000));
               
-              // Then proceed to next tour step
-              return this.next();
+              // Then proceed to next tour step using validation
+              const tour = this.tour;
+              return validateAndNavigate(tour, 'next');
             }
             return this;
           }
@@ -149,7 +152,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -186,7 +190,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -223,7 +228,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -260,7 +266,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -297,7 +304,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -334,7 +342,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -371,7 +380,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -408,7 +418,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -445,7 +456,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -482,7 +494,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -519,7 +532,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],
@@ -556,7 +570,8 @@ export const createTourSteps = (context) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return this.next();
+            const tour = this.tour;
+            return validateAndNavigate(tour, 'next');
           }
         }
       ],

@@ -8,7 +8,7 @@ import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 import dayjs from "dayjs";
 
 const DateRange = () => {
-  const { indicatorQuery, setIndicatorQuery, setAnalysisRef, handleTourProgress } = useContext(
+  const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
     BasicIndicatorContext
   );
 
@@ -26,11 +26,6 @@ const DateRange = () => {
         from: value.toISOString(),
       },
     }));
-
-    // Trigger tour progression after state update
-    if (handleTourProgress) {
-      setTimeout(() => handleTourProgress(), 10);
-    }
   };
 
   const handleUpdateEndDate = (value) => {
