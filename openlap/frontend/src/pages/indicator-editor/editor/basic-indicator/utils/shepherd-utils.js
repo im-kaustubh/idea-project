@@ -4,7 +4,9 @@
 
 // Step validation functions
 export const isLrsSelected = (indicatorQuery) => {
-  return indicatorQuery.lrsStores.length > 0;
+  const result = indicatorQuery.lrsStores.length > 0;
+  console.log('isLrsSelected check:', { lrsStores: indicatorQuery.lrsStores, result });
+  return result;
 };
 
 export const isPlatformSelected = (indicatorQuery) => {
@@ -61,6 +63,7 @@ export const isPreviewGenerated = (indicator) => {
 
 // Main step validation function
 export const validateStepCompletion = (stepIndex, { indicatorQuery, analysisRef, visRef, indicator }) => {
+  console.log(`validateStepCompletion called for step ${stepIndex}`, { indicatorQuery });
   switch (stepIndex) {
     case 0: // LRS Selection
       return isLrsSelected(indicatorQuery);
@@ -141,21 +144,22 @@ export const getNextAvailableStep = ({ indicatorQuery, analysisRef, visRef, indi
 // Generate tooltip content for locked steps
 export const getStepTooltipContent = (stepIndex) => {
   const tooltips = {
-    1: "Please select at least one Learning Record Store (LRS) first",
-    2: "Please select at least one Platform first",
-    3: "Please click the Next button to proceed to Activity selection",
-    4: "Please select at least one Activity Type first",
-    5: "Please select at least one Activity first",
-    6: "Please select at least one Action first",
-    7: "Please complete the date range selection first",
-    8: "Please select an Analysis Technique first",
-    9: "Please map the analysis inputs first",
-    10: "Please set the analysis parameters first",
-    11: "Please preview the analysis data first",
-    12: "Please select a Visualization Library first",
-    13: "Please select a Visualization Type first",
-    14: "Please map the visualization inputs first",
-    15: "Please generate the preview first",
+    0: "Please select at least one Learning Record Store (LRS) first",
+    1: "Please select at least one Platform first", 
+    2: "Please click the Next button to proceed to Activity selection",
+    3: "Please select at least one Activity Type first",
+    4: "Please select at least one Activity first",
+    5: "Please select at least one Action first",
+    6: "Please complete the date range selection first",
+    7: "Please select an Analysis Technique first",
+    8: "Please map the analysis inputs first",
+    9: "Please set the analysis parameters first",
+    10: "Please preview the analysis data first",
+    11: "Please select a Visualization Library first",
+    12: "Please select a Visualization Type first",
+    13: "Please map the visualization inputs first",
+    14: "Please generate the preview first",
+    15: "Please submit the indicator first",
   };
   return tooltips[stepIndex] || "Please complete the previous steps first";
 };

@@ -221,6 +221,17 @@ const BasicIndicator = () => {
       const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
       console.log(`validateAndNavigate: Step ${currentStepIndex} completed: ${isCurrentStepComplete}`);
       
+      // Debug: Log the current context to see what state we have
+      console.log('Current context for validation:', {
+        stepIndex: currentStepIndex,
+        lrsStores: currentContext.indicatorQuery.lrsStores,
+        platforms: currentContext.indicatorQuery.platforms,
+        activityTypes: currentContext.indicatorQuery.activityTypes,
+        activities: currentContext.indicatorQuery.activities,
+        actionOnActivities: currentContext.indicatorQuery.actionOnActivities,
+        lockedStep: currentContext.lockedStep
+      });
+      
       if (!isCurrentStepComplete) {
         const tooltipContent = getStepTooltipContent(currentStepIndex);
         enqueueSnackbar(tooltipContent, { 
