@@ -44,6 +44,9 @@ const DateRange = () => {
     }));
   };
 
+  // Restrict end date to today
+  const today = dayjs();
+
   return (
     <>
       <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -70,6 +73,7 @@ const DateRange = () => {
                 label="End date"
                 value={dayjs(indicatorQuery.duration.until)}
                 minDate={dayjs(indicatorQuery.duration.from)}
+                maxDate={today}
                 fullWidth
                 onChange={(value) => handleUpdateEndDate(value)}
               />
