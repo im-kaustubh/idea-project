@@ -5,8 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Divider, Grid, IconButton, Tooltip, Typography } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import { Divider, Grid, IconButton, Tooltip, Typography, Fab} from "@mui/material";
+import { ArrowBack, TourOutlined, RestartAlt } from "@mui/icons-material";
 import SelectionPanel from "./selection-panel/selection-panel.jsx";
 import dayjs from "dayjs";
 import Condition from "./selection-panel/utils/condition.js";
@@ -14,6 +14,16 @@ import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import { requestCreateBasicIndicator } from "../components/preview-panel/utils/preview-api.js";
 import { AuthContext } from "../../../../setup/auth-context-manager/auth-context-manager.jsx";
+//New Imports
+import Shepherd from "shepherd.js";
+import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
+import { 
+  validateStepCompletion, 
+  canProceedToStep, 
+  getNextAvailableStep, 
+  getStepTooltipContent
+} from "./utils/shepherd-utils.js";
+import "./utils/shepherd-styles.css";
 
 export const BasicIndicatorContext = createContext(undefined);
 
@@ -178,6 +188,96 @@ const BasicIndicator = () => {
     indicator,
   });
 
+ // Shepherd.js tour state
+  const [tourState, setTourState] = useState({
+    isActive: false,
+    currentStep: 0,
+    tour: null,
+  });
+  const tourRef = useRef(null);
+
+ //initialize and update Walkthrough Tour when context changes
+  useEffect(() => {
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    const steps = createTourSteps(currentContext);
+    
+    // Clean up existing tour
+    if (tourRef.current) {
+      tourRef.current.complete();
+      tourRef.current = null;
+    }
+    
+    // Create new tour
+    const tour = new Shepherd.Tour({
+      useModalOverlay: true,
+      modalOverlayOpeningPadding: 8,
+      modalOverlayOpeningRadius: 12,
+      defaultStepOptions: {
+        classes: 'shepherd-theme-custom',
+        scrollTo: { behavior: 'smooth', block: 'center' },
+        showCancelLink: true,
+        cancelIcon: {
+          enabled: true,
+        },
+        when: {
+          show: function() {
+            // Ensure autocomplete dropdowns are properly highlighted
+            setTimeout(() => {
+              const stepElement = this.el;
+              if (stepElement) {
+                const stepId = stepElement.getAttribute('data-shepherd-step-id');
+                const autocompleteElements = document.querySelectorAll('.MuiAutocomplete-popper');
+                autocompleteElements.forEach(el => {
+                  el.style.zIndex = '10001';
+                  el.style.position = 'relative';
+                });
+              }
+            }, 100);
+          }
+        }
+      }
+    });
+
+    // Add steps to tour
+    steps.forEach(step => {
+      tour.addStep(step);
+    });
+    
+    // Tour event handlers
+    tour.on('complete', () => {
+      setTourState(prev => ({
+        ...prev,
+        isActive: false,
+        currentStep: 0
+      }));
+    });
+    
+    tour.on('cancel', () => {
+      setTourState(prev => ({
+        ...prev,
+        isActive: false,
+        currentStep: 0
+      }));
+    });
+    
+    tour.on('show', (event) => {
+      setTourState(prev => ({
+        ...prev,
+        currentStep: event.step ? steps.findIndex(s => s.id === event.step.id) : 0
+      }));
+    });
+    
+    tourRef.current = tour;
+    
+    setTourState(prev => ({
+      ...prev,
+      tour
+    }));
+    
+  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep]);
+
+
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       let session = {
@@ -223,6 +323,124 @@ const BasicIndicator = () => {
     lockedStep,
     indicator,
   ]);
+
+// Sync tour with context changes - with improved timing
+useEffect(() => {
+  if (!tourState.isActive || !tourRef.current) return;
+
+  // Add a small delay to allow UI to update
+  const timeoutId = setTimeout(() => {
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    
+    // Check what the next logical step should be
+    const nextAvailableStep = getNextAvailableStep(currentContext);
+    const currentStep = tourRef.current?.getCurrentStep();
+    const currentStepIndex = currentStep ? 
+      tourRef.current.steps.findIndex(s => s.id === currentStep.id) : 0;
+    
+    // Only advance if we're not already on the correct step and the step has been completed
+    if (nextAvailableStep > currentStepIndex) {
+      console.log(`Auto-advancing tour from step ${currentStepIndex} to step ${nextAvailableStep}`);
+      const tour = tourRef.current;
+      if (tour && tour.steps[nextAvailableStep]) {
+        tour.show(nextAvailableStep);
+      }
+    }
+  }, 500); // 500ms delay to allow for UI updates
+
+  return () => clearTimeout(timeoutId);
+}, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
+
+// Special handling for when user clicks the actual "Next" button to unlock filters
+useEffect(() => {
+  if (!tourState.isActive || !tourRef.current) return;
+
+  // If the tour is currently on the "Next Button" step and the filters panel is now unlocked
+  const currentStepElement = tourRef.current.getCurrentStep();
+  if (currentStepElement && currentStepElement.id === 'next-button' && 
+      !lockedStep.filter.locked && lockedStep.filter.openPanel) {
+    // Advance to the activity type selection step
+    const tour = tourRef.current;
+    if (tour) {
+      setTimeout(() => {
+        tour.show('activity-type-selection');
+      }, 1000); // Give time for the UI to update
+    }
+  }
+}, [lockedStep.filter.locked, lockedStep.filter.openPanel, tourState.isActive]);
+
+   // Shepherd.js tour validation and navigation
+  const validateAndNavigate = (tour, direction = 'next') => {
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
+    const currentStepIndex = tour.getCurrentStep()?.id ? 
+      tour.steps.findIndex(s => s.id === tour.getCurrentStep().id) : 0;
+    
+    if (direction === 'next') {
+      const nextStepIndex = currentStepIndex + 1;
+      
+      if (!canProceedToStep(nextStepIndex, currentContext)) {
+        const tooltipContent = getStepTooltipContent(nextStepIndex);
+        enqueueSnackbar(tooltipContent, { 
+          variant: "warning",
+          autoHideDuration: 4000,
+        });
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
+  // Start the tour
+  const startTour = () => {
+    if (!tourRef.current) return;
+    
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    const nextStep = getNextAvailableStep(currentContext);
+    
+    setTourState(prev => ({
+      ...prev,
+      isActive: true,
+      currentStep: nextStep
+    }));
+    
+    // Always start from the beginning for initial tour, show next step if progressed
+    tourRef.current.start();
+    
+    // If we're not at step 0, show the appropriate step after a delay
+    if (nextStep > 0) {
+      setTimeout(() => {
+        if (tourRef.current) {
+          tourRef.current.show(nextStep);
+        }
+      }, 500);
+    }
+  };
+
+  // Restart the tour from beginning
+    const restartTour = () => {
+    if (!tourRef.current) return;
+    
+    setTourState(prev => ({
+      ...prev,
+      isActive: true,
+      currentStep: 0
+    }));
+    
+    tourRef.current.start();
+  };
+
+  // Stop the tour
+  const stopTour = () => {
+    if (!tourRef.current) return;
+    
+    setTourState(prev => ({
+      ...prev,
+      isActive: false
+    }));
+    
+    tourRef.current.complete();
+  };
 
   const handleSaveNewBasicIndicator = () => {
     const loadCreateBasicIndicator = async (
@@ -290,8 +508,47 @@ const BasicIndicator = () => {
         setLoading,
         setChartConfiguration,
         handleSaveNewBasicIndicator,
+        //Shepherd Functions
+        startTour,
+        stopTour,
+        restartTour
       }}
     >
+      {/* Tour Control FABs */}
+      <div style={{ 
+        position: 'fixed', 
+        bottom: 24, 
+        right: 24, 
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8
+      }}>
+        {!tourState.isActive && (
+          <Tooltip title="Start guided tour" placement="left">
+            <Fab
+              color="primary"
+              size="small"
+              onClick={startTour}
+              sx={{ mb: 1 }}
+            >
+              <TourOutlined />
+            </Fab>
+          </Tooltip>
+        )}
+        
+        {tourState.isActive && (
+          <Tooltip title="Restart tour from beginning" placement="left">
+            <Fab
+              color="secondary"
+              size="small"
+              onClick={restartTour}
+            >
+              <RestartAlt />
+            </Fab>
+          </Tooltip>
+        )}
+      </div>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Grid container alignItems="center">
@@ -321,6 +578,17 @@ const BasicIndicator = () => {
             </Grid>
             <Grid item xs>
               <Typography align="center">Basic Indicator Editor</Typography>
+            </Grid>
+            <Grid item>
+              <Tooltip title="Start guided tour" arrow>
+                <IconButton 
+                  color="primary" 
+                  onClick={startTour}
+                  disabled={tourState.isActive}
+                >
+                  <TourOutlined />
+                </IconButton>
+              </Tooltip>
             </Grid>
           </Grid>
         </Grid>

@@ -217,6 +217,7 @@ const ActivityTypes = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+                  className="shepherd-activity-type-selector"
                   open={autocompleteOpen}
                   onOpen={() => setAutocompleteOpen(true)}
                   onClose={() => setAutocompleteOpen(false)}

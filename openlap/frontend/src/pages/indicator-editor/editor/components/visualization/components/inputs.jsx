@@ -66,7 +66,7 @@ const Inputs = ({ state, setVisRef, analyzedData }) => {
 
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} className="shepherd-viz-inputs">
         <Grid item xs={12}>
           <Grid container alignItems="center">
             <Typography>Visualization inputs</Typography>

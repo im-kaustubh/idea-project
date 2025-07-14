@@ -521,6 +521,7 @@ const ActionOnActivities = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+                  className="shepherd-action-selector"
                   open={autocompleteOpen}
                   onOpen={() => setAutocompleteOpen(true)}
                   onClose={() => setAutocompleteOpen(false)}

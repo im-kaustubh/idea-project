@@ -87,6 +87,7 @@ const Platform = ({ state, setState }) => {
                 }
               >
                 <Autocomplete
+                  className="shepherd-platform-selector"
                   disablePortal
                   disableCloseOnSelect
                   disabled={

@@ -322,6 +322,7 @@ const Visualization = ({
           <Grid container justifyContent="center">
             <Grid item xs={12} md={6}>
               <LoadingButton
+                className="shepherd-generate-preview-btn"
                 loading={state.loadingPreview}
                 loadingIndicator="Generating…"
                 variant="contained"
