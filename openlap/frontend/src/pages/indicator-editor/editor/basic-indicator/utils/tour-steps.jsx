@@ -32,8 +32,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -65,8 +64,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -113,8 +111,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
               await new Promise(resolve => setTimeout(resolve, 1000));
               
               // Then proceed to next tour step using validation
-              const tour = this.tour;
-              return validateAndNavigate(tour, 'next');
+              return validateAndNavigate('next');
             }
             return this;
           }
@@ -152,8 +149,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -190,8 +186,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -208,8 +203,8 @@ export const createTourSteps = (context, validateAndNavigate) => {
       title: 'Choose Actions',
       text: `
         <div>
-          <p>Select the <strong>Actions</strong> performed on these activities.</p>
-          <p>Actions like "viewed", "completed", "attempted" define what learner behaviors you want to track.</p>
+          <p>Select the <strong>Actions</strong> that learners can perform on the activities.</p>
+          <p>This could include actions like viewing, completing, submitting, etc.</p>
         </div>
       `,
       attachTo: {
@@ -228,8 +223,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -241,18 +235,18 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'action-selection'
     },
 
-    // Step 6: Date Range Selection
+    // Step 6: Date Range
     {
       title: 'Set Date Range',
       text: `
         <div>
-          <p>Configure the <strong>time period</strong> for your analysis.</p>
-          <p>Choose the start and end dates to define when the learning activities occurred.</p>
+          <p>Define the <strong>time period</strong> for your analysis.</p>
+          <p>Select start and end dates to filter the learning data within this timeframe.</p>
         </div>
       `,
       attachTo: {
         element: '.shepherd-date-range',
-        on: 'top'
+        on: 'right'
       },
       buttons: [
         {
@@ -266,8 +260,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -279,13 +272,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'date-range-selection'
     },
 
-    // Step 7: Analysis Technique Selection
+    // Step 7: Analysis Technique
     {
-      title: 'Choose Analysis Method',
+      title: 'Choose Analysis Technique',
       text: `
         <div>
-          <p>Select an <strong>Analytics Technique</strong> to process your data.</p>
-          <p>Different techniques like frequency analysis, correlation, or clustering provide different insights into learning patterns.</p>
+          <p>Select an <strong>Analysis Technique</strong> to process your data.</p>
+          <p>Different techniques will provide different insights into the learning patterns.</p>
         </div>
       `,
       attachTo: {
@@ -304,8 +297,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -317,13 +309,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'analysis-technique-selection'
     },
 
-    // Step 8: Analysis Inputs Mapping
+    // Step 8: Analysis Inputs
     {
       title: 'Map Analysis Inputs',
       text: `
         <div>
-          <p>Map your data fields to the <strong>analysis inputs</strong>.</p>
-          <p>This tells the analytics technique which parts of your data to use for processing.</p>
+          <p>Map your data to the <strong>Analysis Inputs</strong>.</p>
+          <p>This tells the system which fields from your data to use in the analysis.</p>
         </div>
       `,
       attachTo: {
@@ -342,8 +334,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -357,11 +348,11 @@ export const createTourSteps = (context, validateAndNavigate) => {
 
     // Step 9: Analysis Parameters
     {
-      title: 'Set Parameters',
+      title: 'Set Analysis Parameters',
       text: `
         <div>
-          <p>Configure the <strong>analysis parameters</strong>.</p>
-          <p>These settings fine-tune how the analytics technique processes your data.</p>
+          <p>Configure any <strong>Parameters</strong> needed for your chosen analysis technique.</p>
+          <p>These fine-tune how the analysis will be performed.</p>
         </div>
       `,
       attachTo: {
@@ -380,8 +371,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -395,16 +385,16 @@ export const createTourSteps = (context, validateAndNavigate) => {
 
     // Step 10: Preview Analysis Data
     {
-      title: 'Preview Analysis',
+      title: 'Preview Analysis Data',
       text: `
         <div>
-          <p>Click <strong>"Preview data"</strong> to run the analysis and see the processed results.</p>
-          <p>This will generate the analyzed data that you'll use for visualization.</p>
+          <p>Click this button to <strong>Generate and Preview</strong> the analysis results.</p>
+          <p>This will process your data and show you a sample of the results.</p>
         </div>
       `,
       attachTo: {
         element: '.shepherd-preview-data-btn',
-        on: 'top'
+        on: 'right'
       },
       buttons: [
         {
@@ -418,8 +408,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -436,8 +425,8 @@ export const createTourSteps = (context, validateAndNavigate) => {
       title: 'Choose Visualization Library',
       text: `
         <div>
-          <p>Select a <strong>Visualization Library</strong> for creating charts.</p>
-          <p>Different libraries offer various chart types and styling options like D3.js, Chart.js, or ApexCharts.</p>
+          <p>Select a <strong>Visualization Library</strong> to create charts and graphs.</p>
+          <p>Different libraries offer different types of visualizations and styling options.</p>
         </div>
       `,
       attachTo: {
@@ -456,8 +445,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -466,16 +454,16 @@ export const createTourSteps = (context, validateAndNavigate) => {
           return shouldShowStep(11, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
-      id: 'visualization-library'
+      id: 'visualization-library-selection'
     },
 
     // Step 12: Visualization Type
     {
-      title: 'Select Chart Type',
+      title: 'Select Visualization Type',
       text: `
         <div>
-          <p>Choose the <strong>Visualization Type</strong> that best represents your data.</p>
-          <p>Options include bar charts, line graphs, pie charts, and more specialized learning analytics visualizations.</p>
+          <p>Choose the <strong>Type of Visualization</strong> that best represents your data.</p>
+          <p>Options might include bar charts, line graphs, pie charts, etc.</p>
         </div>
       `,
       attachTo: {
@@ -494,8 +482,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -504,16 +491,16 @@ export const createTourSteps = (context, validateAndNavigate) => {
           return shouldShowStep(12, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
-      id: 'visualization-type'
+      id: 'visualization-type-selection'
     },
 
     // Step 13: Visualization Inputs
     {
-      title: 'Map Visualization Data',
+      title: 'Map Visualization Inputs',
       text: `
         <div>
-          <p>Map your analyzed data to the <strong>visualization inputs</strong>.</p>
-          <p>This determines what data appears on the X-axis, Y-axis, and other chart elements.</p>
+          <p>Map your analysis results to the <strong>Visualization Inputs</strong>.</p>
+          <p>This determines which data fields will be displayed in your chart.</p>
         </div>
       `,
       attachTo: {
@@ -532,8 +519,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -542,7 +528,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           return shouldShowStep(13, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
-      id: 'visualization-inputs'
+      id: 'visualization-inputs-mapping'
     },
 
     // Step 14: Generate Preview
@@ -550,13 +536,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       title: 'Generate Preview',
       text: `
         <div>
-          <p>Click <strong>"Generate Preview"</strong> to create your visualization.</p>
-          <p>This will process your data and display the final chart that represents your learning analytics indicator.</p>
+          <p>Click this button to <strong>Generate a Preview</strong> of your visualization.</p>
+          <p>This will create a sample chart based on your configuration.</p>
         </div>
       `,
       attachTo: {
         element: '.shepherd-generate-preview-btn',
-        on: 'top'
+        on: 'right'
       },
       buttons: [
         {
@@ -570,8 +556,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            const tour = this.tour;
-            return validateAndNavigate(tour, 'next');
+            return validateAndNavigate('next');
           }
         }
       ],
@@ -588,14 +573,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       title: 'Save Your Indicator',
       text: `
         <div>
-          <p>Perfect! Your indicator is ready. Click <strong>"Save Indicator"</strong> to save it to your collection.</p>
-          <p>You can customize the chart appearance in the panel to the right before saving.</p>
-          <p>🎉 Congratulations on creating your learning analytics indicator!</p>
+          <p>Congratulations! You've successfully configured your indicator.</p>
+          <p>Click the <strong>Submit</strong> button to save your indicator for future use.</p>
         </div>
       `,
       attachTo: {
         element: '.shepherd-submit-btn',
-        on: 'top'
+        on: 'right'
       },
       buttons: [
         {
@@ -622,22 +606,18 @@ export const createTourSteps = (context, validateAndNavigate) => {
     }
   ];
 
-  // Filter steps based on their when conditions
-  return steps.filter(step => !step.when || step.when.show());
+  return steps;
 };
 
 // Shepherd.js specific styles configuration
 export const shepherdStyles = {
   defaultStepOptions: {
     classes: 'shepherd-theme-custom',
-    scrollTo: true,
+    scrollTo: { behavior: 'smooth', block: 'center' },
     showCancelLink: true,
     cancelIcon: {
-      enabled: true,
-    },
-    modalOverlayOpeningPadding: 4,
-    modalOverlayOpeningRadius: 8,
-    useModalOverlay: true,
+      enabled: true
+    }
   }
 };
 

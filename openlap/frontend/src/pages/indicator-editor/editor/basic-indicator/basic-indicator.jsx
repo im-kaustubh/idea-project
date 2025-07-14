@@ -198,7 +198,13 @@ const BasicIndicator = () => {
   const tourRef = useRef(null);
 
    // Shepherd.js tour validation and navigation
-  const validateAndNavigate = (tour, direction = 'next') => {
+  const validateAndNavigate = (direction = 'next') => {
+    if (!tourRef.current) {
+      console.log('validateAndNavigate: No tour reference available');
+      return false;
+    }
+    
+    const tour = tourRef.current;
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const currentStep = tour.getCurrentStep();
     
