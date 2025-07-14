@@ -73,11 +73,7 @@ export const createTourSteps = (context) => {
           return shouldShowStep(1, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
-      id: 'platform-selection',
-      advanceOn: {
-        selector: '.shepherd-platform-selector',
-        event: 'change'
-      }
+      id: 'platform-selection'
     },
 
     // Step 2: Next Button

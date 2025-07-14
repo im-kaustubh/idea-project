@@ -202,12 +202,19 @@ const BasicIndicator = () => {
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const steps = createTourSteps(currentContext);
     
-    // Clean up existing tour
-    if (tourRef.current) {
+        // Only clean up existing tour if it's not currently active
+    // This prevents the tour from being destroyed when users interact with UI elements
+    if (tourRef.current && !tourState.isActive) {
       tourRef.current.complete();
       tourRef.current = null;
     }
-    
+
+    // Skip creating a new tour if one is already active
+    // The existing tour will be handled by the context sync logic
+    if (tourState.isActive && tourRef.current) {
+      return;
+    }
+
     // Create new tour
     const tour = new Shepherd.Tour({
       useModalOverlay: true,
@@ -394,32 +401,41 @@ useEffect(() => {
 
   // Handle tour progression based on UI interactions
   const handleTourProgress = useCallback(() => {
-    if (!tourState.isActive || !tourRef.current) return;
+    if (!tourState.isActive || !tourRef.current) {
+      console.log('Tour progression skipped: tour not active or not available');
+      return;
+    }
     
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const currentStep = tourRef.current.getCurrentStep();
     
-    if (!currentStep) return;
+    if (!currentStep) {
+      console.log('Tour progression skipped: no current step');
+      return;
+    }
     
     const currentStepIndex = tourRef.current.steps.findIndex(s => s.id === currentStep.id);
+    console.log(`Checking tour progression for step ${currentStepIndex} (${currentStep.id})`);
     
     // Check if current step is now completed
     const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
+    console.log(`Step ${currentStepIndex} completed: ${isCurrentStepComplete}`);
     
     if (isCurrentStepComplete) {
       // Find the next available step
       const nextAvailableStep = getNextAvailableStep(currentContext);
+      console.log(`Next available step: ${nextAvailableStep}`);
       
       // Only advance if we're not already on the correct step
       if (nextAvailableStep > currentStepIndex) {
         console.log(`Auto-advancing tour from step ${currentStepIndex} to step ${nextAvailableStep} due to UI interaction`);
         
-        // Small delay to ensure UI has updated
-        setTimeout(() => {
-          if (tourRef.current && tourRef.current.steps[nextAvailableStep]) {
-            tourRef.current.show(nextAvailableStep);
-          }
-        }, 100);
+        // Immediate progression for better user experience
+        if (tourRef.current && tourRef.current.steps[nextAvailableStep]) {
+          tourRef.current.show(nextAvailableStep);
+        }
+      } else {
+        console.log(`No advancement needed: nextAvailableStep (${nextAvailableStep}) <= currentStepIndex (${currentStepIndex})`);
       }
     }
   }, [tourState.isActive, indicatorQuery, analysisRef, visRef, indicator, lockedStep]);

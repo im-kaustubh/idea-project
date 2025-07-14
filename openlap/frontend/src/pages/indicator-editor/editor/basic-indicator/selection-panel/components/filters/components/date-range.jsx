@@ -29,7 +29,7 @@ const DateRange = () => {
 
     // Trigger tour progression after state update
     if (handleTourProgress) {
-      setTimeout(() => handleTourProgress(), 50);
+      setTimeout(() => handleTourProgress(), 10);
     }
   };
 
