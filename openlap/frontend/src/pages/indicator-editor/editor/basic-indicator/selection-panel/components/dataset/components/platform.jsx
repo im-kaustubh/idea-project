@@ -11,7 +11,7 @@ import {
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const Platform = ({ state, setState }) => {
-  const { indicatorQuery, setIndicatorQuery } = useContext(
+  const { indicatorQuery, setIndicatorQuery, handleTourProgress } = useContext(
     BasicIndicatorContext
   );
 
@@ -35,6 +35,11 @@ const Platform = ({ state, setState }) => {
         platforms: tempPlatforms,
       };
     });
+
+    // Trigger tour progression after state update
+    if (handleTourProgress) {
+      setTimeout(() => handleTourProgress(), 50);
+    }
   };
 
   const handleDeselectPlatformList = (selectedPlatform) => {

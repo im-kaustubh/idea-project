@@ -27,6 +27,7 @@ const ActionOnActivities = ({ state, setState }) => {
     setGenerate,
     setIndicator,
     setVisRef,
+    handleTourProgress,
   } = useContext(BasicIndicatorContext);
 
   // State for managing autocomplete dropdown visibility
@@ -167,6 +168,11 @@ const ActionOnActivities = ({ state, setState }) => {
         openPanel: false,
       },
     }));
+
+    // Trigger tour progression after state update
+    if (handleTourProgress) {
+      setTimeout(() => handleTourProgress(), 50);
+    }
   };
 
   // Check states for "Select All" checkbox

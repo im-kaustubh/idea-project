@@ -27,6 +27,7 @@ const Activities = ({ state, setState }) => {
     indicatorQuery,
     setIndicatorQuery,
     setAnalysisInputMenu,
+    handleTourProgress,
   } = useContext(BasicIndicatorContext);
 
   // Filter activities to only show those from selected activity types
@@ -141,6 +142,11 @@ const Activities = ({ state, setState }) => {
         activities: tempActivities,
       }));
 
+      // Trigger tour progression after state update
+      if (handleTourProgress) {
+        setTimeout(() => handleTourProgress(), 50);
+      }
+
       setLastCheckedIndex(currentIndex);
     } else {
       // Handle single click selection/deselection
@@ -219,6 +225,11 @@ const Activities = ({ state, setState }) => {
         activities: tempActivities,
       };
     });
+
+    // Trigger tour progression after state update
+    if (handleTourProgress) {
+      setTimeout(() => handleTourProgress(), 50);
+    }
   };
 
   // Handle deselecting a single activity

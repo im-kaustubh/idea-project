@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from "react";
 import { Divider, Grid, IconButton, Tooltip, Typography, Fab} from "@mui/material";
 import { ArrowBack, TourOutlined, RestartAlt } from "@mui/icons-material";
@@ -324,11 +325,11 @@ const BasicIndicator = () => {
     indicator,
   ]);
 
-// Sync tour with context changes - with improved timing
+// Sync tour with context changes - enhanced for immediate response
 useEffect(() => {
   if (!tourState.isActive || !tourRef.current) return;
 
-  // Add a small delay to allow UI to update
+  // Add a small delay to allow UI to update, but much shorter for better responsiveness
   const timeoutId = setTimeout(() => {
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     
@@ -340,13 +341,13 @@ useEffect(() => {
     
     // Only advance if we're not already on the correct step and the step has been completed
     if (nextAvailableStep > currentStepIndex) {
-      console.log(`Auto-advancing tour from step ${currentStepIndex} to step ${nextAvailableStep}`);
+      console.log(`Auto-advancing tour from step ${currentStepIndex} to step ${nextAvailableStep} due to context change`);
       const tour = tourRef.current;
       if (tour && tour.steps[nextAvailableStep]) {
         tour.show(nextAvailableStep);
       }
     }
-  }, 500); // 500ms delay to allow for UI updates
+  }, 150); // Reduced delay for better responsiveness
 
   return () => clearTimeout(timeoutId);
 }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
@@ -390,6 +391,38 @@ useEffect(() => {
     
     return true;
   };
+
+  // Handle tour progression based on UI interactions
+  const handleTourProgress = useCallback(() => {
+    if (!tourState.isActive || !tourRef.current) return;
+    
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    const currentStep = tourRef.current.getCurrentStep();
+    
+    if (!currentStep) return;
+    
+    const currentStepIndex = tourRef.current.steps.findIndex(s => s.id === currentStep.id);
+    
+    // Check if current step is now completed
+    const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
+    
+    if (isCurrentStepComplete) {
+      // Find the next available step
+      const nextAvailableStep = getNextAvailableStep(currentContext);
+      
+      // Only advance if we're not already on the correct step
+      if (nextAvailableStep > currentStepIndex) {
+        console.log(`Auto-advancing tour from step ${currentStepIndex} to step ${nextAvailableStep} due to UI interaction`);
+        
+        // Small delay to ensure UI has updated
+        setTimeout(() => {
+          if (tourRef.current && tourRef.current.steps[nextAvailableStep]) {
+            tourRef.current.show(nextAvailableStep);
+          }
+        }, 100);
+      }
+    }
+  }, [tourState.isActive, indicatorQuery, analysisRef, visRef, indicator, lockedStep]);
 
   // Start the tour
   const startTour = () => {
@@ -511,7 +544,8 @@ useEffect(() => {
         //Shepherd Functions
         startTour,
         stopTour,
-        restartTour
+        restartTour,
+        handleTourProgress
       }}
     >
       {/* Tour Control FABs */}
