@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Divider, Grid, IconButton, Tooltip, Typography } from "@mui/material";
+import { Divider, Grid, IconButton, Tooltip, Typography, Box } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import SelectionPanel from "./selection-panel/selection-panel.jsx";
 import dayjs from "dayjs";
@@ -14,6 +14,8 @@ import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import { requestCreateBasicIndicator } from "../components/preview-panel/utils/preview-api.js";
 import { AuthContext } from "../../../../setup/auth-context-manager/auth-context-manager.jsx";
+import EndDateSelector from './components/EndDateSelector';
+import StepHelpDialog from './components/StepHelpDialog';
 
 export const BasicIndicatorContext = createContext(undefined);
 
@@ -168,6 +170,8 @@ const BasicIndicator = () => {
           },
         };
   });
+
+  const [endDate, setEndDate] = React.useState('');
 
   const prevDependencies = useRef({
     indicatorQuery,

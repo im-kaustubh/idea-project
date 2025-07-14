@@ -15,7 +15,6 @@ import {
   fetchTechniqueParams,
 } from "../utils/analytics-api.js";
 
-
 const AnalyticsTechnique = ({
   state,
   setState,

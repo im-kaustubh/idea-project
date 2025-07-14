@@ -8,32 +8,44 @@ import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 import dayjs from "dayjs";
 
 const DateRange = () => {
-  const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(BasicIndicatorContext);
-
-  const minSelectableDate = dayjs("2000-01-01");
-  const maxSelectableDate = dayjs();
-  
-  //const shouldDisableDate = (date) => {
-    //const year = date.year();
-    // Disable dates from 2001 to 2010 inclusive
-    //return year >= 2001 && year <= 2010;
- // };
+  const { indicatorQuery, setIndicatorQuery, setAnalysisRef } = useContext(
+    BasicIndicatorContext
+  );
 
   const handleUpdateStartDate = (value) => {
-    setAnalysisRef((prev) => ({ ...prev, analyzedData: {} }));
-    setIndicatorQuery((prev) => ({
-      ...prev,
-      duration: { ...prev.duration, from: value.toISOString() },
+    // If query is changed
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      duration: {
+        ...prevState.duration,
+        from: value.toISOString(),
+      },
     }));
   };
 
   const handleUpdateEndDate = (value) => {
-    setAnalysisRef((prev) => ({ ...prev, analyzedData: {} }));
-    setIndicatorQuery((prev) => ({
-      ...prev,
-      duration: { ...prev.duration, until: value.toISOString() },
+    // If query is changed
+    setAnalysisRef((prevState) => ({
+      ...prevState,
+      analyzedData: {},
+    }));
+
+    setIndicatorQuery((prevState) => ({
+      ...prevState,
+      duration: {
+        ...prevState.duration,
+        until: value.toISOString(),
+      },
     }));
   };
+
+  // Restrict end date to today
+  const today = dayjs();
 
   return (
     <>
@@ -47,12 +59,9 @@ const DateRange = () => {
               <DatePicker
                 label="Start date"
                 value={dayjs(indicatorQuery.duration.from)}
-                onChange={handleUpdateStartDate}
-                minDate={minSelectableDate}
-                maxDate={maxSelectableDate}
-                //shouldDisableDate={shouldDisableDate}
-                openTo="year"
-                views={["year", "month", "day"]}
+                maxDate={dayjs(indicatorQuery.duration.until)}
+                fullWidth
+                onChange={(value) => handleUpdateStartDate(value)}
               />
             </DemoContainer>
           </LocalizationProvider>
@@ -63,12 +72,10 @@ const DateRange = () => {
               <DatePicker
                 label="End date"
                 value={dayjs(indicatorQuery.duration.until)}
-                onChange={handleUpdateEndDate}
-                minDate={minSelectableDate}
-                maxDate={maxSelectableDate}
-                //shouldDisableDate={shouldDisableDate}
-                openTo="year"
-                views={["year", "month", "day"]}
+                minDate={dayjs(indicatorQuery.duration.from)}
+                maxDate={today}
+                fullWidth
+                onChange={(value) => handleUpdateEndDate(value)}
               />
             </DemoContainer>
           </LocalizationProvider>
@@ -79,4 +86,3 @@ const DateRange = () => {
 };
 
 export default DateRange;
-
