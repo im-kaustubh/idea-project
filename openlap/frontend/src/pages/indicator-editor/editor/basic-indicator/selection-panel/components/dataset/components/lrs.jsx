@@ -18,6 +18,7 @@ const LRS = ({ state, setState }) => {
   );
 
   const handleSelectLrsList = (selectedLrs) => {
+    console.log('LRS selected:', selectedLrs);
     setState((prevState) => ({
       ...prevState,
       lrsList: prevState.lrsList.filter((item) => item.id !== selectedLrs.id),
@@ -41,6 +42,7 @@ const LRS = ({ state, setState }) => {
 
     setIndicatorQuery((prevState) => {
       let tempLrsStore = [...prevState.lrsStores, selectedLrs];
+      console.log('Updating indicatorQuery with LRS:', { prevLrsStores: prevState.lrsStores, newLrsStores: tempLrsStore });
       loadPlatformData(tempLrsStore);
       return {
         ...prevState,

@@ -11,7 +11,7 @@ import {
 import { BasicIndicatorContext } from "../../../../basic-indicator.jsx";
 
 const Platform = ({ state, setState }) => {
-  const { indicatorQuery, setIndicatorQuery } = useContext(
+  const { indicatorQuery, setIndicatorQuery} = useContext(
     BasicIndicatorContext
   );
 

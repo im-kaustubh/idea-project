@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from "react";
 import { Divider, Grid, IconButton, Tooltip, Typography, Fab} from "@mui/material";
 import { ArrowBack, TourOutlined, RestartAlt } from "@mui/icons-material";
@@ -196,17 +197,88 @@ const BasicIndicator = () => {
   });
   const tourRef = useRef(null);
 
+   // Shepherd.js tour validation and navigation
+  const validateAndNavigate = (direction = 'next') => {
+    if (!tourRef.current) {
+      console.log('validateAndNavigate: No tour reference available');
+      return false;
+    }
+    
+    const tour = tourRef.current;
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    const currentStep = tour.getCurrentStep();
+    
+    if (!currentStep) {
+      console.log('validateAndNavigate: No current step');
+      return false;
+    }
+    
+    const currentStepIndex = tour.steps.findIndex(s => s.id === currentStep.id);
+    console.log(`validateAndNavigate: Current step ${currentStepIndex} (${currentStep.id})`);
+    
+    if (direction === 'next') {
+      // First validate that the current step is completed
+      const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
+      console.log(`validateAndNavigate: Step ${currentStepIndex} completed: ${isCurrentStepComplete}`);
+      
+      // Debug: Log the current context to see what state we have
+      console.log('Current context for validation:', {
+        stepIndex: currentStepIndex,
+        lrsStores: currentContext.indicatorQuery.lrsStores,
+        platforms: currentContext.indicatorQuery.platforms,
+        activityTypes: currentContext.indicatorQuery.activityTypes,
+        activities: currentContext.indicatorQuery.activities,
+        actionOnActivities: currentContext.indicatorQuery.actionOnActivities,
+        lockedStep: currentContext.lockedStep
+      });
+      
+      if (!isCurrentStepComplete) {
+        const tooltipContent = getStepTooltipContent(currentStepIndex);
+        enqueueSnackbar(tooltipContent, { 
+          variant: "warning",
+          autoHideDuration: 4000,
+        });
+        return false;
+      }
+      
+      // Find the next available step
+      const nextAvailableStep = getNextAvailableStep(currentContext);
+      console.log(`validateAndNavigate: Next available step: ${nextAvailableStep}`);
+      
+      // Navigate to the next available step
+      if (nextAvailableStep > currentStepIndex && tour.steps[nextAvailableStep]) {
+        tour.show(nextAvailableStep);
+        return true;
+      } else if (nextAvailableStep === currentStepIndex) {
+        // Already on the correct step
+        return true;
+      } else {
+        // No valid next step available
+        console.log('validateAndNavigate: No valid next step available');
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
  //initialize and update Walkthrough Tour when context changes
   useEffect(() => {
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-    const steps = createTourSteps(currentContext);
+    const steps = createTourSteps(currentContext, validateAndNavigate);
     
-    // Clean up existing tour
-    if (tourRef.current) {
+        // Only clean up existing tour if it's not currently active
+    // This prevents the tour from being destroyed when users interact with UI elements
+    if (tourRef.current && !tourState.isActive) {
       tourRef.current.complete();
       tourRef.current = null;
     }
-    
+
+         // Skip creating a new tour if one is already active to prevent tour destruction
+     if (tourState.isActive && tourRef.current) {
+       return;
+     }
+
     // Create new tour
     const tour = new Shepherd.Tour({
       useModalOverlay: true,
@@ -324,32 +396,7 @@ const BasicIndicator = () => {
     indicator,
   ]);
 
-// Sync tour with context changes - with improved timing
-useEffect(() => {
-  if (!tourState.isActive || !tourRef.current) return;
-
-  // Add a small delay to allow UI to update
-  const timeoutId = setTimeout(() => {
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-    
-    // Check what the next logical step should be
-    const nextAvailableStep = getNextAvailableStep(currentContext);
-    const currentStep = tourRef.current?.getCurrentStep();
-    const currentStepIndex = currentStep ? 
-      tourRef.current.steps.findIndex(s => s.id === currentStep.id) : 0;
-    
-    // Only advance if we're not already on the correct step and the step has been completed
-    if (nextAvailableStep > currentStepIndex) {
-      console.log(`Auto-advancing tour from step ${currentStepIndex} to step ${nextAvailableStep}`);
-      const tour = tourRef.current;
-      if (tour && tour.steps[nextAvailableStep]) {
-        tour.show(nextAvailableStep);
-      }
-    }
-  }, 500); // 500ms delay to allow for UI updates
-
-  return () => clearTimeout(timeoutId);
-}, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
+// Note: Removed automatic tour progression - tour now only advances via Next button
 
 // Special handling for when user clicks the actual "Next" button to unlock filters
 useEffect(() => {
@@ -369,27 +416,7 @@ useEffect(() => {
   }
 }, [lockedStep.filter.locked, lockedStep.filter.openPanel, tourState.isActive]);
 
-   // Shepherd.js tour validation and navigation
-  const validateAndNavigate = (tour, direction = 'next') => {
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator };
-    const currentStepIndex = tour.getCurrentStep()?.id ? 
-      tour.steps.findIndex(s => s.id === tour.getCurrentStep().id) : 0;
-    
-    if (direction === 'next') {
-      const nextStepIndex = currentStepIndex + 1;
-      
-      if (!canProceedToStep(nextStepIndex, currentContext)) {
-        const tooltipContent = getStepTooltipContent(nextStepIndex);
-        enqueueSnackbar(tooltipContent, { 
-          variant: "warning",
-          autoHideDuration: 4000,
-        });
-        return false;
-      }
-    }
-    
-    return true;
-  };
+  // Note: Removed handleTourProgress - tour now only advances via Next button
 
   // Start the tour
   const startTour = () => {
@@ -508,10 +535,10 @@ useEffect(() => {
         setLoading,
         setChartConfiguration,
         handleSaveNewBasicIndicator,
-        //Shepherd Functions
-        startTour,
-        stopTour,
-        restartTour
+                  //Shepherd Functions
+          startTour,
+          stopTour,
+          restartTour
       }}
     >
       {/* Tour Control FABs */}
