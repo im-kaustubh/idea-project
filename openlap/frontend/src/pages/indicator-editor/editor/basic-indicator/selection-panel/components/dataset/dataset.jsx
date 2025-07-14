@@ -11,6 +11,7 @@ import Platform from "./components/platform.jsx";
 import LRS from "./components/lrs.jsx";
 import { BasicIndicatorContext } from "../../../basic-indicator.jsx";
 import DatasetSummary from "./components/dataset-summary.jsx";
+import StepHelpDialog from '../../../components/StepHelpDialog';
 
 const Dataset = () => {
   const { indicatorQuery, setLockedStep } = useContext(BasicIndicatorContext);
@@ -67,6 +68,8 @@ const Dataset = () => {
           handleToggleShowSelection={handleToggleShowSelection}
           handleTogglePanel={handleTogglePanel}
         />
+        {/* Step Help Dialog for Dataset */}
+        <StepHelpDialog title="Dataset" description="Select the Learning Record Store (LRS) and Platforms for the indicator data source." />
         <AccordionDetails>
           <Grid container spacing={2}>
             <Grid item xs={12}>

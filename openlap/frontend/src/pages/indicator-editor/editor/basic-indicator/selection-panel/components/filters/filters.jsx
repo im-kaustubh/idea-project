@@ -28,6 +28,7 @@ import User from "./components/user.jsx";
 import DateRangeChips from "./components/date-range-chips.jsx";
 import UserChips from "./components/user-chips.jsx";
 import { BasicIndicatorContext } from "../../../basic-indicator.jsx";
+import StepHelpDialog from '../../../components/StepHelpDialog';
 
 const Filters = () => {
   const { setAnalysisRef, indicatorQuery, lockedStep, setLockedStep } =
@@ -110,6 +111,9 @@ const Filters = () => {
                     </Grid>
                     <Grid item>
                       <Typography>Filters</Typography>
+                    </Grid>
+                    <Grid item>
+                      <StepHelpDialog title="Filters" description="Apply filters to narrow down the dataset before analysis." />
                     </Grid>
                     {!lockedStep.filter.openPanel &&
                       !lockedStep.filter.locked && (

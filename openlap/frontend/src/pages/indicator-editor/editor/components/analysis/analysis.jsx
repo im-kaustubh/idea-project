@@ -25,6 +25,7 @@ import AnalyzedDataTable from "../analyzed-data-table/analyzed-data-table.jsx";
 import { LoadingButton } from "@mui/lab";
 import { useSnackbar } from "notistack";
 import InputsMultiLevelIndicator from "./components/inputs-multi-level-indicator.jsx";
+import StepHelpDialog from '../../basic-indicator/components/StepHelpDialog';
 
 const Analysis = ({
   lockedStep,
@@ -140,6 +141,9 @@ const Analysis = ({
                     </Grid>
                     <Grid item>
                       <Typography>Analysis</Typography>
+                    </Grid>
+                    <Grid item>
+                      <StepHelpDialog title="Analysis" description="Define metrics or logic to be applied on the dataset." />
                     </Grid>
                     {!lockedStep.analysis.locked &&
                       !lockedStep.analysis.openPanel && (
