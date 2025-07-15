@@ -128,7 +128,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
         </Grid>
         {state.inputs?.map((input, index) => (
           <Grid item xs={12} sm={6} key={index}>
-            <Grid container spacing={1} className="shepherd-analysis-inputs-dropdown">
+            <Grid container spacing={1}>
               <Grid item xs>
                 <FormControl fullWidth>
                   <InputLabel required={Boolean(input.required)}>
@@ -136,6 +136,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
                   </InputLabel>
 
                   <Select
+                    className="shepherd-analysis-inputs-dropdown"
                     label={input.title}
                     onChange={(event) => handleChangeInputMapping(event, input)}
                   >
