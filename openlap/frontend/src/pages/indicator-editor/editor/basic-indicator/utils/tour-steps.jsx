@@ -1,4 +1,4 @@
-import { validateStepCompletion, canProceedToStep, shouldShowStep } from './shepherd-utils.js';
+// No imports needed - tour allows free progression
 
 /**
  * Tour steps configuration for the Basic Indicator Editor using Shepherd.js
@@ -68,11 +68,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(1, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
+
       id: 'platform-selection'
     },
 
@@ -117,11 +113,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(2, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
+
       id: 'next-button'
     },
     // Step 3: Activity Type Selection
@@ -153,11 +145,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(3, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'activity-type-selection'
     },
 
@@ -190,11 +177,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(4, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'activity-selection'
     },
 
@@ -227,11 +209,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(5, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'action-selection'
     },
 
@@ -264,11 +241,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(6, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'date-range-selection'
     },
 
@@ -314,11 +286,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(7, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'next-button-filters'
     },
 
@@ -351,11 +318,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(8, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'analysis-technique-selection'
     },
 
@@ -388,11 +350,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(9, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'analysis-inputs-mapping'
     },
 
@@ -425,11 +382,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(10, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'analysis-parameters'
     },
 
@@ -462,11 +414,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(11, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'preview-analysis-data'
     },
 
@@ -499,11 +446,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(12, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'visualization-library-selection'
     },
 
@@ -536,11 +478,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(13, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'visualization-type-selection'
     },
 
@@ -573,11 +510,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(14, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'visualization-inputs-mapping'
     },
 
@@ -603,18 +535,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         },
         {
-          text: 'Next',
+          text: 'Finish',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            return this.complete();
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(15, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'generate-preview'
     }
   ];

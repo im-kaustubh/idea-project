@@ -19,9 +19,7 @@ import { AuthContext } from "../../../../setup/auth-context-manager/auth-context
 import Shepherd from "shepherd.js";
 import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
 import { 
-  validateStepCompletion, 
-  getNextAvailableStep, 
-  getStepTooltipContent
+  getNextAvailableStep
 } from "./utils/shepherd-utils.js";
 import "./utils/shepherd-styles.css";
 
@@ -196,15 +194,13 @@ const BasicIndicator = () => {
   });
   const tourRef = useRef(null);
 
-   // Shepherd.js tour validation and navigation
+   // Shepherd.js tour navigation - allows free progression
   const validateAndNavigate = (direction = 'next') => {
     if (!tourRef.current) {
       return false;
     }
 
     const tour = tourRef.current;
-    // Use current live state instead of stale context from tour creation
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const currentStep = tour.getCurrentStep();
 
     if (!currentStep) {
@@ -214,19 +210,7 @@ const BasicIndicator = () => {
     const currentStepIndex = tour.steps.findIndex(s => s.id === currentStep.id);
     
     if (direction === 'next') {
-      // Check if current step requirements are met using live state
-      const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
-      
-      if (!isCurrentStepComplete) {
-        const tooltipContent = getStepTooltipContent(currentStepIndex);
-        enqueueSnackbar(tooltipContent, { 
-          variant: "warning",
-          autoHideDuration: 4000,
-        });
-        return false;
-      }
-
-      // Proceed to next step
+      // Proceed to next step without validation
       const nextStepIndex = currentStepIndex + 1;
       if (tour.steps[nextStepIndex]) {
         tour.show(nextStepIndex);
