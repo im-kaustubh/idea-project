@@ -32,9 +32,15 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: async function() {
+            console.log('Next button clicked - LRS step');
             // Small delay to allow React state to update before validation
             await new Promise(resolve => setTimeout(resolve, 100));
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -66,9 +72,15 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: async function() {
+            console.log('Next button clicked - Platform step');
             // Small delay to allow React state to update before validation
             await new Promise(resolve => setTimeout(resolve, 100));
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -115,7 +127,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
               await new Promise(resolve => setTimeout(resolve, 1000));
               
               // Then proceed to next tour step using validation
-              return validateAndNavigate('next');
+              if (window.validateAndNavigate) {
+                return window.validateAndNavigate('next');
+              } else {
+                console.error('validateAndNavigate not available');
+                return false;
+              }
             }
             return this;
           }
@@ -153,7 +170,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -190,7 +212,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -227,7 +254,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -264,7 +296,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -301,7 +338,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -338,7 +380,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -375,7 +422,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -412,7 +464,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -449,7 +506,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -486,7 +548,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -523,7 +590,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],
@@ -560,7 +632,12 @@ export const createTourSteps = (context, validateAndNavigate) => {
           text: 'Next',
           classes: 'shepherd-button-primary',
           action: function() {
-            return validateAndNavigate('next');
+            if (window.validateAndNavigate) {
+              return window.validateAndNavigate('next');
+            } else {
+              console.error('validateAndNavigate not available');
+              return false;
+            }
           }
         }
       ],

@@ -268,6 +268,10 @@ const BasicIndicator = () => {
  //initialize and update Walkthrough Tour when context changes
   useEffect(() => {
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    
+    // Make validateAndNavigate globally accessible for tour steps
+    window.validateAndNavigate = validateAndNavigate;
+    
     const steps = createTourSteps(currentContext, validateAndNavigate);
     
         // Only clean up existing tour if it's not currently active
@@ -349,6 +353,12 @@ const BasicIndicator = () => {
       tour
     }));
     
+    // Cleanup function to remove global validateAndNavigate
+    return () => {
+      if (window.validateAndNavigate) {
+        delete window.validateAndNavigate;
+      }
+    };
   }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep]);
 
 
@@ -470,6 +480,11 @@ useEffect(() => {
     }));
     
     tourRef.current.complete();
+    
+    // Clean up global function
+    if (window.validateAndNavigate) {
+      delete window.validateAndNavigate;
+    }
   };
 
   const handleSaveNewBasicIndicator = () => {
