@@ -203,36 +203,23 @@ const BasicIndicator = () => {
       console.log('validateAndNavigate: No tour reference available');
       return false;
     }
-    
+
     const tour = tourRef.current;
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const currentStep = tour.getCurrentStep();
-    
+
     if (!currentStep) {
       console.log('validateAndNavigate: No current step');
       return false;
     }
-    
+
     const currentStepIndex = tour.steps.findIndex(s => s.id === currentStep.id);
-    console.log(`validateAndNavigate: Current step ${currentStepIndex} (${currentStep.id})`);
     
     if (direction === 'next') {
-      // First validate that the current step is completed
-      const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
-      console.log(`validateAndNavigate: Step ${currentStepIndex} completed: ${isCurrentStepComplete}`);
+      // First check if we CAN proceed (requirements met)
+      const canProceed = canProceedToStep(currentStepIndex + 1, currentContext);
       
-      // Debug: Log the current context to see what state we have
-      console.log('Current context for validation:', {
-        stepIndex: currentStepIndex,
-        lrsStores: currentContext.indicatorQuery.lrsStores,
-        platforms: currentContext.indicatorQuery.platforms,
-        activityTypes: currentContext.indicatorQuery.activityTypes,
-        activities: currentContext.indicatorQuery.activities,
-        actionOnActivities: currentContext.indicatorQuery.actionOnActivities,
-        lockedStep: currentContext.lockedStep
-      });
-      
-      if (!isCurrentStepComplete) {
+      if (!canProceed) {
         const tooltipContent = getStepTooltipContent(currentStepIndex);
         enqueueSnackbar(tooltipContent, { 
           variant: "warning",
@@ -240,27 +227,46 @@ const BasicIndicator = () => {
         });
         return false;
       }
+
+      // Then check if we SHOULD proceed (current step complete)
+      const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
       
-      // Find the next available step
-      const nextAvailableStep = getNextAvailableStep(currentContext);
-      console.log(`validateAndNavigate: Next available step: ${nextAvailableStep}`);
-      
-      // Navigate to the next available step
-      if (nextAvailableStep > currentStepIndex && tour.steps[nextAvailableStep]) {
-        tour.show(nextAvailableStep);
-        return true;
-      } else if (nextAvailableStep === currentStepIndex) {
-        // Already on the correct step
-        return true;
-      } else {
-        // No valid next step available
-        console.log('validateAndNavigate: No valid next step available');
+      if (!isCurrentStepComplete) {
         return false;
+      }
+
+      // Actually proceed to next step
+      const nextStepIndex = currentStepIndex + 1;
+      if (tour.steps[nextStepIndex]) {
+        tour.show(nextStepIndex);
+        return true;
       }
     }
     
     return true;
   };
+
+  // Modified useEffect for context changes
+  useEffect(() => {
+    if (!tourState.isActive || !tourRef.current) return;
+
+    // Use setTimeout to ensure we run after state updates
+    const timer = setTimeout(() => {
+      const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+      const currentStepIndex = tourRef.current.getCurrentStep()?.id ? 
+        tourRef.current.steps.findIndex(s => s.id === tourRef.current.getCurrentStep().id) : 0;
+
+      // Only auto-progress if current step is complete
+      if (validateStepCompletion(currentStepIndex, currentContext)) {
+        const nextStepIndex = currentStepIndex + 1;
+        if (tourRef.current.steps[nextStepIndex]) {
+          tourRef.current.show(nextStepIndex);
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
 
  //initialize and update Walkthrough Tour when context changes
   useEffect(() => {
