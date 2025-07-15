@@ -41,6 +41,7 @@ import { useSnackbar } from "notistack";
 import { handleDisplayType } from "../utils/utils.js";
 import DeleteDialog from "../../../../common/components/delete-dialog/delete-dialog.jsx";
 import {fetchAnalyzedData} from "../../editor/components/analysis/utils/analytics-api.js"; //added
+import {fetchUserLRSList} from "../../editor/basic-indicator/selection-panel/components/dataset/utils/dataset-api.js"; //added
 
 const MyIndicatorsTable = () => {
   const { api } = useContext(AuthContext);
@@ -164,6 +165,7 @@ const MyIndicatorsTable = () => {
     navigate(`/indicator/${selectedIndicator.id}`);
   };
 
+  //implemenatation
   const handleEdit = () => {
     const loadIndicatorDetail = async (api, indicatorId) => {
       try {
@@ -218,6 +220,20 @@ const MyIndicatorsTable = () => {
           // Fetch analyzedData
           const analyzedDataResponse = await loadAnalyzedData(api, analysisRequest);
 
+          // Hydrate the dataset panel state for edit mode
+          const lrsList = await fetchUserLRSList(api); // returns all available LRSs
+          const selectedLrsList = (analysisRequest.indicatorQuery.lrsStores || [])
+              .map(lrs =>
+                  typeof lrs === "string"
+                      ? lrsList.find(item => item.id === lrs)
+                      : lrs
+              )
+              .filter(Boolean);
+
+          // Hydrate selectedPlatformList with objects { name }
+          const selectedPlatformList = (analysisRequest.indicatorQuery.platforms || []).map(name => ({ name }));
+
+
           // Build a complete session object with all required fields
           const sessionData = {
             indicatorQuery: analysisRequest.indicatorQuery,
@@ -271,10 +287,11 @@ const MyIndicatorsTable = () => {
               },
             },
             lockedStep: indicatorData.lockedStep || {
-              filter: { locked: true, openPanel: false },
-              analysis: { locked: true, openPanel: false },
-              visualization: { locked: true, openPanel: false },
-              finalize: { locked: true, openPanel: false },
+              dataset: { locked: false, openPanel: false },
+              filter: { locked: false, openPanel: false },
+              analysis: { locked: false, openPanel: false },
+              visualization: { locked: false, openPanel: false },
+              finalize: { locked: false, openPanel: false },
             },
             indicator: indicatorData.indicator || {
               previewData: {
@@ -288,6 +305,36 @@ const MyIndicatorsTable = () => {
           };
 
           sessionStorage.setItem("session", JSON.stringify(sessionData));
+          console.log(JSON.parse(sessionStorage.getItem("filters")));
+
+          sessionStorage.setItem(
+              "dataset",
+              JSON.stringify({
+                openPanel: true,
+                showSelections: true,
+                lrsList: [],
+                selectedLrsList,
+                platformList: [],
+                selectedPlatformList,
+                autoCompleteValue: null,
+              })
+          );
+
+          sessionStorage.setItem(
+              "filters",
+              JSON.stringify({
+                openPanel: false,
+                showSelections: true,
+                activityTypesList: [],
+                selectedActivityTypesList: [],
+                activitiesList: [],
+                selectedActivitiesList: [],
+                actionsList: [],
+                selectedActionsList: [],
+                autoCompleteValue: null,
+              })
+          );
+
           return sessionData;
         })
         .then(() => {
