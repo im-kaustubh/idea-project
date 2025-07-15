@@ -29,6 +29,8 @@ const SelectionPanel = () => {
     setLoading,
     setChartConfiguration,
     handleSaveNewBasicIndicator,
+    progressTourOnSectionClick,
+    tourState,
   } = useContext(BasicIndicatorContext);
 
   const loadPreviewVisualization = async (
@@ -77,6 +79,8 @@ const SelectionPanel = () => {
             setIndicator={setIndicator}
             setGenerate={setGenerate}
             setVisRef={setVisRef}
+            progressTourOnSectionClick={progressTourOnSectionClick}
+            tourState={tourState}
             loadAnalyzedData={() =>
               loadAnalyzedData(api, indicatorQuery, analysisRef)
             }

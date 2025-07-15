@@ -13,7 +13,7 @@ import { BasicIndicatorContext } from "../../../basic-indicator.jsx";
 import DatasetSummary from "./components/dataset-summary.jsx";
 
 const Dataset = () => {
-  const { indicatorQuery, setLockedStep } = useContext(BasicIndicatorContext);
+  const { indicatorQuery, setLockedStep, progressTourOnSectionClick, tourState } = useContext(BasicIndicatorContext);
   const [state, setState] = useState(() => {
     const savedState = sessionStorage.getItem("dataset");
     return savedState
@@ -57,6 +57,11 @@ const Dataset = () => {
         openPanel: true,
       },
     }));
+    
+    // Progress tour if active
+    if (progressTourOnSectionClick && tourState && tourState.isActive) {
+      progressTourOnSectionClick('dataset');
+    }
   };
 
   return (

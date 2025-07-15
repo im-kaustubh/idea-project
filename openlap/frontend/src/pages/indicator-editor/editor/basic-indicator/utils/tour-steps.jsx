@@ -359,13 +359,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'analysis-inputs-mapping'
     },
     
-    // Step 9: Analysis Inputs
+    // Step 9: Analysis Inputs Dropdown
     {
-      title: 'Map Analysis Inputs',
+      title: 'Select Analysis Inputs',
       text: `
         <div>
-          <p>Select SOmething IDC</strong>.</p>
-          <p></p>
+          <p>Select the appropriate <strong>analysis inputs</strong> from the dropdown menu.</p>
+          <p>These inputs determine what data will be used for your analysis.</p>
         </div>
       `,
       attachTo: {
@@ -388,6 +388,30 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
+      when: {
+        show: function() {
+          // Ensure dropdown and its children are interactive
+          const dropdown = document.querySelector('.shepherd-analysis-inputs-dropdown');
+          if (dropdown) {
+            dropdown.style.pointerEvents = 'auto';
+            dropdown.style.zIndex = '10000';
+            
+            // Ensure all child elements are also interactive
+            const selectElement = dropdown.querySelector('.MuiSelect-root');
+            if (selectElement) {
+              selectElement.style.pointerEvents = 'auto';
+              selectElement.style.zIndex = 'inherit';
+            }
+          }
+          
+          // Add tour active class to body for CSS targeting
+          document.body.classList.add('shepherd-is-active');
+        },
+        hide: function() {
+          // Remove tour active class when step hides
+          document.body.classList.remove('shepherd-is-active');
+        }
+      },
       id: 'analysis-inputs-dropdown'
     },
 
@@ -656,7 +680,7 @@ export const shepherdTargetClasses = {
   analysisInputs: 'shepherd-analysis-inputs',
   analysisParams: 'shepherd-analysis-params',
   previewDataBtn: 'shepherd-preview-data-btn',
-  nxtBtnAnalysis: 'shshepherd-next-btn-analysis',
+  nxtBtnAnalysis: 'shepherd-next-btn-analysis',
   vizLibrary: 'shepherd-viz-library',
   vizType: 'shepherd-viz-type',
   vizInputs: 'shepherd-viz-inputs',

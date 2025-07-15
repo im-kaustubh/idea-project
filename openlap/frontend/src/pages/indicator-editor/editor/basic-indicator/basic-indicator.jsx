@@ -19,7 +19,9 @@ import { AuthContext } from "../../../../setup/auth-context-manager/auth-context
 import Shepherd from "shepherd.js";
 import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
 import { 
-  getNextAvailableStep
+  getNextAvailableStep,
+  validateStepCompletion,
+  progressTourOnSectionClick
 } from "./utils/shepherd-utils.js";
 import "./utils/shepherd-styles.css";
 
@@ -283,6 +285,9 @@ const BasicIndicator = () => {
         isActive: false,
         currentStep: 0
       }));
+      
+      // Remove tour active class from body
+      document.body.classList.remove('shepherd-is-active');
     });
     
     tour.on('cancel', () => {
@@ -291,12 +296,16 @@ const BasicIndicator = () => {
         isActive: false,
         currentStep: 0
       }));
+      
+      // Remove tour active class from body
+      document.body.classList.remove('shepherd-is-active');
     });
     
     tour.on('show', (event) => {
+      const stepIndex = tour.steps.findIndex(s => s.id === event.step.id);
       setTourState(prev => ({
         ...prev,
-        currentStep: event.step ? steps.findIndex(s => s.id === event.step.id) : 0
+        currentStep: stepIndex
       }));
     });
     
@@ -366,24 +375,28 @@ const BasicIndicator = () => {
     if (!tourRef.current) return;
     
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-    const nextStep = getNextAvailableStep(currentContext);
+    const startingStep = getNextAvailableStep(currentContext);
     
     setTourState(prev => ({
       ...prev,
       isActive: true,
-      currentStep: nextStep
+      currentStep: startingStep
     }));
     
-    // Always start from the beginning for initial tour, show next step if progressed
-    tourRef.current.start();
-    
-    // If we're not at step 0, show the appropriate step after a delay
-    if (nextStep > 0) {
+    // Start the tour from the calculated step
+    if (startingStep === 0) {
+      // Start from beginning
+      tourRef.current.start();
+    } else {
+      // Start from a specific step
+      tourRef.current.start();
+      
+      // Navigate to the appropriate step after initialization
       setTimeout(() => {
-        if (tourRef.current) {
-          tourRef.current.show(nextStep);
+        if (tourRef.current && tourRef.current.steps[startingStep]) {
+          tourRef.current.show(startingStep);
         }
-      }, 500);
+      }, 300); // Reduced timeout for better responsiveness
     }
   };
 
@@ -481,7 +494,9 @@ const BasicIndicator = () => {
                   //Shepherd Functions
           startTour,
           stopTour,
-          restartTour
+          restartTour,
+          progressTourOnSectionClick: (sectionType) => progressTourOnSectionClick(tourRef, sectionType),
+          tourState
       }}
     >
       {/* Tour Control FABs */}

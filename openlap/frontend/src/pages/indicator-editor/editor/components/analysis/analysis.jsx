@@ -35,6 +35,8 @@ const Analysis = ({
   setIndicator,
   setGenerate,
   setVisRef,
+  progressTourOnSectionClick,
+  tourState,
   loadAnalyzedData,
 }) => {
   const [state, setState] = useState(() => {
@@ -109,6 +111,11 @@ const Analysis = ({
         openPanel: true,
       },
     }));
+    
+    // Progress tour if active
+    if (progressTourOnSectionClick && tourState && tourState.isActive) {
+      progressTourOnSectionClick('analysis');
+    }
   };
 
   return (

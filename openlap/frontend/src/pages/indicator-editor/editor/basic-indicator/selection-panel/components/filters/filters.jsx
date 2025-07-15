@@ -30,7 +30,7 @@ import UserChips from "./components/user-chips.jsx";
 import { BasicIndicatorContext } from "../../../basic-indicator.jsx";
 
 const Filters = () => {
-  const { setAnalysisRef, indicatorQuery, lockedStep, setLockedStep } =
+  const { setAnalysisRef, indicatorQuery, lockedStep, setLockedStep, progressTourOnSectionClick, tourState } =
     useContext(BasicIndicatorContext);
   const [state, setState] = useState(() => {
     const savedState = sessionStorage.getItem("filters");
@@ -79,6 +79,11 @@ const Filters = () => {
         openPanel: true,
       },
     }));
+    
+    // Progress tour if active
+    if (progressTourOnSectionClick && tourState && tourState.isActive) {
+      progressTourOnSectionClick('filters');
+    }
   };
 
   return (

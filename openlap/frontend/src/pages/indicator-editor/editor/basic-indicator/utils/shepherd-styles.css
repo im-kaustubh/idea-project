@@ -59,6 +59,36 @@
   z-index: -1;
 }
 
+/* Specific fixes for dropdown highlighting */
+.shepherd-analysis-inputs-dropdown {
+  position: relative;
+  z-index: 10000 !important;
+}
+
+.shepherd-analysis-inputs-dropdown .MuiSelect-root {
+  position: relative;
+  z-index: inherit;
+}
+
+/* Ensure dropdown popup appears above tour overlay */
+.shepherd-analysis-inputs-dropdown .MuiPaper-root,
+.shepherd-analysis-inputs-dropdown .MuiPopper-root {
+  z-index: 10002 !important;
+}
+
+/* Highlight the entire dropdown container during tour */
+.shepherd-is-active .shepherd-analysis-inputs-dropdown {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Ensure dropdown remains interactive during tour */
+.shepherd-is-active .shepherd-analysis-inputs-dropdown * {
+  pointer-events: auto !important;
+}
+
 /* Date Range Container */
 .shepherd-date-range {
   position: relative;
