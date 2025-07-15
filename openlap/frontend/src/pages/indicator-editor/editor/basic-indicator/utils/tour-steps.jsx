@@ -653,36 +653,3 @@ export const shepherdTargetClasses = {
   generatePreviewBtn: 'shepherd-generate-preview-btn',
   submitBtn: 'shepherd-submit-btn',
 };
-};
-
-// Shepherd.js specific styles configuration
-export const shepherdStyles = {
-  defaultStepOptions: {
-    classes: 'shepherd-theme-custom',
-    scrollTo: { behavior: 'smooth', block: 'center' },
-    showCancelLink: true,
-    cancelIcon: {
-      enabled: true
-    }
-  }
-};
-
-// Target classes mapping for Shepherd.js
-export const shepherdTargetClasses = {
-  lrsSelector: 'shepherd-lrs-selector',
-  platformSelector: 'shepherd-platform-selector',
-  nextBtnDataset: 'shepherd-next-btn-dataset',
-  activityTypeSelector: 'shepherd-activity-type-selector',
-  activitySelector: 'shepherd-activity-selector',
-  actionSelector: 'shepherd-action-selector',
-  dateRange: 'shepherd-date-range',
-  analysisTechnique: 'shepherd-analysis-technique',
-  analysisInputs: 'shepherd-analysis-inputs',
-  analysisParams: 'shepherd-analysis-params',
-  previewDataBtn: 'shepherd-preview-data-btn',
-  vizLibrary: 'shepherd-viz-library',
-  vizType: 'shepherd-viz-type',
-  vizInputs: 'shepherd-viz-inputs',
-  generatePreviewBtn: 'shepherd-generate-preview-btn',
-  submitBtn: 'shepherd-submit-btn',
-};
