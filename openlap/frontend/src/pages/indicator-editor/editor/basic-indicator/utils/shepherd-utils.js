@@ -2,75 +2,15 @@
  * Utility functions for Shepherd.js tour step validation and configuration
  */
 
-// Step validation functions
-export const isLrsSelected = (indicatorQuery) => {
-  const result = indicatorQuery.lrsStores.length > 0;
-  console.log('isLrsSelected check:', { lrsStores: indicatorQuery.lrsStores, result });
-  return result;
-};
-
-export const isPlatformSelected = (indicatorQuery) => {
-  return indicatorQuery.platforms.length > 0;
-};
-
-export const isActivityTypeSelected = (indicatorQuery) => {
-  return indicatorQuery.activityTypes.length > 0;
-};
-
-export const isActivitySelected = (indicatorQuery) => {
-  return Object.entries(indicatorQuery.activities).length > 0;
-};
-
-export const isActionSelected = (indicatorQuery) => {
-  return indicatorQuery.actionOnActivities.length > 0;
-};
-
-export const isDateRangeValid = (indicatorQuery) => {
-  return indicatorQuery.duration.from && indicatorQuery.duration.until;
-};
-
-export const isAnalysisTechniqueSelected = (analysisRef) => {
- return analysisRef.analyticsTechniqueId.length > 0;
-};
-
-export const isAnalysisInputsMapped = (analysisRef) => {
-  return analysisRef.analyticsTechniqueMapping.mapping.length > 0;
-};
-
-export const isAnalysisParamsSet = (analysisRef) => {
-  return analysisRef.analyticsTechniqueParams.length > 0;
-};
-
-export const isAnalysisDataGenerated = (analysisRef) => {
-  return Object.entries(analysisRef.analyzedData).length > 0;
-};
-
-export const isVisualizationLibrarySelected = (visRef) => {
-  return visRef.visualizationLibraryId.length > 0;
-};
-
-export const isVisualizationTypeSelected = (visRef) => {
-  return visRef.visualizationTypeId.length > 0;
-};
-
-export const isVisualizationInputsMapped = (visRef) => {
-  return visRef.visualizationMapping.mapping.length > 0;
-};
-
-export const isPreviewGenerated = (indicator) => {
-  return indicator.previewData.displayCode.length > 0;
-};
-
 // Main step validation function
 export const validateStepCompletion = (stepIndex, { indicatorQuery, analysisRef, visRef, indicator }) => {
-  console.log(`validateStepCompletion called for step ${stepIndex}`, { indicatorQuery });
   switch (stepIndex) {
     case 0: // LRS Selection
       return indicatorQuery.lrsStores.length > 0;
     case 1: // Platform Selection
       return indicatorQuery.platforms.length > 0;
-    case 2: // Next Button
-      return true; // Always allow clicking next if we reached this step
+    case 2: // Next Button to Activity Type
+      return true;
     case 3: // Activity Type Selection
       return indicatorQuery.activityTypes.length > 0;
     case 4: // Activity Selection
@@ -79,68 +19,45 @@ export const validateStepCompletion = (stepIndex, { indicatorQuery, analysisRef,
       return indicatorQuery.actionOnActivities.length > 0;
     case 6: // Date Range
       return true;
-    case 7: // Next Button
-      return true  
+    case 7: // Next Button to Analysis
+      return true;
     case 8: // Analysis Technique
       return analysisRef.analyticsTechniqueId.length > 0;
     case 9: // Analysis Inputs
-      return isAnalysisInputsMapped(analysisRef);
+      return analysisRef.analyticsTechniqueMapping.mapping.length > 0;
     case 10: // Analysis Parameters
-      return isAnalysisParamsSet(analysisRef);
+      return analysisRef.analyticsTechniqueParams.length > 0;
     case 11: // Preview Analysis Data
-      return isAnalysisDataGenerated(analysisRef);
+      return Object.entries(analysisRef.analyzedData).length > 0;
     case 12: // Visualization Library
-      return isVisualizationLibrarySelected(visRef);
+      return visRef.visualizationLibraryId.length > 0;
     case 13: // Visualization Type
-      return isVisualizationTypeSelected(visRef);
+      return visRef.visualizationTypeId.length > 0;
     case 14: // Visualization Inputs
-      return isVisualizationInputsMapped(visRef);
+      return visRef.visualizationMapping.mapping.length > 0;
     case 15: // Generate Preview
-      return isPreviewGenerated(indicator);
-    case 16: // Final Submit
-      return true; // Always available once preview is generated
+      return indicator.previewData.displayCode.length > 0;
     default:
       return false;
   }
 };
 
-// Check if user can proceed to next step
-export const canProceedToStep = (targetStepIndex, { indicatorQuery, analysisRef, visRef, indicator }) => {
-  // Allow proceeding if all previous steps are completed
-  for (let i = 0; i < targetStepIndex; i++) {
-    if (!validateStepCompletion(i, { indicatorQuery, analysisRef, visRef, indicator })) {
-      return false;
-    }
-  }
-  return true;
-};
+
 
 // Get next available step
 export const getNextAvailableStep = ({ indicatorQuery, analysisRef, visRef, indicator, lockedStep }) => {
-  const maxSteps = 17;
+  const maxSteps = 16;
   
-  // Find the first step that is either incomplete or not shown
   for (let i = 0; i < maxSteps; i++) {
     const isStepComplete = validateStepCompletion(i, { indicatorQuery, analysisRef, visRef, indicator });
     const shouldShow = shouldShowStep(i, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
     
-    // If step is not complete but should be shown, this is our next step
     if (!isStepComplete && shouldShow) {
       return i;
     }
-    
-    // If step is complete but the next step should be shown, continue
-    if (isStepComplete && shouldShow) {
-      continue;
-    }
-    
-    // If step should not be shown, skip it
-    if (!shouldShow) {
-      continue;
-    }
   }
   
-  return maxSteps - 1; // Return final step if all completed
+  return maxSteps - 1;
 };
 
 // Generate tooltip content for locked steps
@@ -153,7 +70,7 @@ export const getStepTooltipContent = (stepIndex) => {
     4: "Please select at least one Activity first",
     5: "Please select at least one Action first",
     6: "Please complete the date range selection first",
-    7: "Please click the Next button to proceed",
+    7: "Please click the Next button to proceed to Analysis",
     8: "Please select an Analysis Technique first",
     9: "Please map the analysis inputs first",
     10: "Please set the analysis parameters first",
@@ -162,7 +79,6 @@ export const getStepTooltipContent = (stepIndex) => {
     13: "Please select a Visualization Type first",
     14: "Please map the visualization inputs first",
     15: "Please generate the preview first",
-    16: "Please submit the indicator first",
   };
   return tooltips[stepIndex] || "Please complete the previous steps first";
 };
@@ -170,42 +86,41 @@ export const getStepTooltipContent = (stepIndex) => {
 // Check if a step should be shown based on conditions
 export const shouldShowStep = (stepIndex, { indicatorQuery, analysisRef, visRef, indicator, lockedStep }) => {
   switch (stepIndex) {
-    case 0: // LRS Selection - always show
+    case 0: // LRS Selection
       return true;
-    case 1: // Platform Selection - show if LRS is selected
+    case 1: // Platform Selection
       return validateStepCompletion(0, { indicatorQuery, analysisRef, visRef, indicator });
-    case 2: // Next Button - show if platform is selected
+    case 2: // Next Button to Activity Type
       return validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator });
-    case 3: // Activity Type Selection - show if platform is selected and filters panel is unlocked
+    case 3: // Activity Type Selection
       return validateStepCompletion(1, { indicatorQuery, analysisRef, visRef, indicator }) && 
              !lockedStep.filter.locked && lockedStep.filter.openPanel;
-    case 4: // Activity Selection - show if activity type is selected
+    case 4: // Activity Selection
       return validateStepCompletion(3, { indicatorQuery, analysisRef, visRef, indicator });
-    case 5: // Action Selection - show if activity is selected
+    case 5: // Action Selection
       return validateStepCompletion(4, { indicatorQuery, analysisRef, visRef, indicator });
-    case 6: // Date Range - show if action is selected
+    case 6: // Date Range
       return validateStepCompletion(5, { indicatorQuery, analysisRef, visRef, indicator });
-    case 7: // Analysis Technique - show if date range is valid and analysis panel is open
+    case 7: // Next Button to Analysis
+      return validateStepCompletion(6, { indicatorQuery, analysisRef, visRef, indicator });
+    case 8: // Analysis Technique
       return validateStepCompletion(6, { indicatorQuery, analysisRef, visRef, indicator }) && 
              !lockedStep.analysis.locked && lockedStep.analysis.openPanel;
-    case 8: // Analysis Inputs - show if analysis technique is selected
-      return validateStepCompletion(7, { indicatorQuery, analysisRef, visRef, indicator });
-    case 9: // Analysis Parameters - show if analysis inputs are mapped
+    case 9: // Analysis Inputs
       return validateStepCompletion(8, { indicatorQuery, analysisRef, visRef, indicator });
-    case 10: // Preview Analysis Data - show if analysis parameters are set
+    case 10: // Analysis Parameters
       return validateStepCompletion(9, { indicatorQuery, analysisRef, visRef, indicator });
-    case 11: // Visualization Library - show if analysis data is generated and viz panel is open
-      return validateStepCompletion(10, { indicatorQuery, analysisRef, visRef, indicator }) && 
+    case 11: // Preview Analysis Data
+      return validateStepCompletion(10, { indicatorQuery, analysisRef, visRef, indicator });
+    case 12: // Visualization Library
+      return validateStepCompletion(11, { indicatorQuery, analysisRef, visRef, indicator }) && 
              !lockedStep.visualization.locked && lockedStep.visualization.openPanel;
-    case 12: // Visualization Type - show if viz library is selected
-      return validateStepCompletion(11, { indicatorQuery, analysisRef, visRef, indicator });
-    case 13: // Visualization Inputs - show if viz type is selected
+    case 13: // Visualization Type
       return validateStepCompletion(12, { indicatorQuery, analysisRef, visRef, indicator });
-    case 14: // Generate Preview - show if viz inputs are mapped
+    case 14: // Visualization Inputs
       return validateStepCompletion(13, { indicatorQuery, analysisRef, visRef, indicator });
-    case 15: // Save Indicator - show if preview is generated and finalize panel is open
-      return validateStepCompletion(14, { indicatorQuery, analysisRef, visRef, indicator }) && 
-             !lockedStep.finalize.locked && lockedStep.finalize.openPanel;
+    case 15: // Generate Preview
+      return validateStepCompletion(14, { indicatorQuery, analysisRef, visRef, indicator });
     default:
       return false;
   }

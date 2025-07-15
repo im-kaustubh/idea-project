@@ -20,7 +20,6 @@ import Shepherd from "shepherd.js";
 import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
 import { 
   validateStepCompletion, 
-  canProceedToStep, 
   getNextAvailableStep, 
   getStepTooltipContent
 } from "./utils/shepherd-utils.js";
@@ -200,7 +199,6 @@ const BasicIndicator = () => {
    // Shepherd.js tour validation and navigation
   const validateAndNavigate = (direction = 'next') => {
     if (!tourRef.current) {
-      console.log('validateAndNavigate: No tour reference available');
       return false;
     }
 
@@ -209,17 +207,16 @@ const BasicIndicator = () => {
     const currentStep = tour.getCurrentStep();
 
     if (!currentStep) {
-      console.log('validateAndNavigate: No current step');
       return false;
     }
 
     const currentStepIndex = tour.steps.findIndex(s => s.id === currentStep.id);
     
     if (direction === 'next') {
-      // First check if we CAN proceed (requirements met)
-      const canProceed = canProceedToStep(currentStepIndex + 1, currentContext);
+      // Check if current step requirements are met
+      const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
       
-      if (!canProceed) {
+      if (!isCurrentStepComplete) {
         const tooltipContent = getStepTooltipContent(currentStepIndex);
         enqueueSnackbar(tooltipContent, { 
           variant: "warning",
@@ -228,14 +225,7 @@ const BasicIndicator = () => {
         return false;
       }
 
-      // Then check if we SHOULD proceed (current step complete)
-      const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
-      
-      if (!isCurrentStepComplete) {
-        return false;
-      }
-
-      // Actually proceed to next step
+      // Proceed to next step
       const nextStepIndex = currentStepIndex + 1;
       if (tour.steps[nextStepIndex]) {
         tour.show(nextStepIndex);
@@ -246,27 +236,7 @@ const BasicIndicator = () => {
     return true;
   };
 
-  // Modified useEffect for context changes
-  useEffect(() => {
-    if (!tourState.isActive || !tourRef.current) return;
-
-    // Use setTimeout to ensure we run after state updates
-    const timer = setTimeout(() => {
-      const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-      const currentStepIndex = tourRef.current.getCurrentStep()?.id ? 
-        tourRef.current.steps.findIndex(s => s.id === tourRef.current.getCurrentStep().id) : 0;
-
-      // Only auto-progress if current step is complete
-      if (validateStepCompletion(currentStepIndex, currentContext)) {
-        const nextStepIndex = currentStepIndex + 1;
-        if (tourRef.current.steps[nextStepIndex]) {
-          tourRef.current.show(nextStepIndex);
-        }
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
+  // Removed automatic progression - tour now only advances via manual Next button clicks
 
  //initialize and update Walkthrough Tour when context changes
   useEffect(() => {

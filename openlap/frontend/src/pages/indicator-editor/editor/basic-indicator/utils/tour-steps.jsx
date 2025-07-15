@@ -322,8 +322,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'next-button-filters'
     },
 
-    //Step 8 Analysis Technique
-
+    // Step 8: Analysis Technique
     {
       title: 'Choose Analysis Technique',
       text: `
@@ -354,13 +353,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(7, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+          return shouldShowStep(8, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
       id: 'analysis-technique-selection'
     },
 
-    // Step 8: Analysis Inputs
+    // Step 9: Analysis Inputs
     {
       title: 'Map Analysis Inputs',
       text: `
@@ -391,13 +390,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(8, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+          return shouldShowStep(9, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
       id: 'analysis-inputs-mapping'
     },
 
-    // Step 9: Analysis Parameters
+    // Step 10: Analysis Parameters
     {
       title: 'Set Analysis Parameters',
       text: `
@@ -428,13 +427,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(9, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+          return shouldShowStep(10, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
       id: 'analysis-parameters'
     },
 
-    // Step 10: Preview Analysis Data
+    // Step 11: Preview Analysis Data
     {
       title: 'Preview Analysis Data',
       text: `
@@ -465,13 +464,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(10, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+          return shouldShowStep(11, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
       id: 'preview-analysis-data'
     },
 
-    // Step 11: Visualization Library
+    // Step 12: Visualization Library
     {
       title: 'Choose Visualization Library',
       text: `
@@ -502,13 +501,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(11, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+          return shouldShowStep(12, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
       id: 'visualization-library-selection'
     },
 
-    // Step 12: Visualization Type
+    // Step 13: Visualization Type
     {
       title: 'Select Visualization Type',
       text: `
@@ -539,13 +538,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(12, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+          return shouldShowStep(13, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
       id: 'visualization-type-selection'
     },
 
-    // Step 13: Visualization Inputs
+    // Step 14: Visualization Inputs
     {
       title: 'Map Visualization Inputs',
       text: `
@@ -576,13 +575,13 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(13, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+          return shouldShowStep(14, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
       id: 'visualization-inputs-mapping'
     },
 
-    // Step 14: Generate Preview
+    // Step 15: Generate Preview
     {
       title: 'Generate Preview',
       text: `
@@ -613,51 +612,47 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       when: {
         show: function() {
-          return shouldShowStep(14, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
-      id: 'generate-preview'
-    },
-
-    // Step 15: Save Indicator
-    {
-      title: 'Save Your Indicator',
-      text: `
-        <div>
-          <p>Congratulations! You've successfully configured your indicator.</p>
-          <p>Click the <strong>Submit</strong> button to save your indicator for future use.</p>
-        </div>
-      `,
-      attachTo: {
-        element: '.shepherd-submit-btn',
-        on: 'right'
-      },
-      buttons: [
-        {
-          text: 'Back',
-          classes: 'shepherd-button-secondary',
-          action: function() {
-            return this.back();
-          }
-        },
-        {
-          text: 'Finish',
-          classes: 'shepherd-button-primary',
-          action: function() {
-            return this.complete();
-          }
-        }
-      ],
-      when: {
-        show: function() {
           return shouldShowStep(15, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
         }
       },
-      id: 'save-indicator'
+      id: 'generate-preview'
     }
   ];
 
   return steps;
+};
+
+// Shepherd.js specific styles configuration
+export const shepherdStyles = {
+  defaultStepOptions: {
+    classes: 'shepherd-theme-custom',
+    scrollTo: { behavior: 'smooth', block: 'center' },
+    showCancelLink: true,
+    cancelIcon: {
+      enabled: true
+    }
+  }
+};
+
+// Target classes mapping for Shepherd.js
+export const shepherdTargetClasses = {
+  lrsSelector: 'shepherd-lrs-selector',
+  platformSelector: 'shepherd-platform-selector',
+  nextBtnDataset: 'shepherd-next-btn-dataset',
+  activityTypeSelector: 'shepherd-activity-type-selector',
+  activitySelector: 'shepherd-activity-selector',
+  actionSelector: 'shepherd-action-selector',
+  dateRange: 'shepherd-date-range',
+  analysisTechnique: 'shepherd-analysis-technique',
+  analysisInputs: 'shepherd-analysis-inputs',
+  analysisParams: 'shepherd-analysis-params',
+  previewDataBtn: 'shepherd-preview-data-btn',
+  vizLibrary: 'shepherd-viz-library',
+  vizType: 'shepherd-viz-type',
+  vizInputs: 'shepherd-viz-inputs',
+  generatePreviewBtn: 'shepherd-generate-preview-btn',
+  submitBtn: 'shepherd-submit-btn',
+};
 };
 
 // Shepherd.js specific styles configuration
