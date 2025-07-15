@@ -4,6 +4,16 @@
 
 // Main step validation function
 export const validateStepCompletion = (stepIndex, { indicatorQuery, analysisRef, visRef, indicator }) => {
+  // Temporary debugging for step 0
+  if (stepIndex === 0) {
+    console.log('Validating step 0 - LRS Selection:', {
+      stepIndex,
+      lrsStores: indicatorQuery.lrsStores,
+      length: indicatorQuery.lrsStores.length,
+      result: indicatorQuery.lrsStores.length > 0
+    });
+  }
+  
   switch (stepIndex) {
     case 0: // LRS Selection
       return indicatorQuery.lrsStores.length > 0;

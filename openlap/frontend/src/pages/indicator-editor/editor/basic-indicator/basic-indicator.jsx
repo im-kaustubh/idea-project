@@ -236,7 +236,21 @@ const BasicIndicator = () => {
     return true;
   };
 
-  // Removed automatic progression - tour now only advances via manual Next button clicks
+  // Re-evaluate current step when state changes (for enabling/disabling Next button)
+  useEffect(() => {
+    if (!tourState.isActive || !tourRef.current) return;
+
+    const currentStep = tourRef.current.getCurrentStep();
+    if (!currentStep) return;
+
+    const currentStepIndex = tourRef.current.steps.findIndex(s => s.id === currentStep.id);
+    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+    
+    // Log current step validation for debugging
+    const isValid = validateStepCompletion(currentStepIndex, currentContext);
+    console.log(`Tour step ${currentStepIndex} validation:`, isValid);
+    
+  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
 
  //initialize and update Walkthrough Tour when context changes
   useEffect(() => {
