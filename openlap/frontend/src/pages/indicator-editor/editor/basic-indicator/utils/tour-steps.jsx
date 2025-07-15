@@ -272,7 +272,58 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'date-range-selection'
     },
 
-    // Step 7: Analysis Technique
+    // Step 7: Next Button to Analysis
+
+    {
+      title: 'Continue to Analysis',
+      text: `
+        <div>
+          <p>Click this button to proceed to analysis techniques after selecting your data filters.</p>
+        </div>
+      `,
+      attachTo: {
+        element: '.shepherd-next-btn-filters',
+        on: 'right'
+      },
+      buttons: [
+        {
+          text: 'Back',
+          classes: 'shepherd-button-secondary',
+          action: function() {
+            return this.back();
+          }
+        },
+        {
+          text: 'Next',
+          classes: 'shepherd-button-primary',
+          action: async function() {
+            // Get reference to your actual button
+            const actualButton = document.querySelector('.shepherd-next-btn-filters');
+            
+            if (actualButton && !actualButton.disabled) {
+              // Trigger the button click
+              actualButton.click();
+              
+              // Wait for the action to complete
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
+              // Then proceed to next tour step using validation
+              return validateAndNavigate('next');
+            }
+            return this;
+          }
+        }
+      ],
+      when: {
+        show: function() {
+          return shouldShowStep(7, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
+        }
+      },
+      id: 'next-button-filters'
+    },
+
+    //Step 8 Analysis Technique
+
     {
       title: 'Choose Analysis Technique',
       text: `

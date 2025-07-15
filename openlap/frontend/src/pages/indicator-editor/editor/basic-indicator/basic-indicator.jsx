@@ -402,25 +402,7 @@ const BasicIndicator = () => {
     indicator,
   ]);
 
-// Note: Removed automatic tour progression - tour now only advances via Next button
 
-// Special handling for when user clicks the actual "Next" button to unlock filters
-useEffect(() => {
-  if (!tourState.isActive || !tourRef.current) return;
-
-  // If the tour is currently on the "Next Button" step and the filters panel is now unlocked
-  const currentStepElement = tourRef.current.getCurrentStep();
-  if (currentStepElement && currentStepElement.id === 'next-button' && 
-      !lockedStep.filter.locked && lockedStep.filter.openPanel) {
-    // Advance to the activity type selection step
-    const tour = tourRef.current;
-    if (tour) {
-      setTimeout(() => {
-        tour.show('activity-type-selection');
-      }, 1000); // Give time for the UI to update
-    }
-  }
-}, [lockedStep.filter.locked, lockedStep.filter.openPanel, tourState.isActive]);
 
   // Note: Removed handleTourProgress - tour now only advances via Next button
 

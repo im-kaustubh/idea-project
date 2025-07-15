@@ -66,36 +66,38 @@ export const validateStepCompletion = (stepIndex, { indicatorQuery, analysisRef,
   console.log(`validateStepCompletion called for step ${stepIndex}`, { indicatorQuery });
   switch (stepIndex) {
     case 0: // LRS Selection
-      return isLrsSelected(indicatorQuery);
+      return indicatorQuery.lrsStores.length > 0;
     case 1: // Platform Selection
-      return isPlatformSelected(indicatorQuery);
-    case 2: // Next Button - considered complete when platform is selected
-      return isPlatformSelected(indicatorQuery);
+      return indicatorQuery.platforms.length > 0;
+    case 2: // Next Button
+      return true; // Always allow clicking next if we reached this step
     case 3: // Activity Type Selection
-      return isActivityTypeSelected(indicatorQuery);
+      return indicatorQuery.activityTypes.length > 0;
     case 4: // Activity Selection
-      return isActivitySelected(indicatorQuery);
+      return Object.entries(indicatorQuery.activities).length > 0;
     case 5: // Action Selection
-      return isActionSelected(indicatorQuery);
+      return indicatorQuery.actionOnActivities.length > 0;
     case 6: // Date Range
-      return isDateRangeValid(indicatorQuery);
-    case 7: // Analysis Technique
-      return isAnalysisTechniqueSelected(analysisRef);
-    case 8: // Analysis Inputs
+      return true;
+    case 7: // Next Button
+      return true  
+    case 8: // Analysis Technique
+      return analysisRef.analyticsTechniqueId.length > 0;
+    case 9: // Analysis Inputs
       return isAnalysisInputsMapped(analysisRef);
-    case 9: // Analysis Parameters
+    case 10: // Analysis Parameters
       return isAnalysisParamsSet(analysisRef);
-    case 10: // Preview Analysis Data
+    case 11: // Preview Analysis Data
       return isAnalysisDataGenerated(analysisRef);
-    case 11: // Visualization Library
+    case 12: // Visualization Library
       return isVisualizationLibrarySelected(visRef);
-    case 12: // Visualization Type
+    case 13: // Visualization Type
       return isVisualizationTypeSelected(visRef);
-    case 13: // Visualization Inputs
+    case 14: // Visualization Inputs
       return isVisualizationInputsMapped(visRef);
-    case 14: // Generate Preview
+    case 15: // Generate Preview
       return isPreviewGenerated(indicator);
-    case 15: // Final Submit
+    case 16: // Final Submit
       return true; // Always available once preview is generated
     default:
       return false;
@@ -115,7 +117,7 @@ export const canProceedToStep = (targetStepIndex, { indicatorQuery, analysisRef,
 
 // Get next available step
 export const getNextAvailableStep = ({ indicatorQuery, analysisRef, visRef, indicator, lockedStep }) => {
-  const maxSteps = 16;
+  const maxSteps = 17;
   
   // Find the first step that is either incomplete or not shown
   for (let i = 0; i < maxSteps; i++) {
@@ -151,15 +153,16 @@ export const getStepTooltipContent = (stepIndex) => {
     4: "Please select at least one Activity first",
     5: "Please select at least one Action first",
     6: "Please complete the date range selection first",
-    7: "Please select an Analysis Technique first",
-    8: "Please map the analysis inputs first",
-    9: "Please set the analysis parameters first",
-    10: "Please preview the analysis data first",
-    11: "Please select a Visualization Library first",
-    12: "Please select a Visualization Type first",
-    13: "Please map the visualization inputs first",
-    14: "Please generate the preview first",
-    15: "Please submit the indicator first",
+    7: "Please click the Next button to proceed",
+    8: "Please select an Analysis Technique first",
+    9: "Please map the analysis inputs first",
+    10: "Please set the analysis parameters first",
+    11: "Please preview the analysis data first",
+    12: "Please select a Visualization Library first",
+    13: "Please select a Visualization Type first",
+    14: "Please map the visualization inputs first",
+    15: "Please generate the preview first",
+    16: "Please submit the indicator first",
   };
   return tooltips[stepIndex] || "Please complete the previous steps first";
 };

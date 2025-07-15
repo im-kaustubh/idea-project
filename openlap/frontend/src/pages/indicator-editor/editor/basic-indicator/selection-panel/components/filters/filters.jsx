@@ -213,6 +213,7 @@ const Filters = () => {
           <Grid container justifyContent="center">
             <Grid item xs={12} md={6}>
               <Button
+                className="shepherd-next-btn-filters"
                 variant="contained"
                 fullWidth
                 disabled={
