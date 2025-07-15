@@ -107,7 +107,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
 
   return (
     <>
-      <Grid container spacing={2} className="shepherd-analysis-technique">
+      <Grid container spacing={2} className="shepherd-analysis-inputs">
         <Grid item xs={12}>
           <Grid container alignItems="center">
             <Typography>Analysis method inputs</Typography>
@@ -128,7 +128,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
         </Grid>
         {state.inputs?.map((input, index) => (
           <Grid item xs={12} sm={6} key={index}>
-            <Grid container spacing={1}>
+            <Grid container spacing={1} className="shepherd-analysis-inputs-dropdown">
               <Grid item xs>
                 <FormControl fullWidth>
                   <InputLabel required={Boolean(input.required)}>

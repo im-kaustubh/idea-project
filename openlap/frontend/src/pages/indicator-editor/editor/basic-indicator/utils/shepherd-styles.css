@@ -34,7 +34,8 @@
 .shepherd-activity-selector,
 .shepherd-action-selector,
 .shepherd-analysis-technique,
-.shepherd-viz-library {
+.shepherd-viz-library,
+.shepherd-analysis-inputs-dropdown {
   position: relative;
 }
 
@@ -45,7 +46,8 @@
 .shepherd-activity-selector::before,
 .shepherd-action-selector::before,
 .shepherd-analysis-technique::before,
-.shepherd-viz-library::before {
+.shepherd-viz-library::before,
+.shepherd-analysis-inputs-dropdown::before {
   content: '';
   position: absolute;
   top: -4px;

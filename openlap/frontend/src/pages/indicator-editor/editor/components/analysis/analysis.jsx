@@ -353,6 +353,7 @@ const Analysis = ({
             </Grid>
             <Grid item xs>
               <Button
+                className="shepherd-next-btn-analysis"
                 variant="contained"
                 fullWidth
                 disabled={

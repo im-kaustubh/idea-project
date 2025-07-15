@@ -19,10 +19,7 @@ import { AuthContext } from "../../../../setup/auth-context-manager/auth-context
 import Shepherd from "shepherd.js";
 import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
 import { 
-  validateStepCompletion, 
-  canProceedToStep, 
-  getNextAvailableStep, 
-  getStepTooltipContent
+  getNextAvailableStep
 } from "./utils/shepherd-utils.js";
 import "./utils/shepherd-styles.css";
 
@@ -197,45 +194,23 @@ const BasicIndicator = () => {
   });
   const tourRef = useRef(null);
 
-   // Shepherd.js tour validation and navigation
+   // Shepherd.js tour navigation - allows free progression
   const validateAndNavigate = (direction = 'next') => {
     if (!tourRef.current) {
-      console.log('validateAndNavigate: No tour reference available');
       return false;
     }
 
     const tour = tourRef.current;
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const currentStep = tour.getCurrentStep();
 
     if (!currentStep) {
-      console.log('validateAndNavigate: No current step');
       return false;
     }
 
     const currentStepIndex = tour.steps.findIndex(s => s.id === currentStep.id);
     
     if (direction === 'next') {
-      // First check if we CAN proceed (requirements met)
-      const canProceed = canProceedToStep(currentStepIndex + 1, currentContext);
-      
-      if (!canProceed) {
-        const tooltipContent = getStepTooltipContent(currentStepIndex);
-        enqueueSnackbar(tooltipContent, { 
-          variant: "warning",
-          autoHideDuration: 4000,
-        });
-        return false;
-      }
-
-      // Then check if we SHOULD proceed (current step complete)
-      const isCurrentStepComplete = validateStepCompletion(currentStepIndex, currentContext);
-      
-      if (!isCurrentStepComplete) {
-        return false;
-      }
-
-      // Actually proceed to next step
+      // Proceed to next step without validation
       const nextStepIndex = currentStepIndex + 1;
       if (tour.steps[nextStepIndex]) {
         tour.show(nextStepIndex);
@@ -246,44 +221,24 @@ const BasicIndicator = () => {
     return true;
   };
 
-  // Modified useEffect for context changes
-  useEffect(() => {
-    if (!tourState.isActive || !tourRef.current) return;
-
-    // Use setTimeout to ensure we run after state updates
-    const timer = setTimeout(() => {
-      const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-      const currentStepIndex = tourRef.current.getCurrentStep()?.id ? 
-        tourRef.current.steps.findIndex(s => s.id === tourRef.current.getCurrentStep().id) : 0;
-
-      // Only auto-progress if current step is complete
-      if (validateStepCompletion(currentStepIndex, currentContext)) {
-        const nextStepIndex = currentStepIndex + 1;
-        if (tourRef.current.steps[nextStepIndex]) {
-          tourRef.current.show(nextStepIndex);
-        }
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep, tourState.isActive]);
+  // Note: Tour validation now happens only when Next button is clicked
+  // This prevents tour recreation and state loss during user interactions
 
  //initialize and update Walkthrough Tour when context changes
   useEffect(() => {
+    // Don't recreate tour if it's currently active - this preserves state
+    if (tourState.isActive && tourRef.current) {
+      return;
+    }
+
     const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
     const steps = createTourSteps(currentContext, validateAndNavigate);
     
-        // Only clean up existing tour if it's not currently active
-    // This prevents the tour from being destroyed when users interact with UI elements
+    // Clean up existing tour if it's not active
     if (tourRef.current && !tourState.isActive) {
       tourRef.current.complete();
       tourRef.current = null;
     }
-
-         // Skip creating a new tour if one is already active to prevent tour destruction
-     if (tourState.isActive && tourRef.current) {
-       return;
-     }
 
     // Create new tour
     const tour = new Shepherd.Tour({

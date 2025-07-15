@@ -1,4 +1,4 @@
-import { validateStepCompletion, canProceedToStep, shouldShowStep } from './shepherd-utils.js';
+// No imports needed - tour allows free progression
 
 /**
  * Tour steps configuration for the Basic Indicator Editor using Shepherd.js
@@ -14,6 +14,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
         <div>
           <p>Let's start by selecting a <strong>Learning Record Store (LRS)</strong>. This is where your learning data is stored.</p>
           <p>Choose from the available LRS options to begin building your indicator.</p>
+          <p>Select: <strong>IDEA</strong></p>
         </div>
       `,
       attachTo: {
@@ -45,7 +46,8 @@ export const createTourSteps = (context, validateAndNavigate) => {
       text: `
         <div>
           <p>Great! Now choose the <strong>Platform</strong> where your learning activities take place.</p>
-          <p>Platforms like Moodle, Canvas, or other learning management systems will appear here based on your LRS selection.</p>
+          <p>Platforms like CourseMapper, Moodle or other learning management systems will appear here based on your LRS selection.</p>
+          <p>Select: <strong>CourseMapper</strong> </p>
         </div>
       `,
       attachTo: {
@@ -68,11 +70,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(1, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
+
       id: 'platform-selection'
     },
 
@@ -81,7 +79,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
       title: 'Continue to Activities',
       text: `
         <div>
-          <p>Click this button to proceed to activity selection after choosing your platform.</p>
+          <p>Click this button to proceed with <strong>filtering your dataset</strong> after choosing your platform.</p>
         </div>
       `,
       attachTo: {
@@ -117,11 +115,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(2, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
+
       id: 'next-button'
     },
     // Step 3: Activity Type Selection
@@ -130,7 +124,8 @@ export const createTourSteps = (context, validateAndNavigate) => {
       text: `
         <div>
           <p>Next, select the <strong>Activity Type</strong> you want to analyze.</p>
-          <p>This defines the kind of learning activities (like courses, assessments, etc.) that will be included in your indicator.</p>
+          <p>This defines the kind of learning activities (like courses, channels, etc.) that will be included in your indicator.</p>
+          <p>Select: <strong>Course</strong> </p>
         </div>
       `,
       attachTo: {
@@ -153,11 +148,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(3, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'activity-type-selection'
     },
 
@@ -167,7 +157,8 @@ export const createTourSteps = (context, validateAndNavigate) => {
       text: `
         <div>
           <p>Now choose the specific <strong>Activities</strong> you want to analyze.</p>
-          <p>These are the individual learning objects or courses within your selected activity type.</p>
+          <p>These are the individual learning objects within your selected activity type.</p>
+          <p>Select available courses by selecting: <strong>course</strong> </p>
         </div>
       `,
       attachTo: {
@@ -190,11 +181,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(4, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'activity-selection'
     },
 
@@ -205,6 +191,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
         <div>
           <p>Select the <strong>Actions</strong> that learners can perform on the activities.</p>
           <p>This could include actions like viewing, completing, submitting, etc.</p>
+          <p>Select: <strong>Enrolled</strong> </p>
         </div>
       `,
       attachTo: {
@@ -227,11 +214,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(5, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'action-selection'
     },
 
@@ -240,8 +222,9 @@ export const createTourSteps = (context, validateAndNavigate) => {
       title: 'Set Date Range',
       text: `
         <div>
-          <p>Define the <strong>time period</strong> for your analysis.</p>
-          <p>Select start and end dates to filter the learning data within this timeframe.</p>
+          <p>You can define a <strong>time period</strong> for your analysis.</p>
+          <p>For this walkthrough just press:</p>
+          <p><strong>Next button</strong> </p>
         </div>
       `,
       attachTo: {
@@ -264,11 +247,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(6, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'date-range-selection'
     },
 
@@ -314,16 +292,10 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(7, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'next-button-filters'
     },
 
-    //Step 8 Analysis Technique
-
+    // Step 8: Analysis Technique
     {
       title: 'Choose Analysis Technique',
       text: `
@@ -352,15 +324,10 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(7, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'analysis-technique-selection'
     },
 
-    // Step 8: Analysis Inputs
+    // Step 9: Analysis Inputs
     {
       title: 'Map Analysis Inputs',
       text: `
@@ -389,15 +356,42 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(8, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'analysis-inputs-mapping'
     },
+    
+    // Step 9: Analysis Inputs
+    {
+      title: 'Map Analysis Inputs',
+      text: `
+        <div>
+          <p>Select SOmething IDC</strong>.</p>
+          <p></p>
+        </div>
+      `,
+      attachTo: {
+        element: '.shepherd-analysis-inputs-dropdown',
+        on: 'right'
+      },
+      buttons: [
+        {
+          text: 'Back',
+          classes: 'shepherd-button-secondary',
+          action: function() {
+            return this.back();
+          }
+        },
+        {
+          text: 'Next',
+          classes: 'shepherd-button-primary',
+          action: function() {
+            return validateAndNavigate('next');
+          }
+        }
+      ],
+      id: 'analysis-inputs-dropdown'
+    },
 
-    // Step 9: Analysis Parameters
+    // Step 10: Analysis Parameters
     {
       title: 'Set Analysis Parameters',
       text: `
@@ -426,15 +420,10 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(9, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'analysis-parameters'
     },
 
-    // Step 10: Preview Analysis Data
+    // Step 11: Preview Analysis Data
     {
       title: 'Preview Analysis Data',
       text: `
@@ -463,15 +452,54 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(10, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'preview-analysis-data'
     },
 
-    // Step 11: Visualization Library
+    // Step 12: Next Button To Vis
+
+    {
+      title: 'Continue to Visualization',
+      text: `
+        <div>
+          <p>Click this button to proceed to <strong>Visualisation</strong> after selecting your data filters.</p>
+        </div>
+      `,
+      attachTo: {
+        element: '.shepherd-next-btn-analysis',
+        on: 'right'
+      },
+      buttons: [
+        {
+          text: 'Back',
+          classes: 'shepherd-button-secondary',
+          action: function() {
+            return this.back();
+          }
+        },
+        {
+          text: 'Next',
+          classes: 'shepherd-button-primary',
+          action: async function() {
+            // Get reference to your actual button
+            const actualButton = document.querySelector('.shepherd-next-btn-analysis');
+            
+            if (actualButton && !actualButton.disabled) {
+              // Trigger the button click
+              actualButton.click();
+              
+              // Wait for the action to complete
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
+              // Then proceed to next tour step using validation
+              return validateAndNavigate('next');
+            }
+            return this;
+          }
+        }
+      ],
+      id: 'next-button-analysis'
+    },
+
     {
       title: 'Choose Visualization Library',
       text: `
@@ -500,15 +528,10 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(11, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'visualization-library-selection'
     },
 
-    // Step 12: Visualization Type
+    // Step 13: Visualization Type
     {
       title: 'Select Visualization Type',
       text: `
@@ -537,15 +560,10 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(12, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'visualization-type-selection'
     },
 
-    // Step 13: Visualization Inputs
+    // Step 14: Visualization Inputs
     {
       title: 'Map Visualization Inputs',
       text: `
@@ -574,15 +592,10 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(13, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
       id: 'visualization-inputs-mapping'
     },
 
-    // Step 14: Generate Preview
+    // Step 15: Generate Preview
     {
       title: 'Generate Preview',
       text: `
@@ -604,43 +617,6 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         },
         {
-          text: 'Next',
-          classes: 'shepherd-button-primary',
-          action: function() {
-            return validateAndNavigate('next');
-          }
-        }
-      ],
-      when: {
-        show: function() {
-          return shouldShowStep(14, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
-      id: 'generate-preview'
-    },
-
-    // Step 15: Save Indicator
-    {
-      title: 'Save Your Indicator',
-      text: `
-        <div>
-          <p>Congratulations! You've successfully configured your indicator.</p>
-          <p>Click the <strong>Submit</strong> button to save your indicator for future use.</p>
-        </div>
-      `,
-      attachTo: {
-        element: '.shepherd-submit-btn',
-        on: 'right'
-      },
-      buttons: [
-        {
-          text: 'Back',
-          classes: 'shepherd-button-secondary',
-          action: function() {
-            return this.back();
-          }
-        },
-        {
           text: 'Finish',
           classes: 'shepherd-button-primary',
           action: function() {
@@ -648,12 +624,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
           }
         }
       ],
-      when: {
-        show: function() {
-          return shouldShowStep(15, { indicatorQuery, analysisRef, visRef, indicator, lockedStep });
-        }
-      },
-      id: 'save-indicator'
+      id: 'generate-preview'
     }
   ];
 
@@ -685,6 +656,7 @@ export const shepherdTargetClasses = {
   analysisInputs: 'shepherd-analysis-inputs',
   analysisParams: 'shepherd-analysis-params',
   previewDataBtn: 'shepherd-preview-data-btn',
+  nxtBtnAnalysis: 'shshepherd-next-btn-analysis',
   vizLibrary: 'shepherd-viz-library',
   vizType: 'shepherd-viz-type',
   vizInputs: 'shepherd-viz-inputs',
