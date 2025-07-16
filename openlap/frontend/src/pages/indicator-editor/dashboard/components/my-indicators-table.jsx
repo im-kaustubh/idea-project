@@ -167,6 +167,7 @@ const MyIndicatorsTable = () => {
 
   //implemenatation
   const handleEdit = () => {
+    // Helper function: Fetch full indicator details from backend
     const loadIndicatorDetail = async (api, indicatorId) => {
       try {
         return await requestIndicatorFullDetail(api, indicatorId);
@@ -174,6 +175,7 @@ const MyIndicatorsTable = () => {
         console.log("Error requesting my indicators");
       }
     };
+    // Helper function: Fetch analyzed data for the indicator
     const loadAnalyzedData = async (api, analysisRequest) => {
       try {
         return await fetchAnalyzedData(api, analysisRequest);
@@ -188,6 +190,7 @@ const MyIndicatorsTable = () => {
       loadingIndicators: true,
     }));
 
+    // Fetch indicator details, then hydrate state and navigate
     loadIndicatorDetail(api, selectedIndicator.id)
         .then(async (indicatorData) => {
           if (!indicatorData) return;
@@ -195,6 +198,7 @@ const MyIndicatorsTable = () => {
           console.log("indicatorData", indicatorData);
 
           // Build the analysis request for analyzedData
+          // This object is used to fetch the latest analysis results
           const analysisRequest = {
             indicatorQuery: indicatorData.indicatorQuery || {
               lrsStores: [],
@@ -217,11 +221,12 @@ const MyIndicatorsTable = () => {
           console.log("analysisRequest", analysisRequest);
 
 
-          // Fetch analyzedData
+          // Fetch analyzedData using the built analysis request
           const analyzedDataResponse = await loadAnalyzedData(api, analysisRequest);
 
           // Hydrate the dataset panel state for edit mode
           const lrsList = await fetchUserLRSList(api); // returns all available LRSs
+          // Map selected LRS IDs to their full objects for the editor
           const selectedLrsList = (analysisRequest.indicatorQuery.lrsStores || [])
               .map(lrs =>
                   typeof lrs === "string"
@@ -233,15 +238,22 @@ const MyIndicatorsTable = () => {
           // Hydrate selectedPlatformList with objects { name }
           const selectedPlatformList = (analysisRequest.indicatorQuery.platforms || []).map(name => ({ name }));
 
+          // Hydrate filter chips (ensure arrays, default to [])
+          //const selectedActivityTypesList = (analysisRequest.indicatorQuery.activityTypes || []).map(type => ({ type }));
+         // const selectedActionsList = (analysisRequest.indicatorQuery.actionOnActivities || []).map(action => ({ action }));
+         // const selectedActivitiesList = Array.isArray(analysisRequest.indicatorQuery.activities)
+          //     ? analysisRequest.indicatorQuery.activities
+         //     : [];
+
 
           // Build a complete session object with all required fields
           const sessionData = {
-            indicatorQuery: analysisRequest.indicatorQuery,
+            indicatorQuery: analysisRequest.indicatorQuery, //All filter/query settings
             analysisRef: {
               analyticsTechniqueId: analysisRequest.analyticsTechniqueId,
               analyticsTechniqueParams: analysisRequest.analyticsTechniqueParams,
               analyticsTechniqueMapping: analysisRequest.analyticsTechniqueMapping,
-              analyzedData: analyzedDataResponse.data || {},
+              analyzedData: analyzedDataResponse.data || {}, //Latest analysis results
             },
             visRef: indicatorData.visRef || {
               visualizationLibraryId: "",
@@ -301,16 +313,20 @@ const MyIndicatorsTable = () => {
               indicatorName: indicatorData.name || "",
               type: indicatorData.type || "BASIC",
             },
-            edit: true,
+            edit: true, //Mark this an edit session
           };
 
+          // Store the session data in sessionStorage for the editor page to use
           sessionStorage.setItem("session", JSON.stringify(sessionData));
+
+          //just for test
           console.log(JSON.parse(sessionStorage.getItem("filters")));
 
+          // Store dataset panel state (LRSs, platforms)
           sessionStorage.setItem(
               "dataset",
               JSON.stringify({
-                openPanel: true,
+                openPanel: false,
                 showSelections: true,
                 lrsList: [],
                 selectedLrsList,
@@ -320,20 +336,21 @@ const MyIndicatorsTable = () => {
               })
           );
 
-          sessionStorage.setItem(
-              "filters",
-              JSON.stringify({
-                openPanel: false,
-                showSelections: true,
-                activityTypesList: [],
-                selectedActivityTypesList: [],
-                activitiesList: [],
-                selectedActivitiesList: [],
-                actionsList: [],
-                selectedActionsList: [],
-                autoCompleteValue: null,
-              })
-          );
+          // Store filter state (activity types, actions, activities)
+          //sessionStorage.setItem(
+           //   "filters",
+           //   JSON.stringify({
+           //     openPanel: false,
+           //     showSelections: true,
+           //     activityTypesList: [],
+            //    selectedActivityTypesList: [],
+           //     activitiesList: [],
+            //    selectedActivitiesList: [],
+           //     actionsList: [],
+           //     selectedActionsList: [],
+            //    autoCompleteValue: null,
+            //  })
+         // );
 
           return sessionData;
         })

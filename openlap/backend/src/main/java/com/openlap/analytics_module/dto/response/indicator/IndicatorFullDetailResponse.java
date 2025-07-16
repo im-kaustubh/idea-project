@@ -36,7 +36,7 @@ public class IndicatorFullDetailResponse {
 
   // Analytics Technique
   private String analyticsTechnique;
-  private String analyticsTechniqueId; //added this because its needed in frontend
+  private String analyticsTechniqueId; //added this because it is required for analysisrequest
   private OpenLAPPortConfig analyticsTechniqueMapping;
   private List<OpenLAPDynamicParam> analyticsTechniqueParams;
 
