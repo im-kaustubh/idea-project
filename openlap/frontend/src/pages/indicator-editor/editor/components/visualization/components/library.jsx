@@ -109,6 +109,7 @@ const VisualizationLibrary = ({
             </Grid>
             <Grid item xs={12}>
               <Autocomplete
+                className="shepherd-viz-library"
                 disabled={visRef.visualizationLibraryId !== ""}
                 disablePortal
                 id="combo-box-lrs"

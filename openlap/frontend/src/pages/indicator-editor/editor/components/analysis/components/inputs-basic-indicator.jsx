@@ -107,7 +107,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
 
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} className="shepherd-analysis-inputs">
         <Grid item xs={12}>
           <Grid container alignItems="center">
             <Typography>Analysis method inputs</Typography>
@@ -136,6 +136,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
                   </InputLabel>
 
                   <Select
+                    className="shepherd-analysis-inputs-dropdown"
                     label={input.title}
                     onChange={(event) => handleChangeInputMapping(event, input)}
                   >
