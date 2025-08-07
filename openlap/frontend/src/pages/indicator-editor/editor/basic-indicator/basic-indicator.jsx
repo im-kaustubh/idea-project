@@ -6,8 +6,9 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { Divider, Grid, IconButton, Tooltip, Typography, Fab} from "@mui/material";
+import { Divider, Grid, IconButton, Tooltip, Typography, Fab, Box } from "@mui/material";
 import { ArrowBack, TourOutlined, RestartAlt } from "@mui/icons-material";
+
 import SelectionPanel from "./selection-panel/selection-panel.jsx";
 import dayjs from "dayjs";
 import Condition from "./selection-panel/utils/condition.js";
@@ -15,13 +16,16 @@ import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import { requestCreateBasicIndicator } from "../components/preview-panel/utils/preview-api.js";
 import { AuthContext } from "../../../../setup/auth-context-manager/auth-context-manager.jsx";
-//New Imports
+
+// Walkthrough (Shepherd.js)
 import Shepherd from "shepherd.js";
 import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
-import { 
-  getNextAvailableStep
-} from "./utils/shepherd-utils.js";
+import { getNextAvailableStep } from "./utils/shepherd-utils.js";
 import "./utils/shepherd-styles.css";
+
+// Additional UI Components
+import EndDateSelector from './components/EndDateSelector';
+import StepHelpDialog from './components/StepHelpDialog';
 
 export const BasicIndicatorContext = createContext(undefined);
 
@@ -176,6 +180,8 @@ const BasicIndicator = () => {
           },
         };
   });
+
+  const [endDate, setEndDate] = React.useState('');
 
   const prevDependencies = useRef({
     indicatorQuery,

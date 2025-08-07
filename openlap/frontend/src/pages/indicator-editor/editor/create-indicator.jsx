@@ -19,48 +19,54 @@ const CreateIndicator = ({ handleClearSession }) => {
         <Grid item xs={12}>
           <Grid container spacing={2}>
             {images.map((image, index) => {
+              let tourId = '';
+              if (image.imageCode === 'BASIC') tourId = 'basic-indicator';
+              else if (image.imageCode === 'COMPOSITE') tourId = 'composite-indicator';
+              else if (image.imageCode === 'MULTI_LEVEL') tourId = 'multi-level-indicator';
               return (
                 <Grid item xs={4} key={index}>
-                  <Grid
-                    container
-                    component={Paper}
-                    onClick={() => handleStartIndicatorCreationProcess(image)}
-                    sx={{
-                      p: 3,
-                      "&:hover": {
-                        boxShadow: 5,
-                      },
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Grid item xs={12} sx={{ pb: 2 }}>
-                      <Paper
-                        elevation={0}
-                        component="img"
-                        src={image.image}
-                        alt={image.imageCode}
-                        loading="lazy"
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          backgroundColor: "white",
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="h6" gutterBottom>
-                        Create a {image.name}
-                      </Typography>
-                      <Typography variant="body1" gutterBottom>
-                        {image.description}
-                      </Typography>
-                      {image.condition && (
-                        <Typography variant="body2">
-                          <b>Condition:</b> {image.condition}
+                  <div data-tour-id={tourId}>
+                    <Grid
+                      container
+                      component={Paper}
+                      onClick={() => handleStartIndicatorCreationProcess(image)}
+                      sx={{
+                        p: 3,
+                        "&:hover": {
+                          boxShadow: 5,
+                        },
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Grid item xs={12} sx={{ pb: 2 }}>
+                        <Paper
+                          elevation={0}
+                          component="img"
+                          src={image.image}
+                          alt={image.imageCode}
+                          loading="lazy"
+                          sx={{
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "white",
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="h6" gutterBottom>
+                          Create a {image.name}
                         </Typography>
-                      )}
+                        <Typography variant="body1" gutterBottom>
+                          {image.description}
+                        </Typography>
+                        {image.condition && (
+                          <Typography variant="body2">
+                            <b>Condition:</b> {image.condition}
+                          </Typography>
+                        )}
+                      </Grid>
                     </Grid>
-                  </Grid>
+                  </div>
                 </Grid>
               );
             })}

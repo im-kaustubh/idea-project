@@ -22,6 +22,7 @@ import VisualizationType from "./components/type.jsx";
 import Inputs from "./components/inputs.jsx";
 import { LoadingButton } from "@mui/lab";
 import { useSnackbar } from "notistack";
+import StepHelpDialog from '../../basic-indicator/components/StepHelpDialog';
 
 const Visualization = ({
   lockedStep,
@@ -146,6 +147,9 @@ const Visualization = ({
                     </Grid>
                     <Grid item>
                       <Typography>Visualization</Typography>
+                    </Grid>
+                    <Grid item>
+                      <StepHelpDialog title="Visualization" description="Choose how to display the indicator results (e.g., charts, tables)." />
                     </Grid>
                     {!lockedStep.visualization.locked &&
                       !lockedStep.visualization.openPanel && (

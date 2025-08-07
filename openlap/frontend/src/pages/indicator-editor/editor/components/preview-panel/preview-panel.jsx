@@ -21,6 +21,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import EmptyPreview from "../../../../../assets/images/vis-empty-state/no-indicator-preview.svg";
 import ChartCustomization from "./customizations/chart-customization.jsx";
 import NameDialog from "./name-dialog.jsx";
+import StepHelpDialog from '../../basic-indicator/components/StepHelpDialog';
 
 const PreviewPanel = ({
   lockedStep,
@@ -105,6 +106,9 @@ const PreviewPanel = ({
                     </Grid>
                     <Grid item>
                       <Typography>Preview & Finalize</Typography>
+                    </Grid>
+                    <Grid item>
+                      <StepHelpDialog title="Preview & Finalize" description="Review all settings and finalize the indicator creation." />
                     </Grid>
                     {!lockedStep.finalize.locked &&
                       !lockedStep.finalize.openPanel && (

@@ -3,12 +3,15 @@ import { Delete } from "@mui/icons-material";
 import React, { useEffect, useState } from "react";
 import CreateIndicator from "./create-indicator.jsx";
 import { useNavigate } from "react-router-dom";
+import IndicatorTutorial from './components/IndicatorTutorial';
 
 const IndicatorEditor = () => {
   const navigate = useNavigate();
   const [state, setState] = useState({
     route: "",
   });
+  const [runTutorial, setRunTutorial] = React.useState(false);
+
   useEffect(() => {
     const savedState = sessionStorage.getItem("session");
     if (savedState) {
@@ -59,6 +62,9 @@ const IndicatorEditor = () => {
           <Divider />
         </Grid>
         <Grid item xs={12}>
+          <Button onClick={() => setRunTutorial(true)} variant='outlined' sx={{ float: 'right', mt: 2 }}>
+            Show Tutorial
+          </Button>
           <CreateIndicator handleClearSession={handleClearSession} />
         </Grid>
         {/* {state.route && (
@@ -98,6 +104,7 @@ const IndicatorEditor = () => {
           </Grid>
         )} */}
       </Grid>
+      <IndicatorTutorial run={runTutorial} setRun={setRunTutorial} />
     </>
   );
 };
