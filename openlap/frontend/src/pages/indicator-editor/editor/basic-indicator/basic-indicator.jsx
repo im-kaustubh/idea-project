@@ -6,8 +6,8 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { Divider, Grid, IconButton, Tooltip, Typography, Fab, Box } from "@mui/material";
-import { ArrowBack, TourOutlined, RestartAlt } from "@mui/icons-material";
+import { Divider, Grid, IconButton, Tooltip, Typography } from "@mui/material";
+import { ArrowBack, TourOutlined } from "@mui/icons-material";
 
 import SelectionPanel from "./selection-panel/selection-panel.jsx";
 import dayjs from "dayjs";
@@ -19,8 +19,7 @@ import { AuthContext } from "../../../../setup/auth-context-manager/auth-context
 
 // Walkthrough (Shepherd.js)
 import Shepherd from "shepherd.js";
-import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
-import { getNextAvailableStep } from "./utils/shepherd-utils.js";
+import { createTourSteps } from "./utils/tour-steps.jsx";
 import "./utils/shepherd-styles.css";
 
 // Additional UI Components
@@ -30,6 +29,8 @@ import StepHelpDialog from './components/StepHelpDialog';
 export const BasicIndicatorContext = createContext(undefined);
 
 const BasicIndicator = () => {
+  console.log('BasicIndicator component rendering...');
+  
   const { api } = useContext(AuthContext);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -98,11 +99,18 @@ const BasicIndicator = () => {
           visualizationTypeId: "",
           visualizationParams: {
             height: 500,
-            width: 500,
+            width: 800,
+            margin: {
+              top: 20,
+              right: 20,
+              bottom: 20,
+              left: 20,
+            },
           },
           visualizationMapping: {
             mapping: [],
           },
+          visualizationData: {},
         };
   });
 
@@ -146,17 +154,8 @@ const BasicIndicator = () => {
             description:
               'Selected list of sources specified in Dataset such as "Moodle" etc.',
           },
-          // user: {
-          //   id: "statement.actor.account.name",
-          //   type: "Text",
-          //   required: true,
-          //   title: "Users",
-          //   description:
-          //     "Selected list of the User(s) specified in User Filter",
-          // },
         };
   });
-
   const [lockedStep, setLockedStep] = useState(() => {
     const savedState = sessionStorage.getItem("session");
     return savedState
@@ -181,241 +180,137 @@ const BasicIndicator = () => {
         };
   });
 
-  const [endDate, setEndDate] = React.useState('');
-
-  const prevDependencies = useRef({
-    indicatorQuery,
-    analysisRef,
-    visRef,
-    analysisInputMenu,
-    lockedStep,
-    indicator,
-  });
-
- // Shepherd.js tour state
-  const [tourState, setTourState] = useState({
-    isActive: false,
-    currentStep: 0,
-    tour: null,
-  });
+  // Shepherd.js tour
   const tourRef = useRef(null);
+  // Human-note: while the walkthrough is running we keep the editor in a read-only/demo mode
+  const [isTourMode, setIsTourMode] = useState(false);
+  // Human-note: we store the lock state before starting the tour so we can put it back afterwards
+  const originalLockedStepRef = useRef(null);
 
-   // Shepherd.js tour navigation - allows free progression
-  const validateAndNavigate = (direction = 'next') => {
-    if (!tourRef.current) {
-      return false;
+  // Human-note: create a safe snapshot of the current lock state (defensive deep copy)
+  const snapshotLockedStep = useCallback(() => {
+    try {
+      return JSON.parse(JSON.stringify(lockedStep));
+    } catch (e) {
+      return lockedStep;
     }
+  }, [lockedStep]);
 
-    const tour = tourRef.current;
-    const currentStep = tour.getCurrentStep();
+  // Human-note: unlock all steps for the duration of the tour and open all panels for visibility
+  const unlockAllStepsForTour = useCallback(() => {
+    setLockedStep({
+      filter: { locked: false, openPanel: true },
+      analysis: { locked: false, openPanel: true },
+      visualization: { locked: false, openPanel: true },
+      finalize: { locked: false, openPanel: true },
+    });
+  }, []);
 
-    if (!currentStep) {
-      return false;
-    }
-
-    const currentStepIndex = tour.steps.findIndex(s => s.id === currentStep.id);
-    
-    if (direction === 'next') {
-      // Proceed to next step without validation
-      const nextStepIndex = currentStepIndex + 1;
-      if (tour.steps[nextStepIndex]) {
-        tour.show(nextStepIndex);
-        return true;
-      }
-    }
-    
-    return true;
-  };
-
-  // Note: Tour validation now happens only when Next button is clicked
-  // This prevents tour recreation and state loss during user interactions
-
- //initialize and update Walkthrough Tour when context changes
+  // Human-note: toggle a body-level class while the tour runs to block interactions globally
   useEffect(() => {
-    // Don't recreate tour if it's currently active - this preserves state
-    if (tourState.isActive && tourRef.current) {
-      return;
+    if (isTourMode) {
+      document.body.classList.add('olap-tour-mode');
+    } else {
+      document.body.classList.remove('olap-tour-mode');
+    }
+    return () => {
+      document.body.classList.remove('olap-tour-mode');
+    };
+  }, [isTourMode]);
+
+  // Human-note: when the tour ends (complete/cancel), restore whatever locks the user really had before
+  const restoreOriginalLocks = useCallback(() => {
+    const snapshot = originalLockedStepRef.current;
+    if (snapshot) {
+      setLockedStep(snapshot);
+    }
+    setIsTourMode(false);
+  }, []);
+
+  // Initialize tour lazily on start to avoid race conditions with state updates
+  useEffect(() => {
+    // Human-note: tour is constructed on-demand inside startTour()
+  }, []);
+
+  // Start tour function
+  const startTour = async () => {
+    console.log('Starting tour...');
+    if (tourRef.current) {
+      console.log('Tour ref exists, starting tour...');
+      // If a previous tour instance exists, ensure it is not active
+      if (tourRef.current.isActive()) {
+        tourRef.current.complete();
+      }
+    } else {
+      console.log('Tour ref is null!');
     }
 
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-    const steps = createTourSteps(currentContext, validateAndNavigate);
-    
-    // Clean up existing tour if it's not active
-    if (tourRef.current && !tourState.isActive) {
-      tourRef.current.complete();
-      tourRef.current = null;
-    }
+    try {
+      // Human-note: snapshot existing locks and switch the page into a non-interactive "tour mode"
+      originalLockedStepRef.current = snapshotLockedStep();
+      setIsTourMode(true);
+      unlockAllStepsForTour();
 
-    // Create new tour
-    const tour = new Shepherd.Tour({
-      useModalOverlay: true,
-      modalOverlayOpeningPadding: 8,
-      modalOverlayOpeningRadius: 12,
-      defaultStepOptions: {
-        classes: 'shepherd-theme-custom',
-        scrollTo: { behavior: 'smooth', block: 'center' },
-        showCancelLink: true,
-        cancelIcon: {
-          enabled: true,
+      // Wait a tick so the UI can render the unlocked/open panels
+      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 150)));
+
+      const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
+      const steps = createTourSteps(currentContext);
+
+      // Create new tour with stable configuration
+      const tour = new Shepherd.Tour({
+        useModalOverlay: true,
+        modalOverlayOpeningPadding: 8,
+        modalOverlayOpeningRadius: 12,
+        defaultStepOptions: {
+          classes: 'shepherd-theme-custom',
+          scrollTo: true,
+          showCancelLink: true,
+          cancelIcon: { enabled: true },
+          highlightClass: 'shepherd-highlight',
         },
-        when: {
-          show: function() {
-            // Ensure autocomplete dropdowns are properly highlighted
-            setTimeout(() => {
-              const stepElement = this.el;
-              if (stepElement) {
-                const stepId = stepElement.getAttribute('data-shepherd-step-id');
-                const autocompleteElements = document.querySelectorAll('.MuiAutocomplete-popper');
-                autocompleteElements.forEach(el => {
-                  el.style.zIndex = '10001';
-                  el.style.position = 'relative';
-                });
-              }
-            }, 100);
-          }
+        confirmCancel: true,
+        confirmCancelMessage: 'Are you sure you want to end the tour?',
+        autoStart: false,
+      });
+
+      steps.forEach(step => tour.addStep(step));
+
+      tour.on('complete', () => {
+        restoreOriginalLocks();
+      });
+      tour.on('cancel', () => {
+        restoreOriginalLocks();
+      });
+
+      // If the first step is attached to a selector, wait for it to exist
+      try {
+        const first = steps?.[0];
+        const sel = first?.attachTo?.element;
+        if (typeof sel === 'string' && sel !== 'body') {
+          const waitFor = async (selector, attempts = 10) => {
+            for (let i = 0; i < attempts; i += 1) {
+              const el = document.querySelector(selector);
+              if (el && el.offsetParent !== null) return true;
+              // wait a bit longer for layout
+              // eslint-disable-next-line no-await-in-loop
+              await new Promise((r) => setTimeout(r, 100));
+            }
+            return false;
+          };
+          await waitFor(sel, 15);
         }
-      }
-    });
-
-    // Add steps to tour
-    steps.forEach(step => {
-      tour.addStep(step);
-    });
-    
-    // Tour event handlers
-    tour.on('complete', () => {
-      setTourState(prev => ({
-        ...prev,
-        isActive: false,
-        currentStep: 0
-      }));
-    });
-    
-    tour.on('cancel', () => {
-      setTourState(prev => ({
-        ...prev,
-        isActive: false,
-        currentStep: 0
-      }));
-    });
-    
-    tour.on('show', (event) => {
-      setTourState(prev => ({
-        ...prev,
-        currentStep: event.step ? steps.findIndex(s => s.id === event.step.id) : 0
-      }));
-    });
-    
-    tourRef.current = tour;
-    
-    setTourState(prev => ({
-      ...prev,
-      tour
-    }));
-    
-  }, [indicatorQuery, analysisRef, visRef, indicator, lockedStep]);
-
-
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      let session = {
-        indicatorQuery,
-        analysisRef,
-        visRef,
-        analysisInputMenu,
-        indicator,
-        lockedStep,
-      };
-
-      sessionStorage.setItem("session", JSON.stringify(session));
-
-      // Check if any of the dependencies have changed
-      if (
-        prevDependencies.current.indicatorQuery !== indicatorQuery ||
-        prevDependencies.current.analysisRef !== analysisRef ||
-        prevDependencies.current.visRef !== visRef ||
-        prevDependencies.current.analysisInputMenu !== analysisInputMenu ||
-        prevDependencies.current.lockedStep !== lockedStep ||
-        prevDependencies.current.indicator !== indicator
-      ) {
-        enqueueSnackbar("Autosaved", { variant: "success" });
+      } catch (e) {
+        // non-fatal; tour will still start centered if target missing
       }
 
-      // Update the previous dependencies to the current ones
-      prevDependencies.current = {
-        indicatorQuery,
-        analysisRef,
-        visRef,
-        analysisInputMenu,
-        lockedStep,
-        indicator,
-      };
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, [
-    indicatorQuery,
-    analysisRef,
-    visRef,
-    analysisInputMenu,
-    lockedStep,
-    indicator,
-  ]);
-
-
-
-  // Note: Removed handleTourProgress - tour now only advances via Next button
-
-  // Start the tour
-  const startTour = () => {
-    if (!tourRef.current) return;
-    
-    const currentContext = { indicatorQuery, analysisRef, visRef, indicator, lockedStep };
-    const nextStep = getNextAvailableStep(currentContext);
-    
-    setTourState(prev => ({
-      ...prev,
-      isActive: true,
-      currentStep: nextStep
-    }));
-    
-    // Always start from the beginning for initial tour, show next step if progressed
-    tourRef.current.start();
-    
-    // If we're not at step 0, show the appropriate step after a delay
-    if (nextStep > 0) {
-      setTimeout(() => {
-        if (tourRef.current) {
-          tourRef.current.show(nextStep);
-        }
-      }, 500);
+      tourRef.current = tour;
+      tour.start();
+    } catch (error) {
+      console.error('Error starting tour:', error);
+      // Fail-safe restore
+      restoreOriginalLocks();
     }
-  };
-
-  // Restart the tour from beginning
-    const restartTour = () => {
-    if (!tourRef.current) return;
-    
-    setTourState(prev => ({
-      ...prev,
-      isActive: true,
-      currentStep: 0
-    }));
-    
-    tourRef.current.start();
-  };
-
-  // Stop the tour
-  const stopTour = () => {
-    if (!tourRef.current) return;
-    
-    setTourState(prev => ({
-      ...prev,
-      isActive: false
-    }));
-    
-    tourRef.current.complete();
   };
 
   const handleSaveNewBasicIndicator = () => {
@@ -456,75 +351,33 @@ const BasicIndicator = () => {
 
   const clearSession = () => {
     sessionStorage.removeItem("session");
-    sessionStorage.removeItem("dataset");
-    sessionStorage.removeItem("filters");
-    sessionStorage.removeItem("analysis");
-    sessionStorage.removeItem("visualization");
   };
 
   return (
     <BasicIndicatorContext.Provider
       value={{
         indicatorQuery,
-        lockedStep,
-        analysisRef,
-        analysisInputMenu,
-        visRef,
-        indicator,
-        generate,
-        loading,
-        chartConfiguration,
         setIndicatorQuery,
-        setLockedStep,
+        analysisRef,
         setAnalysisRef,
-        setAnalysisInputMenu,
+        visRef,
         setVisRef,
+        indicator,
         setIndicator,
+        generate,
         setGenerate,
+        loading,
         setLoading,
+        chartConfiguration,
         setChartConfiguration,
+        analysisInputMenu,
+        setAnalysisInputMenu,
+        lockedStep,
+        setLockedStep,
         handleSaveNewBasicIndicator,
-                  //Shepherd Functions
-          startTour,
-          stopTour,
-          restartTour
+        startTour
       }}
     >
-      {/* Tour Control FABs */}
-      <div style={{ 
-        position: 'fixed', 
-        bottom: 24, 
-        right: 24, 
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8
-      }}>
-        {!tourState.isActive && (
-          <Tooltip title="Start guided tour" placement="left">
-            <Fab
-              color="primary"
-              size="small"
-              onClick={startTour}
-              sx={{ mb: 1 }}
-            >
-              <TourOutlined />
-            </Fab>
-          </Tooltip>
-        )}
-        
-        {tourState.isActive && (
-          <Tooltip title="Restart tour from beginning" placement="left">
-            <Fab
-              color="secondary"
-              size="small"
-              onClick={restartTour}
-            >
-              <RestartAlt />
-            </Fab>
-          </Tooltip>
-        )}
-      </div>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Grid container alignItems="center">
@@ -560,7 +413,6 @@ const BasicIndicator = () => {
                 <IconButton 
                   color="primary" 
                   onClick={startTour}
-                  disabled={tourState.isActive}
                 >
                   <TourOutlined />
                 </IconButton>

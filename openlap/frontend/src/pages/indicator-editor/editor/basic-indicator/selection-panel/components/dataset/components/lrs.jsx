@@ -93,7 +93,7 @@ const LRS = ({ state, setState }) => {
 
   return (
     <>
-      <Grid container spacing={4} >
+      <Grid container spacing={4} className="shepherd-lrs-selector">
         <Grid item xs={12} md={4}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
