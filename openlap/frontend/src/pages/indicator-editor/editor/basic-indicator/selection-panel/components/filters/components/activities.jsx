@@ -419,6 +419,7 @@ const Activities = ({ state, setState }) => {
               }
             >
               <Autocomplete
+                className="shepherd-activity-selector"
                 openOnFocus
                 disablePortal
                 disableCloseOnSelect

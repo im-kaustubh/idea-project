@@ -1,0 +1,393 @@
+/* Shepherd.js CSS Overrides for Basic Indicator Editor */
+
+/* Import Shepherd.js base styles */
+@import 'shepherd.js/dist/css/shepherd.css';
+
+/* Global Shepherd Styles */
+.shepherd-modal-overlay-container {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(2px);
+}
+
+.shepherd-element {
+  max-width: 350px;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border: 1px solid rgba(25, 118, 210, 0.1) !important;
+  overflow: hidden;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.15));
+}
+
+.shepherd-arrow {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) !important;
+}
+
+.shepherd-arrow::before {
+  background: #ffffff !important;
+}
+
+/* Custom spotlight padding for form elements */
+.shepherd-lrs-selector,
+.shepherd-platform-selector,
+.shepherd-activity-type-selector,
+.shepherd-activity-selector,
+.shepherd-action-selector,
+.shepherd-analysis-technique,
+.shepherd-viz-library,
+.shepherd-analysis-inputs-dropdown {
+  position: relative;
+}
+
+/* Highlighted area adjustments - 4px top/bottom padding, -4px left padding */
+.shepherd-lrs-selector::before,
+.shepherd-platform-selector::before,
+.shepherd-activity-type-selector::before,
+.shepherd-activity-selector::before,
+.shepherd-action-selector::before,
+.shepherd-analysis-technique::before,
+.shepherd-viz-library::before,
+.shepherd-analysis-inputs-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 4px;
+  right: 0;
+  pointer-events: none;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+/* Date Range Container */
+.shepherd-date-range {
+  position: relative;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* Analysis inputs and params containers */
+.shepherd-analysis-inputs,
+.shepherd-analysis-params {
+  position: relative;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(25, 118, 210, 0.02);
+  border: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+/* Visualization type container */
+.shepherd-viz-type {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: rgba(25, 118, 210, 0.02);
+  border: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+/* Visualization inputs */
+.shepherd-viz-inputs {
+  position: relative;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(25, 118, 210, 0.02);
+  border: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+/* Button highlighting */
+.shepherd-preview-data-btn,
+.shepherd-generate-preview-btn,
+.shepherd-submit-btn {
+  position: relative;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.shepherd-preview-data-btn:hover,
+.shepherd-generate-preview-btn:hover,
+.shepherd-submit-btn:hover {
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+/* Shepherd content styling */
+.shepherd-content {
+  padding: 20px !important;
+}
+
+.shepherd-text {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  color: #333 !important;
+}
+
+.shepherd-text h3 {
+  color: #1976d2 !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  font-size: 18px !important;
+}
+
+.shepherd-text p {
+  line-height: 1.6 !important;
+  margin-bottom: 8px !important;
+}
+
+.shepherd-text strong {
+  color: #1976d2 !important;
+  font-weight: 600 !important;
+}
+
+/* Shepherd footer and buttons */
+.shepherd-footer {
+  padding: 16px 20px !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.shepherd-button {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  padding: 8px 16px !important;
+  transition: all 0.2s ease !important;
+  font-size: 14px !important;
+  border: none !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+.shepherd-button:focus {
+  outline: 2px solid rgba(25, 118, 210, 0.5) !important;
+  outline-offset: 2px !important;
+}
+
+.shepherd-button.shepherd-button-primary {
+  background: #1976d2 !important;
+  color: white !important;
+}
+
+.shepherd-button.shepherd-button-primary:hover {
+  background: #1565c0 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
+
+.shepherd-button.shepherd-button-secondary {
+  background: transparent !important;
+  color: #1976d2 !important;
+  border: 1px solid #1976d2 !important;
+}
+
+.shepherd-button.shepherd-button-secondary:hover {
+  background: rgba(25, 118, 210, 0.04) !important;
+}
+
+.shepherd-button.shepherd-button-skip {
+  color: #666 !important;
+  background: transparent !important;
+}
+
+.shepherd-button.shepherd-button-skip:hover {
+  color: #333 !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Progress indicator */
+.shepherd-progress {
+  background: rgba(25, 118, 210, 0.1) !important;
+  height: 4px !important;
+  border-radius: 2px !important;
+  margin-bottom: 12px !important;
+  overflow: hidden !important;
+}
+
+.shepherd-progress-bar {
+  background: #1976d2 !important;
+  height: 100% !important;
+  border-radius: 2px !important;
+  transition: width 0.3s ease !important;
+}
+
+/* Shepherd modal target highlighting */
+.shepherd-modal-target {
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Enhanced highlighting for autocomplete dropdowns */
+.shepherd-lrs-selector,
+.shepherd-platform-selector,
+.shepherd-activity-type-selector,
+.shepherd-activity-selector,
+.shepherd-action-selector {
+  position: relative;
+}
+
+/* When tour is active, highlight the autocomplete container and dropdown */
+.shepherd-element[data-shepherd-step-id*="lrs"] ~ * .shepherd-lrs-selector,
+.shepherd-element[data-shepherd-step-id*="platform"] ~ * .shepherd-platform-selector,
+.shepherd-element[data-shepherd-step-id*="activity-type"] ~ * .shepherd-activity-type-selector,
+.shepherd-element[data-shepherd-step-id*="activity"] ~ * .shepherd-activity-selector,
+.shepherd-element[data-shepherd-step-id*="action"] ~ * .shepherd-action-selector {
+  z-index: 9999 !important;
+}
+
+/* Ensure dropdown menus are highlighted properly */
+.MuiAutocomplete-popper {
+  z-index: 10000 !important;
+}
+
+.MuiAutocomplete-popper .MuiPaper-root {
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
+  border-radius: 8px !important;
+}
+
+/* Animation for smooth transitions */
+.shepherd-element {
+  animation: shepherdTooltipEnter 0.3s ease-out;
+}
+
+@keyframes shepherdTooltipEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced button hover states */
+.shepherd-preview-data-btn,
+.shepherd-generate-preview-btn,
+.shepherd-submit-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.shepherd-preview-data-btn::before,
+.shepherd-generate-preview-btn::before,
+.shepherd-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+  pointer-events: none;
+}
+
+.shepherd-preview-data-btn:hover::before,
+.shepherd-generate-preview-btn:hover::before,
+.shepherd-submit-btn:hover::before {
+  left: 100%;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .shepherd-element {
+    max-width: 90vw !important;
+    font-size: 14px !important;
+  }
+  
+  .shepherd-analysis-inputs,
+  .shepherd-analysis-params,
+  .shepherd-viz-type,
+  .shepherd-viz-inputs {
+    padding: 8px;
+  }
+  
+  .shepherd-content {
+    padding: 16px !important;
+  }
+  
+  .shepherd-footer {
+    padding: 12px 16px !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .shepherd-element {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%) !important;
+    border-color: rgba(25, 118, 210, 0.3) !important;
+  }
+  
+  .shepherd-text {
+    color: #ffffff !important;
+  }
+  
+  .shepherd-text h3 {
+    color: #64b5f6 !important;
+  }
+  
+  .shepherd-text strong {
+    color: #64b5f6 !important;
+  }
+  
+  .shepherd-footer {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .shepherd-analysis-inputs,
+  .shepherd-analysis-params,
+  .shepherd-viz-type,
+  .shepherd-viz-inputs {
+    background-color: rgba(25, 118, 210, 0.05);
+    border-color: rgba(25, 118, 210, 0.2);
+  }
+  
+  .shepherd-arrow::before {
+    background: #1e1e1e !important;
+  }
+}
+
+/* Accessibility improvements */
+.shepherd-element:focus-within {
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
+}
+
+/* Custom step indicator */
+.shepherd-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+.shepherd-step-indicator::before {
+  content: 'Step ';
+}
+
+.shepherd-step-indicator::after {
+  content: ' of 16';
+}
+
+/* Shepherd specific target class mappings */
+.shepherd-lrs-selector { /* Maps to original .joyride-lrs-selector */ }
+.shepherd-platform-selector { /* Maps to original .joyride-platform-selector */ }
+.shepherd-next-btn-dataset { /* Maps to original .joyride-next-btn-dataset */ }
+.shepherd-activity-type-selector { /* Maps to original .joyride-activity-type-selector */ }
+.shepherd-activity-selector { /* Maps to original .joyride-activity-selector */ }
+.shepherd-action-selector { /* Maps to original .joyride-action-selector */ }
+.shepherd-date-range { /* Maps to original .joyride-date-range */ }
+.shepherd-analysis-technique { /* Maps to original .joyride-analysis-technique */ }
+.shepherd-analysis-inputs { /* Maps to original .joyride-analysis-inputs */ }
+.shepherd-analysis-params { /* Maps to original .joyride-analysis-params */ }
+.shepherd-preview-data-btn { /* Maps to original .joyride-preview-data-btn */ }
+.shepherd-viz-library { /* Maps to original .joyride-viz-library */ }
+.shepherd-viz-type { /* Maps to original .joyride-viz-type */ }
+.shepherd-viz-inputs { /* Maps to original .joyride-viz-inputs */ }
+.shepherd-generate-preview-btn { /* Maps to original .joyride-generate-preview-btn */ }
+.shepherd-submit-btn { /* Maps to original .joyride-submit-btn */ }
