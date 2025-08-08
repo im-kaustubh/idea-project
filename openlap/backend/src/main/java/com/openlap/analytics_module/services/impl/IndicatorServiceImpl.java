@@ -178,6 +178,7 @@ public class IndicatorServiceImpl implements IndicatorService {
     if (indicatorType == IndicatorType.BASIC) {
       StatementsRequest statementsRequest =
           gson.fromJson(foundIndicator.getIndicatorQuery(), StatementsRequest.class);
+      indicatorFullDetailResponse.setIndicatorQuery(statementsRequest); //added
       AnalyticsTechniqueStatementResponse statementResponse =
           new AnalyticsTechniqueStatementResponse();
 
@@ -221,6 +222,8 @@ public class IndicatorServiceImpl implements IndicatorService {
     if (indicatorType == IndicatorType.BASIC || indicatorType == IndicatorType.MULTI_LEVEL) {
       indicatorFullDetailResponse.setAnalyticsTechnique(
           foundIndicator.getAnalyticsTechniqueReference().getAnalyticsTechnique().getName());
+      indicatorFullDetailResponse.setAnalyticsTechniqueId( //added the Id
+              foundIndicator.getAnalyticsTechniqueReference().getAnalyticsTechnique().getId());
       indicatorFullDetailResponse.setAnalyticsTechniqueParams(
           gson.fromJson(
               foundIndicator.getAnalyticsTechniqueReference().getAdditionalParams(),

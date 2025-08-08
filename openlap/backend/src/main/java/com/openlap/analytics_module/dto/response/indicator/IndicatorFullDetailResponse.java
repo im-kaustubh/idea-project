@@ -3,6 +3,7 @@ package com.openlap.analytics_module.dto.response.indicator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.openlap.analytics_module.dto.response.indicator.utility_response.AnalyticsTechniqueStatementResponse;
 import com.openlap.analytics_module.entities.utility_entities.IndicatorType;
+import com.openlap.analytics_statements.dtos.request.StatementsRequest;
 import com.openlap.dataset.OpenLAPColumnConfigData;
 import com.openlap.dataset.OpenLAPPortConfig;
 import com.openlap.dynamicparam.OpenLAPDynamicParam;
@@ -35,10 +36,14 @@ public class IndicatorFullDetailResponse {
 
   // Analytics Technique
   private String analyticsTechnique;
+  private String analyticsTechniqueId; //added this because it is required for analysisrequest
   private OpenLAPPortConfig analyticsTechniqueMapping;
   private List<OpenLAPDynamicParam> analyticsTechniqueParams;
 
   private AnalyticsTechniqueStatementResponse statementResponse;
+
+  private StatementsRequest indicatorQuery; //added this to send the raw indicatorquery to frontend
+
 
   // Only for COMPOSITE
   private OpenLAPColumnConfigData columnToMerge;

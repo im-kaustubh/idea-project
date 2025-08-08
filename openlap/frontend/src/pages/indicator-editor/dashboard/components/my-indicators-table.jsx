@@ -23,6 +23,7 @@ import {
   requestIndicatorCode,
   requestIndicatorDeletion,
   requestMyIndicators,
+  requestIndicatorFullDetail,
 } from "../utils/indicator-dashboard-api.js";
 import { AuthContext } from "../../../../setup/auth-context-manager/auth-context-manager.jsx";
 import {
@@ -39,6 +40,8 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { handleDisplayType } from "../utils/utils.js";
 import DeleteDialog from "../../../../common/components/delete-dialog/delete-dialog.jsx";
+import {fetchAnalyzedData} from "../../editor/components/analysis/utils/analytics-api.js"; //added
+import {fetchUserLRSList} from "../../editor/basic-indicator/selection-panel/components/dataset/utils/dataset-api.js"; //added
 
 const MyIndicatorsTable = () => {
   const { api } = useContext(AuthContext);
@@ -162,7 +165,209 @@ const MyIndicatorsTable = () => {
     navigate(`/indicator/${selectedIndicator.id}`);
   };
 
+  //implemenatation
   const handleEdit = () => {
+    // Helper function: Fetch full indicator details from backend
+    const loadIndicatorDetail = async (api, indicatorId) => {
+      try {
+        return await requestIndicatorFullDetail(api, indicatorId);
+      } catch (error) {
+        console.log("Error requesting my indicators");
+      }
+    };
+    // Helper function: Fetch analyzed data for the indicator
+    const loadAnalyzedData = async (api, analysisRequest) => {
+      try {
+        return await fetchAnalyzedData(api, analysisRequest);
+      } catch (error) {
+        console.log("Error fetching analyzed data");
+        return {};
+      }
+    };
+
+    setState((prevState) => ({
+      ...prevState,
+      loadingIndicators: true,
+    }));
+
+    // Fetch indicator details, then hydrate state and navigate
+    loadIndicatorDetail(api, selectedIndicator.id)
+        .then(async (indicatorData) => {
+          if (!indicatorData) return;
+
+          console.log("indicatorData", indicatorData);
+
+          // Build the analysis request for analyzedData
+          // This object is used to fetch the latest analysis results
+          const analysisRequest = {
+            indicatorQuery: indicatorData.indicatorQuery || {
+              lrsStores: [],
+              platforms: [],
+              activityTypes: [],
+              activities: {},
+              actionOnActivities: [],
+              duration: {
+                from: new Date().toISOString(),
+                until: new Date().toISOString(),
+              },
+              outputs: [],
+              userQueryCondition: "only_me",
+            },
+            analyticsTechniqueId: indicatorData.analyticsTechniqueId || "",
+            analyticsTechniqueMapping: indicatorData.analyticsTechniqueMapping || { mapping: [] },
+            analyticsTechniqueParams: indicatorData.analyticsTechniqueParams || [],
+          };
+
+          console.log("analysisRequest", analysisRequest);
+
+
+          // Fetch analyzedData using the built analysis request
+          const analyzedDataResponse = await loadAnalyzedData(api, analysisRequest);
+
+          // Hydrate the dataset panel state for edit mode
+          const lrsList = await fetchUserLRSList(api); // returns all available LRSs
+          // Map selected LRS IDs to their full objects for the editor
+          const selectedLrsList = (analysisRequest.indicatorQuery.lrsStores || [])
+              .map(lrs =>
+                  typeof lrs === "string"
+                      ? lrsList.find(item => item.id === lrs)
+                      : lrs
+              )
+              .filter(Boolean);
+
+          // Hydrate selectedPlatformList with objects { name }
+          const selectedPlatformList = (analysisRequest.indicatorQuery.platforms || []).map(name => ({ name }));
+
+          // Hydrate filter chips (ensure arrays, default to [])
+          //const selectedActivityTypesList = (analysisRequest.indicatorQuery.activityTypes || []).map(type => ({ type }));
+         // const selectedActionsList = (analysisRequest.indicatorQuery.actionOnActivities || []).map(action => ({ action }));
+         // const selectedActivitiesList = Array.isArray(analysisRequest.indicatorQuery.activities)
+          //     ? analysisRequest.indicatorQuery.activities
+         //     : [];
+
+
+          // Build a complete session object with all required fields
+          const sessionData = {
+            indicatorQuery: analysisRequest.indicatorQuery, //All filter/query settings
+            analysisRef: {
+              analyticsTechniqueId: analysisRequest.analyticsTechniqueId,
+              analyticsTechniqueParams: analysisRequest.analyticsTechniqueParams,
+              analyticsTechniqueMapping: analysisRequest.analyticsTechniqueMapping,
+              analyzedData: analyzedDataResponse.data || {}, //Latest analysis results
+            },
+            visRef: indicatorData.visRef || {
+              visualizationLibraryId: "",
+              visualizationTypeId: "",
+              visualizationParams: { height: 500, width: 500 },
+              visualizationMapping: { mapping: [] },
+            },
+            analysisInputMenu: indicatorData.analysisInputMenu || {
+              activities: {
+                id: undefined,
+                type: "Text",
+                required: true,
+                title: "Activities",
+                description:
+                    "Selected list of all the Activities specified in Activity Filter. " +
+                    'E.g. courses that are selected in Activity name section are "Learning Analytics", "Data Mining" etc.',
+                options: [],
+              },
+              activityTypes: {
+                id: "statement.object.definition.type",
+                type: "Text",
+                required: true,
+                title: "Activity Types",
+                description: "Types of activities",
+              },
+              actionOnActivities: {
+                id: undefined,
+                type: "Text",
+                required: true,
+                title: "Actions",
+                description:
+                    "Selected list of actions performed on the activity(ies). E.g. a list of actions that were " +
+                    'performed on a course such as "viewed", "enrolled" etc.',
+                options: [],
+              },
+              platforms: {
+                id: "statement.context.platform",
+                type: "Text",
+                required: true,
+                title: "Platforms",
+                description:
+                    'Selected list of sources specified in Dataset such as "Moodle" etc.',
+              },
+            },
+            lockedStep: indicatorData.lockedStep || {
+              dataset: { locked: false, openPanel: false },
+              filter: { locked: false, openPanel: false },
+              analysis: { locked: false, openPanel: false },
+              visualization: { locked: false, openPanel: false },
+              finalize: { locked: false, openPanel: false },
+            },
+            indicator: indicatorData.indicator || {
+              previewData: {
+                displayCode: [],
+                scriptData: "",
+              },
+              indicatorName: indicatorData.name || "",
+              type: indicatorData.type || "BASIC",
+            },
+            edit: true, //Mark this an edit session
+          };
+
+          // Store the session data in sessionStorage for the editor page to use
+          sessionStorage.setItem("session", JSON.stringify(sessionData));
+
+          //just for test
+          console.log(JSON.parse(sessionStorage.getItem("filters")));
+
+          // Store dataset panel state (LRSs, platforms)
+          sessionStorage.setItem(
+              "dataset",
+              JSON.stringify({
+                openPanel: false,
+                showSelections: true,
+                lrsList: [],
+                selectedLrsList,
+                platformList: [],
+                selectedPlatformList,
+                autoCompleteValue: null,
+              })
+          );
+
+          // Store filter state (activity types, actions, activities)
+          //sessionStorage.setItem(
+           //   "filters",
+           //   JSON.stringify({
+           //     openPanel: false,
+           //     showSelections: true,
+           //     activityTypesList: [],
+            //    selectedActivityTypesList: [],
+           //     activitiesList: [],
+            //    selectedActivitiesList: [],
+           //     actionsList: [],
+           //     selectedActionsList: [],
+            //    autoCompleteValue: null,
+            //  })
+         // );
+
+          return sessionData;
+        })
+        .then(() => {
+          setState((prevState) => ({
+            ...prevState,
+            loadingIndicators: false,
+          }));
+          navigate("/indicator/editor/basic");
+        })
+        .catch((error) => {
+          setState((prevState) => ({
+            ...prevState,
+            loadingIndicators: false,
+          }));
+          console.error(error);
+        });
     handleMenuClose();
   };
 
@@ -350,6 +555,12 @@ const MyIndicatorsTable = () => {
                               <Preview fontSize="small" color="primary" />
                             </ListItemIcon>
                             <ListItemText primary="Preview Indicator" />
+                          </MenuItem>
+                          <MenuItem onClick={handleEdit}>
+                            <ListItemIcon>
+                              <Edit fontSize="small" color="primary" />
+                            </ListItemIcon>
+                            <ListItemText primary="Edit" />
                           </MenuItem>
                           <MenuItem
                             onClick={handleCopyCode}
