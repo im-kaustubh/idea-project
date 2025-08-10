@@ -34,7 +34,19 @@ Welcome to the **IDEA Project**! This platform turns raw educational data into i
 - **Styling:** Material-UI or TailwindCSS for a modern UI  
 
 ### Architecture Diagram 
-
+```
++------------------+            HTTPS (JWT)             +---------------------+         ODM         +------------------+
+|  React Frontend  | <--------------------------------> |  Express API Layer  | <-----------------> |     MongoDB      |
+|  (Vite, MUI/TW)  |   Axios requests / JSON responses  |  (Node.js)          |   Mongoose models   |  (Users, Dashboards,
+|                  |                                     |                     |                    |   Datasets, etc.) |
++---------+--------+                                     +----------+----------+                    +---------+--------+
+          |  Redux store (global state)                             |  AuthN/AuthZ (JWT)
+          |  Notistack (toasts)                                     |  Validation, routing
+          |  Shepherd.js (guided tours)                             |  Business logic
+          |  Chart.js/D3 (viz)                                      |  CRUD endpoints
+          v                                                         v
+   UI components & pages                                    Controllers / Services
+```
 ---
 
 ## Core Libraries & Frameworks
@@ -89,27 +101,16 @@ Track our progress: **[GitHub Project Board](https://github.com/users/im-kaustub
 
 ## Live Demo Screencast
 
-> **YouTube demo link here .**  
+> **YouTube demo link .**  
 > `https://youtu.be/demo-link`
 
 ---
 
 ## Advertisement Video
 
-> **Advertisement video link here .**  
-> `https://youtu.be/link`
+> **Advertisement video link .**
+> **[Click here](https://youtu.be/gd2QOi8TlXs)**
+> 
 
 ---
 
-## Inspiration & Design Ideas
-
-- **Awesome README** – curated examples to inspire structure & visuals  
-  https://github.com/matiassingers/awesome-readme  
-- **Shields.io** – SVG badges for tech stack & status  
-  https://shields.io/  
-- **MUI Templates** – layout & component inspiration  
-  https://mui.com/store/#templates  
-- **D3 Gallery** – visualization patterns and design ideas  
-  https://observablehq.com/@d3/gallery
-
----
