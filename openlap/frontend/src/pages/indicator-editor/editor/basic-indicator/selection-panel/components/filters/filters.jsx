@@ -88,7 +88,12 @@ const Filters = () => {
         expanded={lockedStep.filter.openPanel}
         disabled={lockedStep.filter.locked}
       >
-        <AccordionSummary aria-controls="panel2-content" id="panel2-header">
+        <AccordionSummary 
+          aria-controls="panel2-content" 
+          id="panel2-header"
+          expandIcon={null}
+          sx={{ pointerEvents: 'none' }}
+        >
           <Grid container spacing={1}>
             {/* Label */}
             <Grid item xs={12}>
@@ -120,7 +125,10 @@ const Filters = () => {
                         <>
                           <Grid item>
                             <Tooltip title="Edit filter selection">
-                              <IconButton onClick={handleTogglePanel}>
+                              <IconButton 
+                                onClick={handleTogglePanel}
+                                sx={{ pointerEvents: 'auto' }}
+                              >
                                 <EditIcon color="primary" />
                               </IconButton>
                             </Tooltip>
@@ -134,7 +142,10 @@ const Filters = () => {
                                   : "Hide summary"
                               }
                             >
-                              <IconButton onClick={handleToggleShowSelection}>
+                              <IconButton 
+                                onClick={handleToggleShowSelection}
+                                sx={{ pointerEvents: 'auto' }}
+                              >
                                 {!state.showSelections ? (
                                   <VisibilityIcon color="primary" />
                                 ) : (
@@ -150,7 +161,10 @@ const Filters = () => {
                 {lockedStep.filter.openPanel && !lockedStep.filter.locked && (
                   <Grid item>
                     <Tooltip title="Close panel">
-                      <IconButton onClick={handleTogglePanel}>
+                      <IconButton 
+                        onClick={handleTogglePanel}
+                        sx={{ pointerEvents: 'auto' }}
+                      >
                         <CloseIcon color="primary" />
                       </IconButton>
                     </Tooltip>

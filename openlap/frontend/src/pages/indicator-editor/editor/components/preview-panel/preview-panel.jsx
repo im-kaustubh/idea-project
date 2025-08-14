@@ -84,7 +84,10 @@ const PreviewPanel = ({
         expanded={lockedStep.finalize.openPanel}
         disabled={lockedStep.finalize.locked}
       >
-        <AccordionSummary>
+        <AccordionSummary
+          expandIcon={null}
+          sx={{ pointerEvents: 'none' }}
+        >
           <Grid container spacing={1}>
             <Grid item xs={12}>
               <Grid
@@ -114,7 +117,10 @@ const PreviewPanel = ({
                       !lockedStep.finalize.openPanel && (
                         <Grid item>
                           <Tooltip title="Edit and customize visualization">
-                            <IconButton onClick={handleTogglePanel}>
+                            <IconButton 
+                              onClick={handleTogglePanel}
+                              sx={{ pointerEvents: 'auto' }}
+                            >
                               <EditIcon color="primary" />
                             </IconButton>
                           </Tooltip>
@@ -124,11 +130,14 @@ const PreviewPanel = ({
                 </Grid>
                 {lockedStep.finalize.openPanel && (
                   <Grid item>
-                    <Tooltip title="Close panel">
-                      <IconButton onClick={handleTogglePanel}>
-                        <CloseIcon color="primary" />
-                      </IconButton>
-                    </Tooltip>
+                                          <Tooltip title="Close panel">
+                        <IconButton 
+                          onClick={handleTogglePanel}
+                          sx={{ pointerEvents: 'auto' }}
+                        >
+                          <CloseIcon color="primary" />
+                        </IconButton>
+                      </Tooltip>
                   </Grid>
                 )}
               </Grid>
@@ -136,7 +145,7 @@ const PreviewPanel = ({
           </Grid>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container spacing={2} alignItem="center">
+          <Grid container spacing={2} alignItems="center">
             <Grid
               item
               xs={12}

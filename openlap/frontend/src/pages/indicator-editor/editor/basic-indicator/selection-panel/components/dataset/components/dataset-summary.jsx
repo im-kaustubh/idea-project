@@ -6,6 +6,7 @@ import {
   Tooltip,
   IconButton,
 } from "@mui/material";
+import StepHelpDialog from '../../../../components/StepHelpDialog';
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import EditIcon from "@mui/icons-material/Edit";
@@ -20,7 +21,12 @@ const DatasetSummary = ({
 }) => {
   return (
     <>
-      <AccordionSummary aria-controls="panel1-content" id="panel1-header">
+      <AccordionSummary 
+        aria-controls="panel1-content" 
+        id="panel1-header"
+        expandIcon={null}
+        sx={{ pointerEvents: 'none' }}
+      >
         <Grid container spacing={1}>
           {/* Label */}
           <Grid item xs={12}>
@@ -38,11 +44,17 @@ const DatasetSummary = ({
                   <Grid item>
                     <Typography>Dataset</Typography>
                   </Grid>
+                  <Grid item>
+                    <StepHelpDialog title="Dataset" description="Select the Learning Record Store (LRS) and Platforms for the indicator data source." />
+                  </Grid>
                   {!state.openPanel && (
                     <>
                       <Grid item>
                         <Tooltip title="Edit dataset selection">
-                          <IconButton onClick={handleTogglePanel}>
+                          <IconButton 
+                            onClick={handleTogglePanel}
+                            sx={{ pointerEvents: 'auto' }}
+                          >
                             <EditIcon color="primary" />
                           </IconButton>
                         </Tooltip>
@@ -56,7 +68,10 @@ const DatasetSummary = ({
                               : "Hide summary"
                           }
                         >
-                          <IconButton onClick={handleToggleShowSelection}>
+                          <IconButton 
+                            onClick={handleToggleShowSelection}
+                            sx={{ pointerEvents: 'auto' }}
+                          >
                             {!state.showSelections ? (
                               <VisibilityIcon color="primary" />
                             ) : (
@@ -72,7 +87,10 @@ const DatasetSummary = ({
               {state.openPanel && (
                 <Grid item>
                   <Tooltip title="Close panel">
-                    <IconButton onClick={handleTogglePanel}>
+                    <IconButton 
+                      onClick={handleTogglePanel}
+                      sx={{ pointerEvents: 'auto' }}
+                    >
                       <CloseIcon color="primary" />
                     </IconButton>
                   </Tooltip>

@@ -656,7 +656,7 @@ export const shepherdTargetClasses = {
   analysisInputs: 'shepherd-analysis-inputs',
   analysisParams: 'shepherd-analysis-params',
   previewDataBtn: 'shepherd-preview-data-btn',
-  nxtBtnAnalysis: 'shshepherd-next-btn-analysis',
+  nxtBtnAnalysis: 'shepherd-next-btn-analysis',
   vizLibrary: 'shepherd-viz-library',
   vizType: 'shepherd-viz-type',
   vizInputs: 'shepherd-viz-inputs',

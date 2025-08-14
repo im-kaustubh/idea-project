@@ -15,7 +15,7 @@ const StepHelpDialog = ({ title, description }) => {
   return (
     <>
       <Tooltip title='What is this step for?'>
-        <IconButton size='small' onClick={() => setOpen(true)} sx={{ ml: 1 }}>
+        <IconButton size='small' onClick={() => setOpen(true)} sx={{ ml: 1, pointerEvents: 'auto' }}>
           <InfoOutlinedIcon fontSize='small' />
         </IconButton>
       </Tooltip>

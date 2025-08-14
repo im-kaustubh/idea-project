@@ -4,6 +4,7 @@ import {
   AccordionActions,
   AccordionDetails,
   AccordionSummary,
+  Button,
   Chip,
   Grid,
   IconButton,
@@ -20,7 +21,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import VisualizationLibrary from "./components/library.jsx";
 import VisualizationType from "./components/type.jsx";
 import Inputs from "./components/inputs.jsx";
-import { LoadingButton } from "@mui/lab";
+
 import { useSnackbar } from "notistack";
 import StepHelpDialog from '../../basic-indicator/components/StepHelpDialog';
 
@@ -124,7 +125,12 @@ const Visualization = ({
         expanded={lockedStep.visualization.openPanel}
         disabled={lockedStep.visualization.locked}
       >
-        <AccordionSummary aria-controls="panel3-content" id="panel3-header">
+        <AccordionSummary 
+          aria-controls="panel3-content" 
+          id="panel3-header"
+          expandIcon={null}
+          sx={{ pointerEvents: 'none' }}
+        >
           <Grid container spacing={1}>
             {/* Label */}
             <Grid item xs={12}>
@@ -156,7 +162,10 @@ const Visualization = ({
                         <>
                           <Grid item>
                             <Tooltip title="Edit visualization selection">
-                              <IconButton onClick={handleTogglePanel}>
+                              <IconButton 
+                                onClick={handleTogglePanel}
+                                sx={{ pointerEvents: 'auto' }}
+                              >
                                 <EditIcon color="primary" />
                               </IconButton>
                             </Tooltip>
@@ -170,7 +179,10 @@ const Visualization = ({
                                   : "Hide summary"
                               }
                             >
-                              <IconButton onClick={handleToggleShowSelection}>
+                              <IconButton 
+                                onClick={handleToggleShowSelection}
+                                sx={{ pointerEvents: 'auto' }}
+                              >
                                 {!state.showSelections ? (
                                   <VisibilityIcon color="primary" />
                                 ) : (
@@ -187,7 +199,10 @@ const Visualization = ({
                   lockedStep.visualization.openPanel && (
                     <Grid item>
                       <Tooltip title="Close panel">
-                        <IconButton onClick={handleTogglePanel}>
+                        <IconButton 
+                          onClick={handleTogglePanel}
+                          sx={{ pointerEvents: 'auto' }}
+                        >
                           <CloseIcon color="primary" />
                         </IconButton>
                       </Tooltip>
@@ -325,21 +340,20 @@ const Visualization = ({
         <AccordionActions>
           <Grid container justifyContent="center">
             <Grid item xs={12} md={6}>
-              <LoadingButton
+              <Button
                 className="shepherd-generate-preview-btn"
-                loading={state.loadingPreview}
-                loadingIndicator="Generating…"
                 variant="contained"
                 fullWidth
                 disabled={
                   !visRef.visualizationLibraryId.length ||
                   !visRef.visualizationTypeId.length ||
-                  !visRef.visualizationMapping.mapping.length
+                  !visRef.visualizationMapping.mapping.length ||
+                  state.loadingPreview
                 }
                 onClick={handleGeneratePreview}
               >
-                Generate Preview
-              </LoadingButton>
+                {state.loadingPreview ? "Generating…" : "Generate Preview"}
+              </Button>
             </Grid>
           </Grid>
         </AccordionActions>

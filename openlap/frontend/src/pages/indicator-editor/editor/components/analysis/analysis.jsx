@@ -22,7 +22,7 @@ import AnalyticsTechnique from "./components/analytics-technique.jsx";
 import InputsBasicIndicator from "./components/inputs-basic-indicator.jsx";
 import Params from "./components/params.jsx";
 import AnalyzedDataTable from "../analyzed-data-table/analyzed-data-table.jsx";
-import { LoadingButton } from "@mui/lab";
+
 import { useSnackbar } from "notistack";
 import InputsMultiLevelIndicator from "./components/inputs-multi-level-indicator.jsx";
 import StepHelpDialog from '../../basic-indicator/components/StepHelpDialog';
@@ -118,7 +118,10 @@ const Analysis = ({
         expanded={lockedStep.analysis.openPanel}
         disabled={lockedStep.analysis.locked}
       >
-        <AccordionSummary>
+        <AccordionSummary
+          expandIcon={null}
+          sx={{ pointerEvents: 'none' }}
+        >
           <Grid container spacing={1}>
             {/* Label */}
             <Grid item xs={12}>
@@ -150,7 +153,10 @@ const Analysis = ({
                         <>
                           <Grid item>
                             <Tooltip title="Edit analysis selection">
-                              <IconButton onClick={handleTogglePanel}>
+                              <IconButton 
+                                onClick={handleTogglePanel}
+                                sx={{ pointerEvents: 'auto' }}
+                              >
                                 <EditIcon color="primary" />
                               </IconButton>
                             </Tooltip>
@@ -164,7 +170,10 @@ const Analysis = ({
                                   : "Hide summary"
                               }
                             >
-                              <IconButton onClick={handleToggleShowSelection}>
+                              <IconButton 
+                                onClick={handleToggleShowSelection}
+                                sx={{ pointerEvents: 'auto' }}
+                              >
                                 {!state.showSelections ? (
                                   <VisibilityIcon color="primary" />
                                 ) : (
@@ -181,7 +190,10 @@ const Analysis = ({
                   lockedStep.analysis.openPanel && (
                     <Grid item>
                       <Tooltip title="Close panel">
-                        <IconButton onClick={handleTogglePanel}>
+                        <IconButton 
+                          onClick={handleTogglePanel}
+                          sx={{ pointerEvents: 'auto' }}
+                        >
                           <CloseIcon color="primary" />
                         </IconButton>
                       </Tooltip>
@@ -339,21 +351,20 @@ const Analysis = ({
         <AccordionActions>
           <Grid container spacing={2}>
             <Grid item xs>
-              <LoadingButton
+              <Button
                 className="shepherd-preview-data-btn"
-                loading={state.loadingPreview}
-                loadingIndicator="Loading…"
                 variant="contained"
                 fullWidth
                 disabled={
                   !analysisRef.analyticsTechniqueId.length ||
                   !analysisRef.analyticsTechniqueMapping.mapping.length ||
-                  !analysisRef.analyticsTechniqueParams.length
+                  !analysisRef.analyticsTechniqueParams.length ||
+                  state.loadingPreview
                 }
                 onClick={handlePreviewAnalyzedData}
               >
-                Preview data
-              </LoadingButton>
+                {state.loadingPreview ? "Loading…" : "Preview data"}
+              </Button>
             </Grid>
             <Grid item xs>
               <Button

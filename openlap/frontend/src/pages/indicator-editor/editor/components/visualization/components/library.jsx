@@ -30,7 +30,7 @@ const VisualizationLibrary = ({
       }
     };
 
-    if (state.libraryList.length === 0) {
+    if (!state.libraryList || state.libraryList.length === 0) {
       loadVisualizationLibraryData().then((response) => {
         setState((prevState) => ({
           ...prevState,
@@ -113,7 +113,7 @@ const VisualizationLibrary = ({
                 disabled={visRef.visualizationLibraryId !== ""}
                 disablePortal
                 id="combo-box-lrs"
-                options={state.libraryList.sort((a, b) =>
+                options={(state.libraryList || []).sort((a, b) =>
                   a.name.localeCompare(b.name)
                 )}
                 fullWidth
@@ -164,7 +164,7 @@ const VisualizationLibrary = ({
             >
               <Grid container spacing={1}>
                 <Grid item>
-                  {state.libraryList?.map((library) => {
+                  {(state.libraryList || [])?.map((library) => {
                     if (library.id === visRef.visualizationLibraryId) {
                       return (
                         <Tooltip

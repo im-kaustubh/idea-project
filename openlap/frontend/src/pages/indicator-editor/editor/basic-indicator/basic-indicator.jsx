@@ -19,15 +19,37 @@ import { AuthContext } from "../../../../setup/auth-context-manager/auth-context
 
 // Walkthrough (Shepherd.js)
 import Shepherd from "shepherd.js";
-import { createTourSteps, shepherdStyles } from "./utils/tour-steps.jsx";
+import { createTourSteps } from "./utils/tour-steps.jsx";
 import { getNextAvailableStep } from "./utils/shepherd-utils.js";
 import "./utils/shepherd-styles.css";
 
 // Additional UI Components
-import EndDateSelector from './components/EndDateSelector';
 import StepHelpDialog from './components/StepHelpDialog';
 
-export const BasicIndicatorContext = createContext(undefined);
+export const BasicIndicatorContext = createContext({
+  indicatorQuery: {},
+  lockedStep: {},
+  analysisRef: {},
+  analysisInputMenu: {},
+  visRef: {},
+  indicator: {},
+  generate: false,
+  loading: false,
+  chartConfiguration: null,
+  setIndicatorQuery: () => {},
+  setLockedStep: () => {},
+  setAnalysisRef: () => {},
+  setAnalysisInputMenu: () => {},
+  setVisRef: () => {},
+  setIndicator: () => {},
+  setGenerate: () => {},
+  setLoading: () => {},
+  setChartConfiguration: () => {},
+  handleSaveNewBasicIndicator: () => {},
+  startTour: () => {},
+  stopTour: () => {},
+  restartTour: () => {}
+});
 
 const BasicIndicator = () => {
   const { api } = useContext(AuthContext);
@@ -181,7 +203,7 @@ const BasicIndicator = () => {
         };
   });
 
-  const [endDate, setEndDate] = React.useState('');
+
 
   const prevDependencies = useRef({
     indicatorQuery,
