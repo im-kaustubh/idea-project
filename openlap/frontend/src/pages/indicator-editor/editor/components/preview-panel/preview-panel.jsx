@@ -233,7 +233,6 @@ const PreviewPanel = ({
             <Grid container spacing={2} justifyContent="center">
               <Grid item xs={12} md={6}>
                 <Button
-                  className="shepherd-submit-btn"
                   fullWidth
                   variant="contained"
                   disabled={indicator.previewData.displayCode.length === 0}

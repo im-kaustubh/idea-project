@@ -107,7 +107,7 @@ const InputsBasicIndicator = ({ state, setState }) => {
 
   return (
     <>
-      <Grid container spacing={2} className="shepherd-analysis-inputs">
+      <Grid container spacing={2}>
         <Grid item xs={12}>
           <Grid container alignItems="center">
             <Typography>Analysis method inputs</Typography>
