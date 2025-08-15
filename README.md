@@ -69,17 +69,6 @@ Welcome to the **IDEA Project**! This platform turns raw educational data into i
 - **Vite** (fast dev/build)  
 - **Jest / React Testing Library** (testing)
 
----
-
-## Project Screenshots
-
-> *screenshots of dashboard and visualizations here.**  
-> `![Dashboard Screenshot](./docs/images/screenshot-1.png)`  
-> `![Visualization Screenshot](./docs/images/screenshot-2.png)`
-> <img width="2476" height="1412" alt="Screenshot 2025-08-15 130205" src="https://github.com/user-attachments/assets/bb10fb13-11ff-4f61-a238-c3e7dd2c89e9" />
-<img width="2469" height="1407" alt="Screenshot 2025-08-15 130410" src="https://github.com/user-attachments/assets/08bb0e8f-147b-4d3c-bb83-7d0871ab4178" />
-<img width="2060" height="588" alt="Screenshot 2025-08-15 130846" src="https://github.com/user-attachments/assets/7ee7f0e7-210b-4c8d-82ec-f83201e5d162" />
-
 
 
 ---
@@ -101,6 +90,25 @@ Welcome to the **IDEA Project**! This platform turns raw educational data into i
 ## Project Kanban Board
 
 Track our progress: **[GitHub Project Board](https://github.com/users/im-kaustubh/projects/9/views/1)**
+
+---
+
+## Our Implementations for Basic Indicator Editor
+1. Enhanced general selection features:
+   - Added nested dropdown menus, improved selection boxes, and convenient options to select or deselect all items
+2. Interactive onboarding:
+   - Introduced guided walkthroughs for both the Basic Indicator Editor and the Indicator Editor selection process
+3. Improved indicator management:
+   - Added functionality to edit already-created indicators
+
+---
+
+## Project Screenshots
+
+> *Screenshots of dashboard and our Changes**
+> <img width="2476" height="1412" alt="Screenshot 2025-08-15 130205" src="https://github.com/user-attachments/assets/bb10fb13-11ff-4f61-a238-c3e7dd2c89e9" />
+<img width="2469" height="1407" alt="Screenshot 2025-08-15 130410" src="https://github.com/user-attachments/assets/08bb0e8f-147b-4d3c-bb83-7d0871ab4178" />
+<img width="2060" height="588" alt="Screenshot 2025-08-15 130846" src="https://github.com/user-attachments/assets/7ee7f0e7-210b-4c8d-82ec-f83201e5d162" />
 
 ---
 
