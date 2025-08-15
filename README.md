@@ -100,6 +100,8 @@ Track our progress: **[GitHub Project Board](https://github.com/users/im-kaustub
    - Introduced guided walkthroughs for both the Basic Indicator Editor and the Indicator Editor selection process
 3. Improved indicator management:
    - Added functionality to edit already-created indicators
+4. Improved date selection for data
+   - Disabled selection of future dates where data does not exist
 
 ---
 
