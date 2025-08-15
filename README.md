@@ -12,7 +12,7 @@
 [![Chart.js](https://img.shields.io/badge/Chart.js-Charts-FF6384?logo=chartdotjs&logoColor=fff&labelColor=1b1f24)]()
 [![Shepherd.js](https://img.shields.io/badge/Shepherd.js-Walkthrough-6C5CE7?labelColor=1b1f24)]()
 [![Notistack](https://img.shields.io/badge/notistack-Notifications-4A90E2?labelColor=1b1f24)]()
-
+[![React Joyride](https://img.shields.io/badge/react--joyride-Tutorials%20%26%20Walkthroughs-FF6F61?labelColor=1b1f24)]()
 ---
 
 ## Overview
@@ -108,7 +108,7 @@ Track our progress: **[GitHub Project Board](https://github.com/users/im-kaustub
 
 ## Advertisement Video
 
-> **Advertisement video link .**
+> **Advertisement video link **
 > **[Click here](https://youtu.be/gd2QOi8TlXs)**
 > 
 
