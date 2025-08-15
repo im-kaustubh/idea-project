@@ -1,8 +1,3 @@
-// No imports needed - tour allows free progression
-
-/**
- * Tour steps configuration for the Basic Indicator Editor using Shepherd.js
- */
 export const createTourSteps = (context, validateAndNavigate) => {
   const { indicatorQuery, analysisRef, visRef, indicator, lockedStep } = context;
   
@@ -191,7 +186,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
         <div>
           <p>Select the <strong>Actions</strong> that learners can perform on the activities.</p>
           <p>This could include actions like viewing, completing, submitting, etc.</p>
-          <p>Select: <strong>Enrolled</strong> </p>
+          <p>Select: <strong>Enrolled & Accessed</strong> </p>
         </div>
       `,
       attachTo: {
@@ -223,7 +218,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
       text: `
         <div>
           <p>You can define a <strong>time period</strong> for your analysis.</p>
-          <p>For this walkthrough just press:</p>
+          <p>For this walkthrough just press the:</p>
           <p><strong>Next button</strong> </p>
         </div>
       `,
@@ -301,7 +296,8 @@ export const createTourSteps = (context, validateAndNavigate) => {
       text: `
         <div>
           <p>Select an <strong>Analysis Technique</strong> to process your data.</p>
-          <p>Different techniques will provide different insights into the learning patterns.</p>
+          <p>We want to know how many people have accessed or are enrolled in courses so select:</p>
+          <p><Strong>Count N most occuring or least occuring items</strong></p>
         </div>
       `,
       attachTo: {
@@ -327,18 +323,52 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'analysis-technique-selection'
     },
 
-    // Step 9: Analysis Inputs
+    // Step 9: Analysis Inputs Explanation
     {
-      title: 'Map Analysis Inputs',
+      title: 'Analysis Inputs Explanation',
       text: `
         <div>
-          <p>Map your data to the <strong>Analysis Inputs</strong>.</p>
-          <p>This tells the system which fields from your data to use in the analysis.</p>
+          <p><strong>Analysis Method Inputs</strong> define what part of your data you will apply your analysis technique to.</p>
+          <p><strong>Analysis Method Inputs</strong> and <strong>Parameters</strong> will vary depending on you chosen method.</p>
+          <p><strong>Press Next</strong></p>
         </div>
       `,
       attachTo: {
         element: '.shepherd-analysis-inputs',
-        on: 'right'
+        on: 'top'
+      },
+      buttons: [
+        {
+          text: 'Back',
+          classes: 'shepherd-button-secondary',
+          action: function() {
+            return this.back();
+          }
+        },
+        {
+          text: 'Next',
+          classes: 'shepherd-button-primary',
+          action: function() {
+            return validateAndNavigate('next');
+          }
+        }
+      ],
+      id: 'analysis-inputs-explanation'
+    },
+
+     // Step 10: Analysis Inputs
+    {
+      title: 'Select Analysis Inputs',
+      text: `
+        <div>
+          <p>Remember: We want to know how many students enrolled in courses and how many accessed courses. </p>
+          <p>This data can be found in our selected <strong>Actions</strong></p>
+          <p>For <strong>Analysis method inputs </strong> select <strong>Actions</strong></p>
+        </div>
+      `,
+      attachTo: {
+        element: '.shepherd-analysis-inputs',
+        on: 'top'
       },
       buttons: [
         {
@@ -358,46 +388,19 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       id: 'analysis-inputs-mapping'
     },
-    
-    // Step 9: Analysis Inputs
-    {
-      title: 'Map Analysis Inputs',
-      text: `
-        <div>
-          <p>Select SOmething IDC</strong>.</p>
-          <p></p>
-        </div>
-      `,
-      attachTo: {
-        element: '.shepherd-analysis-inputs-dropdown',
-        on: 'right'
-      },
-      buttons: [
-        {
-          text: 'Back',
-          classes: 'shepherd-button-secondary',
-          action: function() {
-            return this.back();
-          }
-        },
-        {
-          text: 'Next',
-          classes: 'shepherd-button-primary',
-          action: function() {
-            return validateAndNavigate('next');
-          }
-        }
-      ],
-      id: 'analysis-inputs-dropdown'
-    },
 
-    // Step 10: Analysis Parameters
+
+    
+
+    // Step 11: Analysis Parameters
     {
       title: 'Set Analysis Parameters',
       text: `
         <div>
-          <p>Configure any <strong>Parameters</strong> needed for your chosen analysis technique.</p>
-          <p>These fine-tune how the analysis will be performed.</p>
+          <p>Configure <strong>Parameters</strong> needed for your chosen analysis technique.</p>
+          <p>These fine-tune how the analysis will be performed</p>
+          <p>For this walkthrough just press the:</p>
+          <p><strong>Next button</strong> </p>
         </div>
       `,
       attachTo: {
@@ -423,7 +426,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'analysis-parameters'
     },
 
-    // Step 11: Preview Analysis Data
+    // Step 12: Preview Analysis Data
     {
       title: 'Preview Analysis Data',
       text: `
@@ -455,7 +458,7 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'preview-analysis-data'
     },
 
-    // Step 12: Next Button To Vis
+    // Step 13: Next Button To Vis
 
     {
       title: 'Continue to Visualization',
@@ -499,13 +502,14 @@ export const createTourSteps = (context, validateAndNavigate) => {
       ],
       id: 'next-button-analysis'
     },
-
+    // Step 14: Choose Vis Library
     {
       title: 'Choose Visualization Library',
       text: `
         <div>
           <p>Select a <strong>Visualization Library</strong> to create charts and graphs.</p>
           <p>Different libraries offer different types of visualizations and styling options.</p>
+          <p>Select: <strong>ApexCharts.js</strong></p>
         </div>
       `,
       attachTo: {
@@ -531,13 +535,14 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'visualization-library-selection'
     },
 
-    // Step 13: Visualization Type
+    // Step 15: Visualization Type
     {
       title: 'Select Visualization Type',
       text: `
         <div>
-          <p>Choose the <strong>Type of Visualization</strong> that best represents your data.</p>
-          <p>Options might include bar charts, line graphs, pie charts, etc.</p>
+          <p>You can choose the <strong>Type of Visualization</strong> that best represents your data.</p>
+          <p>In our case</p>
+          <p>Select: <strong>Bar Chart</strong></p>
         </div>
       `,
       attachTo: {
@@ -563,13 +568,14 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'visualization-type-selection'
     },
 
-    // Step 14: Visualization Inputs
+    // Step 16: Visualization Inputs
     {
       title: 'Map Visualization Inputs',
       text: `
         <div>
           <p>Map your analysis results to the <strong>Visualization Inputs</strong>.</p>
           <p>This determines which data fields will be displayed in your chart.</p>
+          <p>Press: <strong>Next</strong></p>
         </div>
       `,
       attachTo: {
@@ -595,13 +601,14 @@ export const createTourSteps = (context, validateAndNavigate) => {
       id: 'visualization-inputs-mapping'
     },
 
-    // Step 15: Generate Preview
+    // Step 17: Generate Preview
     {
       title: 'Generate Preview',
       text: `
         <div>
-          <p>Click this button to <strong>Generate a Preview</strong> of your visualization.</p>
-          <p>This will create a sample chart based on your configuration.</p>
+          <p>By pressing <strong>Generate Preview</strong> you can finally see your visualization.</p>
+          <p>Now you can change elements to customize your indicator visualization to your liking.</p>
+          <p> When you are happy with you indicator you can save it.</p>
         </div>
       `,
       attachTo: {
@@ -653,13 +660,13 @@ export const shepherdTargetClasses = {
   actionSelector: 'shepherd-action-selector',
   dateRange: 'shepherd-date-range',
   analysisTechnique: 'shepherd-analysis-technique',
+  analysisInputsExplanation: 'shepherd-analysis-input',
   analysisInputs: 'shepherd-analysis-inputs',
   analysisParams: 'shepherd-analysis-params',
   previewDataBtn: 'shepherd-preview-data-btn',
-  nxtBtnAnalysis: 'shepherd-next-btn-analysis',
+  nxtBtnAnalysis: 'shshepherd-next-btn-analysis',
   vizLibrary: 'shepherd-viz-library',
   vizType: 'shepherd-viz-type',
   vizInputs: 'shepherd-viz-inputs',
-  generatePreviewBtn: 'shepherd-generate-preview-btn',
-  submitBtn: 'shepherd-submit-btn',
+  generatePreviewBtn: 'shepherd-generate-preview-btn'
 };

@@ -1,6 +1,4 @@
 /* Shepherd.js CSS Overrides for Basic Indicator Editor */
-
-/* Import Shepherd.js base styles */
 @import 'shepherd.js/dist/css/shepherd.css';
 
 /* Global Shepherd Styles */
@@ -35,7 +33,7 @@
 .shepherd-action-selector,
 .shepherd-analysis-technique,
 .shepherd-viz-library,
-.shepherd-analysis-inputs-dropdown {
+.shepherd-analysis-inputs {
   position: relative;
 }
 
@@ -47,7 +45,8 @@
 .shepherd-action-selector::before,
 .shepherd-analysis-technique::before,
 .shepherd-viz-library::before,
-.shepherd-analysis-inputs-dropdown::before {
+.shepherd-analysis-inputs::before
+ {
   content: '';
   position: absolute;
   top: -4px;
@@ -96,8 +95,7 @@
 
 /* Button highlighting */
 .shepherd-preview-data-btn,
-.shepherd-generate-preview-btn,
-.shepherd-submit-btn {
+.shepherd-generate-preview-btn {
   position: relative;
   box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
   border-radius: 8px !important;
@@ -105,8 +103,7 @@
 }
 
 .shepherd-preview-data-btn:hover,
-.shepherd-generate-preview-btn:hover,
-.shepherd-submit-btn:hover {
+.shepherd-generate-preview-btn:hover{
   box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4) !important;
   transform: translateY(-1px);
 }
@@ -265,15 +262,13 @@
 
 /* Enhanced button hover states */
 .shepherd-preview-data-btn,
-.shepherd-generate-preview-btn,
-.shepherd-submit-btn {
+.shepherd-generate-preview-btn{
   position: relative;
   overflow: hidden;
 }
 
 .shepherd-preview-data-btn::before,
-.shepherd-generate-preview-btn::before,
-.shepherd-submit-btn::before {
+.shepherd-generate-preview-btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -286,8 +281,7 @@
 }
 
 .shepherd-preview-data-btn:hover::before,
-.shepherd-generate-preview-btn:hover::before,
-.shepherd-submit-btn:hover::before {
+.shepherd-generate-preview-btn:hover::before{
   left: 100%;
 }
 
@@ -390,4 +384,3 @@
 .shepherd-viz-type { /* Maps to original .joyride-viz-type */ }
 .shepherd-viz-inputs { /* Maps to original .joyride-viz-inputs */ }
 .shepherd-generate-preview-btn { /* Maps to original .joyride-generate-preview-btn */ }
-.shepherd-submit-btn { /* Maps to original .joyride-submit-btn */ }

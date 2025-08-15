@@ -291,7 +291,7 @@ const Analysis = ({
           </Grid>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} className="shepherd-analysis-inputs">
             <Grid item xs={12}>
               <AnalyticsTechnique
                 state={state}
